@@ -1,0 +1,344 @@
+onescience_manifest_version: "0.1"
+resource_type: model
+
+resource:
+  id: OneScience/PDENNEval
+  name: PDENNEval
+  domain: cfd
+  domain_tags: [cfd, pde, neural_operator, benchmark]
+  task: pde_surrogate_training_evaluation
+  task_tags: [train, evaluate, preflight, hdf5]
+  modalities: [gridded_field, pde_solution]
+  input_formats: [hdf5, yaml]
+  output_formats: [pt, log, yaml]
+  summary: PDENNEval 偏微分方程神经网络求解模型集合，提供与 OneScience/pdenneval 数据集匹配的 FNO 标准训练和评测入口。
+
+platform_resource:
+  primary:
+    platform: modelscope
+    repo_id: OneScience/PDENNEval
+    repo_type: model
+    url: https://modelscope.cn/models/OneScience/PDENNEval
+    revision: main
+    readme_path: README.md
+    manifest_path: onescience_run_manifest.yaml
+  mirrors: []
+  access:
+    visibility: public
+    license: unknown
+
+website_integration:
+  enabled: true
+  click_target:
+    platform: modelscope
+    resource_url: https://modelscope.cn/models/OneScience/PDENNEval
+  llm_handoff:
+    readme_required: true
+    manifest_required: true
+    download_readme_first: true
+    resolve_related_datasets: true
+    default_run_goal: minimal_validation
+    cwd_note: 如果使用 modelscope download --cache_dir 下载模型，请先 cd 到实际下载后的模型包根目录再执行 commands 中的命令。
+
+runtime:
+  enabled: true
+  onescience_domain: cfd
+  min_onescience_version: null
+  supported_execution: [local_cpu_preflight, local_gpu_training, local_gpu_evaluation]
+  environment:
+    required_env:
+      ONESCIENCE_PDENNEVAL_DATA_DIR: 指向 OneScience/pdenneval 数据集仓库中的 data 目录。
+    optional_env:
+      MODELSCOPE_CACHE: ModelScope 下载缓存目录。
+  dependencies:
+    python: ">=3.10"
+    python_packages: [onescience, torch, numpy, h5py, pyyaml, ruamel.yaml, tqdm]
+
+onescience:
+  repo: https://gitee.com/onescience-ai/onescience
+  official_links:
+    gitee:
+      doc: https://gitee.com/onescience-ai/onescience-doc
+      onescience: https://gitee.com/onescience-ai/onescience
+      skills: https://gitee.com/onescience-ai/oneskills
+    github:
+      doc: https://github.com/onescience-ai/OneScience-doc
+      onescience: https://github.com/onescience-ai/OneScience
+      skills: https://github.com/onescience-ai/oneskills
+  install:
+    required_by_default: true
+    command: bash install.sh cfd
+  source_paths:
+    - onescience/src/onescience/datapipes/cfd/PDENNEval.py
+    - onescience/src/onescience/models/pdenneval
+    - onescience/src/onescience/utils/pdenneval
+  compatibility:
+    examples_path: onescience/examples/cfd/PDENNEval
+    status: examples_compatible
+  config_loader: onescience.utils.YParams
+  datapipe: onescience.datapipes.cfd.PDENNEval.PDEBenchFNODatapipe
+
+runtime_package:
+  kind: standard_runtime_package
+  package_root: .
+  standard_layout:
+    workdir: .
+    config_dir: conf
+    checkpoint_dir: outputs
+    data_dir: external
+    output_dir: outputs
+  apply_policy:
+    mode: direct_use
+    target: session_workdir
+    overwrite: true
+    protect_installed_onescience: true
+  entry_files:
+    - conf/fno_2d_darcy.yaml
+    - conf/fno_1d_burgers.yaml
+    - FNO/train.py
+    - scripts/preflight_check.py
+  entrypoints:
+    preflight: scripts/preflight_check.py
+    inference: null
+    train: FNO/train.py
+    finetune: null
+    evaluate: FNO/train.py
+    visualize: null
+    deploy: null
+
+files:
+  model_files:
+    - path: FNO/train.py
+      role: fno_training_evaluation_entry
+      description_zh: FNO 训练和评测入口，使用 onescience.datapipes.cfd.PDENNEval 和 onescience.models.pdenneval.fno。
+      required: true
+      required_for: [train, evaluate]
+      source: {platform: modelscope, repo_id: OneScience/PDENNEval, repo_type: model, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: FNO/train.py
+    - path: DeepONet/
+      role: reference_method_code
+      description_zh: DeepONet 原始方法代码和配置，默认 run_matrix 不直接调用。
+      required: false
+      required_for: [research_reference]
+      source: {platform: modelscope, repo_id: OneScience/PDENNEval, repo_type: model, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: DeepONet/
+    - path: UNet/
+      role: reference_method_code
+      description_zh: UNet 原始方法代码和配置，默认 run_matrix 不直接调用。
+      required: false
+      required_for: [research_reference]
+      source: {platform: modelscope, repo_id: OneScience/PDENNEval, repo_type: model, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: UNet/
+  dataset_files: []
+  config_files:
+    - path: conf/fno_2d_darcy.yaml
+      role: model_datapipe_training_config
+      description_zh: 标准 FNO + 2D Darcy Flow 配置，数据文件为 2D_DarcyFlow_beta0.1_Train.hdf5。
+      required: true
+      required_for: [preflight, train, evaluate]
+      source: {platform: modelscope, repo_id: OneScience/PDENNEval, repo_type: model, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: conf/fno_2d_darcy.yaml
+    - path: conf/fno_1d_burgers.yaml
+      role: model_datapipe_training_config
+      description_zh: 标准 FNO + 1D Burgers 配置，数据文件为 1D_Burgers_Sols_Nu0.001.hdf5。
+      required: true
+      required_for: [preflight, train, evaluate]
+      source: {platform: modelscope, repo_id: OneScience/PDENNEval, repo_type: model, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: conf/fno_1d_burgers.yaml
+  sample_files:
+    - path: scripts/preflight_check.py
+      role: preflight
+      description_zh: 模型预检脚本，检查标准配置、数据目录、HDF5 schema 和输出目录可写性。
+      required: true
+      required_for: [preflight]
+      source: {platform: modelscope, repo_id: OneScience/PDENNEval, repo_type: model, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: scripts/preflight_check.py
+
+relations:
+  required_datasets:
+    - id: OneScience/pdenneval
+      role: train_data
+      required_for: [preflight, train, evaluate]
+      resource_ref:
+        platform: modelscope
+        repo_id: OneScience/pdenneval
+        repo_type: dataset
+        url: https://modelscope.cn/datasets/OneScience/pdenneval
+        revision: main
+        readme_path: README.md
+        manifest_path: onescience_run_manifest.yaml
+      local_path: data
+      expected_env: ONESCIENCE_PDENNEVAL_DATA_DIR
+  optional_datasets: []
+  compatible_models: []
+
+configuration_adaptation:
+  - file: conf/fno_2d_darcy.yaml
+    yaml_path: fno_config.datapipe.source.data_dir
+    original_value: ${ONESCIENCE_DATASETS_DIR}/PDENNEval/data/
+    current_value: ${ONESCIENCE_PDENNEVAL_DATA_DIR}
+    reason: 模型和数据集分仓上传后，网页端或用户下载 OneScience/pdenneval 数据集，再通过 ONESCIENCE_PDENNEVAL_DATA_DIR 指向数据集仓库的 data 目录。
+  - file: conf/fno_2d_darcy.yaml
+    yaml_path: fno_config.training.output_dir
+    original_value: ./checkpoint/
+    current_value: ./outputs/fno_2d_darcy/
+    reason: 标准运行包将运行输出集中到 outputs 目录，避免与原始示例 checkpoint 路径混淆。
+  - file: conf/fno_1d_burgers.yaml
+    yaml_path: fno_config.datapipe.source.data_dir
+    original_value: YOUR_DATASET_DIR_PATH
+    current_value: ${ONESCIENCE_PDENNEVAL_DATA_DIR}
+    reason: 原配置为占位路径，必须改为标准数据集环境变量才能自动运行。
+  - file: conf/fno_1d_burgers.yaml
+    yaml_path: fno_config.training.output_dir
+    original_value: ./checkpoint/
+    current_value: ./outputs/fno_1d_burgers/
+    reason: 标准运行包将运行输出集中到 outputs 目录，避免与原始示例 checkpoint 路径混淆。
+  - file: dataset package data/1D_Burgers_Sols_Nu0.001.hdf5
+    yaml_path: dataset.file_name_mapping
+    original_value: cfd_dataset/PDENNEval/data/268190
+    current_value: data/1D_Burgers_Sols_Nu0.001.hdf5
+    reason: 原始下载残留文件名为 268190，wget-log 中 Content-Disposition 指向 1D_Burgers_Sols_Nu0.001.hdf5；标准包使用可读语义文件名并用 SHA256 证明内容一致。
+
+run_matrix:
+  scenarios:
+    - name: preflight_standard_configs
+      capability: preflight
+      default: true
+      required_datasets:
+        - id: OneScience/pdenneval
+          role: train_data
+          local_path: data
+      required_model_files: [conf/fno_2d_darcy.yaml, conf/fno_1d_burgers.yaml, scripts/preflight_check.py]
+      required_dataset_files:
+        - data/2D_DarcyFlow_beta0.1_Train.hdf5
+        - data/1D_Burgers_Sols_Nu0.001.hdf5
+      preconditions:
+        - 已下载 OneScience/pdenneval 数据集。
+        - ONESCIENCE_PDENNEVAL_DATA_DIR 指向数据集仓库的 data 目录。
+      command_refs: [commands.preflight.model_preflight_all]
+      outputs:
+        - "控制台输出 [OK] model preflight completed"
+    - name: train_fno_2d_darcy
+      capability: train
+      default: true
+      required_datasets:
+        - id: OneScience/pdenneval
+          role: train_data
+          local_path: data
+      required_model_files: [FNO/train.py, conf/fno_2d_darcy.yaml]
+      required_dataset_files: [data/2D_DarcyFlow_beta0.1_Train.hdf5]
+      preconditions:
+        - 已通过 model_preflight_all。
+        - 已安装 OneScience CFD 环境和 PyTorch。
+      command_refs: [commands.train.train_fno_2d_darcy]
+      outputs:
+        - outputs/fno_2d_darcy/**
+    - name: train_fno_1d_burgers
+      capability: train
+      default: false
+      required_datasets:
+        - id: OneScience/pdenneval
+          role: train_data
+          local_path: data
+      required_model_files: [FNO/train.py, conf/fno_1d_burgers.yaml]
+      required_dataset_files: [data/1D_Burgers_Sols_Nu0.001.hdf5]
+      preconditions:
+        - 已通过 model_preflight_all。
+        - 已安装 OneScience CFD 环境和 PyTorch。
+      command_refs: [commands.train.train_fno_1d_burgers]
+      outputs:
+        - outputs/fno_1d_burgers/**
+    - name: evaluate_fno_from_checkpoint
+      capability: evaluate
+      default: true
+      required_datasets:
+        - id: OneScience/pdenneval
+          role: eval_data
+          local_path: data
+      required_model_files: [FNO/train.py, conf/fno_2d_darcy.yaml]
+      required_dataset_files: [data/2D_DarcyFlow_beta0.1_Train.hdf5]
+      preconditions:
+        - 在配置中设置 training.if_training=false。
+        - 在配置中设置 training.model_path 为已有 checkpoint。
+      command_refs: [commands.evaluate.evaluate_fno_2d_darcy]
+      outputs:
+        - 控制台评测指标和 outputs/fno_2d_darcy/**
+
+capabilities:
+  preflight: true
+  inference: false
+  train: true
+  finetune: false
+  evaluate: true
+  visualize: false
+  deploy: false
+
+commands:
+  download:
+    - name: download_model
+      command: modelscope download --model OneScience/PDENNEval
+      cwd: session_workdir
+    - name: download_dataset
+      command: modelscope download --dataset OneScience/pdenneval
+      cwd: session_workdir
+  prepare:
+    - name: export_dataset_env
+      command: export ONESCIENCE_PDENNEVAL_DATA_DIR=/path/to/OneScience/pdenneval/data
+      cwd: .
+  preflight:
+    - name: model_preflight_all
+      command: python scripts/preflight_check.py --all
+      cwd: .
+    - name: model_preflight_darcy
+      command: python scripts/preflight_check.py --config fno_2d_darcy.yaml
+      cwd: .
+  train:
+    - name: train_fno_2d_darcy
+      command: python train.py ../conf/fno_2d_darcy.yaml
+      cwd: FNO
+    - name: train_fno_1d_burgers
+      command: python train.py ../conf/fno_1d_burgers.yaml
+      cwd: FNO
+  finetune: []
+  inference: []
+  evaluate:
+    - name: evaluate_fno_2d_darcy
+      command: python train.py ../conf/fno_2d_darcy.yaml
+      cwd: FNO
+      note: 运行前需在 conf/fno_2d_darcy.yaml 中设置 training.if_training=false 和 training.model_path。
+  visualize: []
+  deploy: []
+
+expected_outputs:
+  - path: outputs/fno_2d_darcy/
+    type: directory
+    description_zh: FNO 2D Darcy 训练或评测输出目录。
+  - path: outputs/fno_1d_burgers/
+    type: directory
+    description_zh: FNO 1D Burgers 训练输出目录。
+
+diagnostics:
+  - name: missing_dataset_env
+    match: "ONESCIENCE_PDENNEVAL_DATA_DIR is not set"
+    severity: error
+    fix_zh: 下载 OneScience/pdenneval 数据集后，将 ONESCIENCE_PDENNEVAL_DATA_DIR 指向数据集仓库 data 目录。
+  - name: missing_hdf5
+    match: "missing HDF5 data file"
+    severity: error
+    fix_zh: 确认已执行 modelscope download --dataset OneScience/pdenneval，且数据目录中包含必需 HDF5 文件。
+  - name: dependency_missing
+    match: "ModuleNotFoundError"
+    severity: error
+    fix_zh: 安装 OneScience CFD 运行环境、PyTorch、h5py、PyYAML 和 ruamel.yaml。
+  - name: cuda_memory
+    match: "CUDA out of memory"
+    severity: error
+    fix_zh: 调小 batch_size 或使用更大显存设备。
+
+domain_extension:
+  cfd:
+    equation_families: [darcy_flow, burgers]
+    benchmark_family: PDEBench
+    data_format: HDF5
+    default_method: FNO
+    non_default_methods_included: [DeepONet, UNet, UNO, PINO, MPNN, PINN, WAN]

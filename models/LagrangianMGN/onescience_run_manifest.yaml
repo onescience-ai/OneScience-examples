@@ -1,0 +1,344 @@
+onescience_manifest_version: "0.1"
+resource_type: model
+
+resource:
+  id: OneScience/LagrangianMGN
+  name: LagrangianMGN
+  domain: cfd
+  domain_tags: [cfd, particle_simulation, lagrangian_dynamics, graph_neural_network]
+  task: lagrangian_particle_simulation
+  task_tags: [train, inference, evaluation, visualization]
+  modalities: [particle_trajectory, graph]
+  input_formats: [tfrecord]
+  output_formats: [checkpoint, gif, png]
+  summary: Lagrangian MeshGraphNet 标准运行包，用于基于 DeepMind Water 粒子轨迹数据训练和展开预测拉格朗日粒子动力学。
+
+platform_resource:
+  primary:
+    platform: modelscope
+    repo_id: OneScience/LagrangianMGN
+    repo_type: model
+    url: https://modelscope.cn/models/OneScience/LagrangianMGN
+    revision: main
+    readme_path: README.md
+    manifest_path: onescience_run_manifest.yaml
+  mirrors: []
+  access:
+    visibility: public
+    license: unknown
+
+website_integration:
+  enabled: true
+  click_target:
+    platform: modelscope
+    resource_url: https://modelscope.cn/models/OneScience/LagrangianMGN
+  llm_handoff:
+    readme_required: true
+    manifest_required: true
+    download_readme_first: true
+    resolve_related_datasets: true
+    default_run_goal: minimal_validation
+    cwd_note: 如果使用 modelscope download --cache_dir 下载模型，请先 cd 到实际下载后的模型包根目录再执行 commands 中的命令。
+
+runtime:
+  enabled: true
+  onescience_domain: cfd
+  min_onescience_version: null
+  supported_execution: [local_cpu_preflight, local_gpu_training, local_gpu_inference, distributed_gpu_training, local_slurm]
+  environment:
+    required_env:
+      ONESCIENCE_LAGRANGIAN_DATA_DIR: 指向 OneScience/lagrangian 数据集仓库中的 data/Water 目录；如果模型包根目录下存在 data/Water，可不设置。
+    optional_env:
+      MODELSCOPE_CACHE: ModelScope 下载缓存目录。
+  dependencies:
+    python: ">=3.10"
+    python_packages: [onescience, torch, dgl, tensorflow, hydra-core, omegaconf, numpy, matplotlib, pillow, tqdm, pyyaml]
+
+onescience:
+  repo: https://gitee.com/onescience-ai/onescience
+  official_links:
+    gitee:
+      doc: https://gitee.com/onescience-ai/onescience-doc
+      onescience: https://gitee.com/onescience-ai/onescience
+      skills: https://gitee.com/onescience-ai/oneskills
+    github:
+      doc: https://github.com/onescience-ai/OneScience-doc
+      onescience: https://github.com/onescience-ai/OneScience
+      skills: https://github.com/onescience-ai/oneskills
+  install:
+    required_by_default: true
+    command: bash install.sh cfd
+  source_paths:
+    - onescience/src/onescience/datapipes/cfd/deepmind_lagrangian.py
+    - onescience/src/onescience/models/meshgraphnet
+  compatibility:
+    examples_path: onescience/examples/cfd/Lagrangian_MGN
+    status: examples_compatible
+  datapipe: onescience.datapipes.cfd.DeepMindLagrangianDatapipe
+  model_classes:
+    - onescience.models.meshgraphnet.MeshGraphNet
+
+runtime_package:
+  kind: standard_runtime_package
+  package_root: .
+  standard_layout:
+    workdir: .
+    config_dir: conf
+    checkpoint_dir: model/Water
+    data_dir: data/Water
+    output_dir: outputs
+  apply_policy:
+    mode: direct_use
+    target: session_workdir
+    overwrite: true
+    protect_installed_onescience: true
+  entry_files:
+    - train.py
+    - inference.py
+    - loggers.py
+    - conf/config.yaml
+    - conf/experiment/water.yaml
+    - scripts/preflight_lagrangian_mgn.py
+  entrypoints:
+    preflight: scripts/preflight_lagrangian_mgn.py
+    inference: inference.py
+    train: train.py
+    finetune: null
+    evaluate: inference.py
+    visualize: inference.py
+    deploy: null
+
+configuration_adaptation:
+  source_model_code_path: onescience/examples/cfd/Lagrangian_MGN/
+  reason: 原始示例包含多个 DeepMind Lagrangian 子数据集实验配置，本次标准化数据集仓库只上传 Water 子集，因此标准运行包默认配置收敛到 2D Water 数据。
+  adapted_files:
+    - path: conf/config.yaml
+      changes:
+        - yaml_path: data.data_dir
+          original_value: "???"
+          current_value: "${oc.env:ONESCIENCE_LAGRANGIAN_DATA_DIR,data/Water}"
+          reason: 允许网页端下载数据集后通过环境变量指向 data/Water；未设置时使用模型包根目录下的 data/Water。
+        - yaml_path: data.name
+          original_value: "dataset"
+          current_value: "Water"
+          reason: 当前上传数据只包含 Water 子集，默认实验必须与数据集名称一致。
+    - path: conf/experiment/
+      changes:
+        - yaml_path: available_experiments
+          original_value: "goop, multi_material, sand, water, water_3d, water_ramps"
+          current_value: "water"
+          reason: 避免自动运行选择不存在的数据子集或 3D Water 配置。
+
+files:
+  model_files:
+    - id: train_entry
+      path: train.py
+      role: training_entry
+      description_zh: Lagrangian MGN 训练入口，读取 Hydra 配置和 Water TFRecord 数据。
+      required: true
+      required_for: [train]
+      source: {platform: modelscope, repo_id: OneScience/LagrangianMGN, repo_type: model, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: train.py
+    - id: inference_entry
+      path: inference.py
+      role: inference_evaluate_visualize_entry
+      description_zh: 使用训练得到的 checkpoint 对测试序列 rollout，并输出 GIF 和误差图。
+      required: true
+      required_for: [inference, evaluate, visualize]
+      source: {platform: modelscope, repo_id: OneScience/LagrangianMGN, repo_type: model, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: inference.py
+  dataset_files: []
+  config_files:
+    - id: hydra_config
+      path: conf/config.yaml
+      role: runtime_config
+      description_zh: 标准化后的默认 Hydra 配置，默认读取 Water 数据。
+      required: true
+      required_for: [preflight, train, inference, evaluate, visualize]
+      source: {platform: modelscope, repo_id: OneScience/LagrangianMGN, repo_type: model, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: conf/config.yaml
+    - id: water_experiment
+      path: conf/experiment/water.yaml
+      role: water_experiment_config
+      description_zh: 2D Water 实验配置，绑定 mgn_2d、MSELoss、Adam 和 CosineAnnealingLR。
+      required: true
+      required_for: [preflight, train, inference, evaluate, visualize]
+      source: {platform: modelscope, repo_id: OneScience/LagrangianMGN, repo_type: model, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: conf/experiment/water.yaml
+  sample_files:
+    - id: preflight_script
+      path: scripts/preflight_lagrangian_mgn.py
+      role: preflight
+      description_zh: 检查配置、数据路径、TFRecord 文件、metadata schema 和归一化统计字段。
+      required: true
+      required_for: [preflight]
+      source: {platform: modelscope, repo_id: OneScience/LagrangianMGN, repo_type: model, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: scripts/preflight_lagrangian_mgn.py
+    - id: slurm_example
+      path: slurm.sh
+      role: cluster_example
+      description_zh: Slurm 训练示例脚本。
+      required: false
+      required_for: [train]
+      source: {platform: modelscope, repo_id: OneScience/LagrangianMGN, repo_type: model, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: slurm.sh
+
+relations:
+  required_datasets:
+    - id: OneScience/lagrangian
+      role: train_data
+      required_for: [preflight, train, inference, evaluate, visualize]
+      resource_ref:
+        platform: modelscope
+        repo_id: OneScience/lagrangian
+        repo_type: dataset
+        url: https://modelscope.cn/datasets/OneScience/lagrangian
+        revision: main
+        readme_path: README.md
+        manifest_path: onescience_run_manifest.yaml
+      expected_local_path: data/Water
+      env: ONESCIENCE_LAGRANGIAN_DATA_DIR
+      adapter: null
+  optional_datasets: []
+  compatible_models: []
+
+run_matrix:
+  scenarios:
+    - name: minimal_validation
+      default: true
+      capability: preflight
+      description: 检查模型包与 OneScience/lagrangian Water 数据是否匹配。
+      required_datasets:
+        - id: OneScience/lagrangian
+          role: train_data
+          local_path: data/Water
+      required_model_files: [train.py, inference.py, conf/config.yaml, conf/experiment/water.yaml, scripts/preflight_lagrangian_mgn.py]
+      required_dataset_files: [data/Water/metadata.json, data/Water/train.tfrecord, data/Water/valid.tfrecord, data/Water/test.tfrecord]
+      preconditions:
+        - 已下载 OneScience/LagrangianMGN 模型仓库并 cd 到模型包根目录。
+        - 已下载 OneScience/lagrangian 数据集仓库，并将 ONESCIENCE_LAGRANGIAN_DATA_DIR 指向其 data/Water 目录，或把 data/Water 放在模型包根目录。
+      command_refs: [commands.preflight.preflight_water]
+      expected_outputs: [preflight_ok]
+    - name: train_water
+      capability: train
+      description: 从 Water 训练集训练 Lagrangian MGN，并保存 checkpoint。
+      required_datasets:
+        - id: OneScience/lagrangian
+          role: train_data
+          local_path: data/Water
+      required_model_files: [train.py, loggers.py, conf/config.yaml, conf/experiment/water.yaml]
+      required_dataset_files: [data/Water/metadata.json, data/Water/train.tfrecord, data/Water/valid.tfrecord]
+      preconditions:
+        - 预检通过。
+        - 已安装 OneScience CFD 依赖、DGL 和 TensorFlow。
+        - GPU 训练推荐；CPU 可用于小规模调试但很慢。
+      command_refs: [commands.train.train_water]
+      expected_outputs: [water_checkpoint]
+    - name: inference_water
+      capability: inference
+      description: 使用训练得到的 checkpoint 在 Water 测试集上 rollout，并生成动画和误差图。
+      required_datasets:
+        - id: OneScience/lagrangian
+          role: inference_input
+          local_path: data/Water
+      required_model_files: [inference.py, loggers.py, conf/config.yaml, conf/experiment/water.yaml]
+      required_dataset_files: [data/Water/metadata.json, data/Water/test.tfrecord]
+      preconditions:
+        - model/Water 或 resume_dir 指向的位置存在训练产生的 checkpoint。
+        - test.batch_size 必须为 1。
+      command_refs: [commands.inference.inference_water]
+      expected_outputs: [water_rollout_gifs, water_error_png]
+
+capabilities:
+  inference: true
+  train: true
+  finetune: false
+  evaluate: true
+  visualize: true
+  deploy: false
+
+commands:
+  download:
+    - name: download_model
+      target: model
+      repo_id: OneScience/LagrangianMGN
+      local_path: <session_workdir>/LagrangianMGN
+      required: true
+      required_for: [preflight, train, inference, evaluate, visualize]
+      command: modelscope download --model OneScience/LagrangianMGN
+  preflight:
+    - name: preflight_water
+      description: 检查配置与 Water 数据 schema、split 文件和归一化统计字段。
+      cwd: .
+      command: python scripts/preflight_lagrangian_mgn.py --repo-root . --data-dir "${ONESCIENCE_LAGRANGIAN_DATA_DIR:-data/Water}"
+      required_files: [scripts/preflight_lagrangian_mgn.py, conf/config.yaml, conf/experiment/water.yaml]
+      required_env: [ONESCIENCE_LAGRANGIAN_DATA_DIR]
+      expected_outputs: [{path: stdout, type: text, contains: "Lagrangian MGN preflight passed"}]
+      success_criteria: [exit_code == 0]
+  prepare: []
+  inference:
+    - name: inference_water
+      description: 对 Water 测试序列执行 rollout 推理并生成可视化。
+      cwd: .
+      command: python inference.py +experiment=water data.data_dir="${ONESCIENCE_LAGRANGIAN_DATA_DIR:-data/Water}" data.test.num_sequences=4 resume_dir=./model/Water output=./result/water/inference
+      required_files: [inference.py, conf/config.yaml, conf/experiment/water.yaml]
+      required_env: [ONESCIENCE_LAGRANGIAN_DATA_DIR]
+      expected_outputs:
+        - {path: result/water/inference/animations, type: directory}
+        - {path: result/water/inference/animations/error.png, type: image}
+      success_criteria: [exit_code == 0, output_path_exists]
+  train:
+    - name: train_water
+      description: 使用 Water 训练集训练 Lagrangian MGN。
+      cwd: .
+      command: python train.py +experiment=water data.data_dir="${ONESCIENCE_LAGRANGIAN_DATA_DIR:-data/Water}" resume_dir=./model/Water output=./outputs/water
+      required_files: [train.py, conf/config.yaml, conf/experiment/water.yaml]
+      required_env: [ONESCIENCE_LAGRANGIAN_DATA_DIR]
+      expected_outputs:
+        - {path: model/Water, type: directory}
+        - {path: outputs/water, type: directory}
+      success_criteria: [exit_code == 0, checkpoint_path_exists]
+  finetune: []
+  evaluate: []
+  visualize: []
+  deploy: []
+
+expected_outputs:
+  - id: preflight_ok
+    path: stdout
+    type: text
+    description_zh: 预检输出 Lagrangian MGN preflight passed。
+  - id: water_checkpoint
+    path: model/Water
+    type: directory
+    description_zh: 训练 checkpoint 目录，由 OneScience checkpoint 工具写入。
+  - id: water_rollout_gifs
+    path: result/water/inference/animations/*.gif
+    type: gif
+    description_zh: Water 测试序列预测与真值对比动画。
+  - id: water_error_png
+    path: result/water/inference/animations/error.png
+    type: image
+    description_zh: rollout 序列位置误差图。
+
+diagnostics:
+  - symptom: "Missing mandatory value: data.data_dir"
+    cause: 未使用标准化后的 conf/config.yaml，或没有传入 data.data_dir。
+    fix: 确认在模型包根目录运行，并使用命令中的 data.data_dir 参数或设置 ONESCIENCE_LAGRANGIAN_DATA_DIR。
+  - symptom: "TensorFlow is required for reading .tfrecord files"
+    cause: 环境缺少 TensorFlow。
+    fix: 安装 OneScience CFD 依赖或执行 pip install "tensorflow<=2.17.1"。
+  - symptom: "checkpoint not found"
+    cause: 推理前没有训练 checkpoint，或 resume_dir 指向错误。
+    fix: 先运行 train_water，或把 resume_dir 指向已有 checkpoint 目录。
+  - symptom: "Only batch size 1 is currently supported"
+    cause: 推理 batch size 被改为非 1。
+    fix: 保持 test.batch_size=1。
+
+domain_extension:
+  cfd:
+    simulation_type: lagrangian_particle_dynamics
+    graph_construction: radius_graph
+    default_dataset: Water
+    dimensionality: 2
+    metadata_fields: [bounds, sequence_length, default_connectivity_radius, dim, dt, vel_mean, vel_std, acc_mean, acc_std]

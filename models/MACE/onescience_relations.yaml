@@ -1,0 +1,18 @@
+required_datasets:
+  - id: OneScience/ani1x
+    role: train_data
+    required_for:
+      - preflight
+      - train
+      - evaluate
+    resource_ref:
+      platform: modelscope
+      repo_id: OneScience/ani1x
+      repo_type: dataset
+      url: https://modelscope.cn/datasets/OneScience/ani1x
+      revision: main
+      readme_path: README.md
+      manifest_path: manifest.yaml
+    local_path: data/ani1x
+optional_datasets: []
+compatible_models: []

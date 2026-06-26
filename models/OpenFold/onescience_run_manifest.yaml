@@ -1,0 +1,505 @@
+onescience_manifest_version: "0.1"
+resource_type: model
+resource:
+  id: OneScience/OpenFold
+  name: OpenFold
+  chinese_name: OpenFold
+  domain: bio
+  domain_tags:
+    - bio
+    - protein
+    - protein_structure_prediction
+  task: protein_structure_prediction
+  task_tags:
+    - protein_structure_prediction
+    - folding
+    - ptm_prediction
+  modalities:
+    - protein_sequence
+    - multiple_sequence_alignment
+    - protein_template
+    - protein_structure
+  input_formats:
+    - fasta
+    - a3m
+    - sto
+    - hhr
+    - mmcif
+  output_formats:
+    - pdb
+    - cif
+    - pkl
+  summary: OpenFold 蛋白质结构预测标准运行包，包含 OneScience 示例代码、推理脚本、训练脚本、辅助脚本、示例 FASTA 和 finetuning PTM 权重。
+
+platform_resource:
+  primary:
+    platform: modelscope
+    repo_id: OneScience/OpenFold
+    repo_type: model
+    url: https://modelscope.cn/models/OneScience/OpenFold
+    revision: master
+    readme_path: README.md
+    manifest_path: manifest.yaml
+  mirrors: []
+  access:
+    visibility: public
+    license: null
+
+website_integration:
+  enabled: true
+  click_target:
+    platform: modelscope
+    resource_url: https://modelscope.cn/models/OneScience/OpenFold
+  llm_handoff:
+    readme_required: true
+    manifest_required: true
+    download_readme_first: true
+    resolve_related_datasets: false
+    default_run_goal: minimal_validation
+    notes: "本模型包无固定必需数据集仓库；FASTA、MSA、模板和训练数据由用户提供或外部数据库准备。"
+
+runtime:
+  enabled: true
+  onescience_domain: bio
+  min_onescience_version: null
+  supported_execution:
+    - local
+    - local_slurm
+    - remote_slurm
+    - scnet_mcp
+  workdir: .
+  environment:
+    install_command: bash install.sh bio
+    python_dependencies:
+      - torch
+      - numpy
+      - pyyaml
+    onescience_imports:
+      - onescience.configs.bio.openfold.config
+      - onescience.datapipes.openfold
+      - onescience.utils.openfold.script_utils
+
+onescience:
+  repo: https://gitee.com/onescience-ai/onescience
+  official_links:
+    gitee:
+      doc: https://gitee.com/onescience-ai/onescience-doc
+      onescience: https://gitee.com/onescience-ai/onescience
+      skills: https://gitee.com/onescience-ai/oneskills
+    github:
+      doc: https://github.com/onescience-ai/OneScience-doc
+      onescience: https://github.com/onescience-ai/OneScience
+      skills: https://github.com/onescience-ai/oneskills
+  install:
+    required_by_default: false
+    command: bash install.sh bio
+  source_paths:
+    - examples/biosciences/openfold
+  compatibility:
+    examples_path: examples/biosciences/openfold
+    status: examples_compatible
+
+runtime_package:
+  kind: standard_runtime_package
+  package_root: .
+  standard_layout:
+    workdir: .
+    config_dir: null
+    checkpoint_dir: params
+    data_dir: monomer
+    output_dir: outputs
+  apply_policy:
+    mode: direct_use
+    target: session_workdir
+    overwrite: true
+    protect_installed_onescience: true
+  entry_files:
+    - run_pretrained_openfold.py
+    - train_openfold.py
+    - monomer/inference.sh
+    - deepspeed_config.json
+    - scripts/precompute_alignments.py
+    - tools/preflight_check.py
+  entrypoints:
+    preflight: tools/preflight_check.py
+    inference: run_pretrained_openfold.py
+    train: train_openfold.py
+    finetune: train_openfold.py
+    evaluate: null
+    visualize: null
+    deploy: null
+  configuration_adaptation:
+    applied: true
+    changes:
+      - file: monomer/inference.sh
+        yaml_path: null
+        original_value: "${ONESCIENCE_MODELS_DIR}/OpenFold/finetuning_ptm_2.pt"
+        current_value: "params/finetuning_ptm_2.pt 在标准包中作为推荐 checkpoint 路径；原脚本保留为 examples 兼容入口。"
+        reason: "ModelScope 标准运行包需要仓库内自包含权重，网页端下载后可直接定位 checkpoint。"
+    notes: "未改写原始脚本；Manifest 和 README 明确标准包内权重路径，用户可按本地 OneScience 环境变量继续使用 monomer/inference.sh。"
+
+files:
+  manifests:
+    - path: manifest.yaml
+      role: runtime_manifest
+      required: true
+      description_zh: OneScience ModelScope 标准 Manifest。
+    - path: onescience_run_manifest.yaml
+      role: runtime_manifest_alias
+      required: true
+      description_zh: 与 manifest.yaml 内容一致的网页端兼容运行清单。
+    - path: onescience_relations.yaml
+      role: relations_manifest
+      required: true
+      description_zh: 显式声明模型与数据集关系，本模型无固定必需数据集仓库。
+  documentation:
+    - path: README.md
+      role: readme
+      required: true
+      description_zh: 中文 README 和运行入口说明。
+  model_files:
+    - path: params/finetuning_ptm_2.pt
+      role: model_checkpoint
+      format: pytorch_checkpoint
+      required: true
+      size_hint: "358M"
+      sha256: aff88a4534f500bcd4509584c2a6ce824417b31f4efaa5b17d19b4c97a8aaa49
+      local_path: params/finetuning_ptm_2.pt
+      description_zh: OpenFold finetuning PTM PyTorch checkpoint。
+      source:
+        platform: modelscope
+        repo_id: OneScience/OpenFold
+        repo_type: model
+        path: params/finetuning_ptm_2.pt
+        download_method: command_ref
+        command_ref: download_model_package
+  code_files:
+    - path: run_pretrained_openfold.py
+      role: inference_entry
+      required: true
+      required_for:
+        - inference
+      source:
+        platform: modelscope
+        repo_id: OneScience/OpenFold
+        repo_type: model
+        path: run_pretrained_openfold.py
+        download_method: command_ref
+        command_ref: download_model_package
+      local_path: run_pretrained_openfold.py
+      description_zh: OpenFold 预训练权重推理入口。
+    - path: train_openfold.py
+      role: training_entry
+      required: true
+      required_for:
+        - train
+        - finetune
+      source:
+        platform: modelscope
+        repo_id: OneScience/OpenFold
+        repo_type: model
+        path: train_openfold.py
+        download_method: command_ref
+        command_ref: download_model_package
+      local_path: train_openfold.py
+      description_zh: OpenFold 训练和微调入口。
+    - path: scripts/
+      role: helper_scripts
+      required: true
+      required_for:
+        - inference_prepare
+        - train_prepare
+      source:
+        platform: modelscope
+        repo_id: OneScience/OpenFold
+        repo_type: model
+        path: scripts/
+        download_method: command_ref
+        command_ref: download_model_package
+      local_path: scripts/
+      description_zh: 数据库下载、MSA 预计算、缓存生成和权重转换辅助脚本。
+    - path: monomer/inference.sh
+      role: shell_example
+      required: false
+      required_for:
+        - inference
+      source:
+        platform: modelscope
+        repo_id: OneScience/OpenFold
+        repo_type: model
+        path: monomer/inference.sh
+        download_method: command_ref
+        command_ref: download_model_package
+      local_path: monomer/inference.sh
+      description_zh: OneScience OpenFold 单体推理示例脚本。
+    - path: tools/preflight_check.py
+      role: preflight
+      required: true
+      required_for:
+        - preflight
+      source:
+        platform: modelscope
+        repo_id: OneScience/OpenFold
+        repo_type: model
+        path: tools/preflight_check.py
+        download_method: command_ref
+        command_ref: download_model_package
+      local_path: tools/preflight_check.py
+      description_zh: 轻量预检脚本，检查模型包结构、编码、repo_id、关系和命令引用。
+  config_files:
+    - path: deepspeed_config.json
+      role: training_config
+      required: false
+      source:
+        platform: modelscope
+        repo_id: OneScience/OpenFold
+        repo_type: model
+        path: deepspeed_config.json
+        download_method: command_ref
+        command_ref: download_model_package
+      local_path: deepspeed_config.json
+      description_zh: DeepSpeed 配置文件。
+  sample_files:
+    - path: monomer/fasta_dir/6kwc.fasta
+      role: sample_fasta
+      required: true
+      source:
+        platform: modelscope
+        repo_id: OneScience/OpenFold
+        repo_type: model
+        path: monomer/fasta_dir/6kwc.fasta
+        download_method: command_ref
+        command_ref: download_model_package
+      local_path: monomer/fasta_dir/6kwc.fasta
+      description_zh: 示例 FASTA 文件，用于验证包内输入目录结构。
+    - path: monomer/alignments/
+      role: user_alignment_dir
+      required: false
+      source:
+        platform: user
+        repo_id: null
+        repo_type: null
+        path: monomer/alignments/
+        download_method: user_provided
+      local_path: monomer/alignments/
+      description_zh: 用户预计算 MSA/alignment 放置目录，真实推理时需要填充。
+
+relations:
+  required_datasets: []
+  optional_datasets: []
+  compatible_models: []
+  external_inputs:
+    - name: user_fasta
+      required_for:
+        - inference
+      formats:
+        - fasta
+      description_zh: 用户提供待预测蛋白序列 FASTA，示例包内提供 monomer/fasta_dir/6kwc.fasta。
+    - name: precomputed_alignments_or_external_databases
+      required_for:
+        - inference
+        - train
+      formats:
+        - a3m
+        - sto
+        - hhr
+      description_zh: 用户提供预计算 MSA/alignment，或准备 AlphaFold/OpenFold 外部数据库后由脚本生成。
+    - name: template_mmcif_dir
+      required_for:
+        - inference
+        - train
+      formats:
+        - mmcif
+      description_zh: 用户提供 PDB mmCIF 模板目录或自定义模板目录。
+
+run_matrix:
+  scenarios:
+    - name: minimal_validation
+      title_zh: 模型包轻量预检
+      default: true
+      capability: preflight
+      workdir: .
+      required_model_files:
+        - params/finetuning_ptm_2.pt
+      required_code_files:
+        - run_pretrained_openfold.py
+        - train_openfold.py
+        - monomer/inference.sh
+        - scripts/
+        - tools/preflight_check.py
+      required_datasets: []
+      required_user_inputs: []
+      command_ref: preflight
+      expected_outputs:
+        - stdout: MODEL_PREFLIGHT_OK
+      notes_zh: 该场景只检查模型包结构、编码、repo_id、权重和命令引用，不运行真实结构预测。
+    - name: inference_with_user_inputs
+      title_zh: 使用用户 FASTA、MSA 和模板目录推理
+      default: false
+      capability: inference
+      workdir: .
+      required_model_files:
+        - params/finetuning_ptm_2.pt
+      required_code_files:
+        - run_pretrained_openfold.py
+        - scripts/
+      required_datasets: []
+      required_user_inputs:
+        - FASTA_DIR
+        - PRECOMPUTED_ALIGNMENT_DIR
+        - MMCIF_DIR
+      command_ref: inference_user_inputs
+      expected_outputs:
+        - path: monomer/
+          description_zh: 输出目录下生成预测结构 PDB 或 ModelCIF 文件。
+      notes_zh: 用户必须先准备 FASTA、alignment 和模板 mmCIF 目录；这些输入不随模型包固定上传。
+    - name: train_with_user_data
+      title_zh: 使用用户训练数据训练或微调
+      default: false
+      capability: train
+      workdir: .
+      required_model_files:
+        - params/finetuning_ptm_2.pt
+      required_code_files:
+        - train_openfold.py
+        - deepspeed_config.json
+        - scripts/
+      required_datasets: []
+      required_user_inputs:
+        - TRAIN_MMCIF_DIR
+        - TRAIN_ALIGNMENT_DIR
+        - TEMPLATE_MMCIF_DIR
+      command_ref: train_user_data
+      expected_outputs:
+        - path: outputs/train/
+          description_zh: 训练 checkpoint、日志和性能记录。
+      notes_zh: 训练数据、缓存和验证集由用户按 OpenFold 数据格式准备。
+
+capabilities:
+  preflight: true
+  inference: true
+  train: true
+  finetune: true
+  evaluate: false
+  visualize: false
+  deploy: false
+
+commands:
+  environment_preflight:
+    - name: check_python
+      cwd: .
+      command: python --version
+      description_zh: 检查 Python 是否可用。
+  download:
+    - name: download_model_package
+      cwd: .
+      command: modelscope download --model OneScience/OpenFold --local_dir ./OpenFold_model
+      repo_id: OneScience/OpenFold
+      repo_type: model
+      description_zh: 下载完整 OpenFold 标准运行包。
+  preflight:
+    - name: preflight
+      cwd: .
+      command: python tools/preflight_openfold.py --repo-root .
+      required_files:
+        - README.md
+        - manifest.yaml
+        - onescience_run_manifest.yaml
+        - onescience_relations.yaml
+        - params/finetuning_ptm_2.pt
+        - run_pretrained_openfold.py
+        - train_openfold.py
+      expected_outputs:
+        - MODEL_PREFLIGHT_OK
+      description_zh: 检查标准包结构、编码、repo_id、关系和关键文件。
+  inference:
+    - name: inference_user_inputs
+      cwd: .
+      command: >-
+        python run_pretrained_openfold.py "$FASTA_DIR" "$MMCIF_DIR"
+        --output_dir "$OUTPUT_DIR"
+        --config_preset model_1_ptm
+        --model_device cuda:0
+        --data_random_seed 42
+        --use_precomputed_alignments "$PRECOMPUTED_ALIGNMENT_DIR"
+        --openfold_checkpoint_path params/finetuning_ptm_2.pt
+      required_files:
+        - run_pretrained_openfold.py
+        - params/finetuning_ptm_2.pt
+      required_env:
+        - FASTA_DIR
+        - MMCIF_DIR
+        - OUTPUT_DIR
+        - PRECOMPUTED_ALIGNMENT_DIR
+      expected_outputs:
+        - monomer/
+      description_zh: 使用用户准备的 FASTA、预计算 alignment 和模板 mmCIF 目录运行 OpenFold 推理。
+  train:
+    - name: train_user_data
+      cwd: .
+      command: >-
+        python train_openfold.py "$TRAIN_MMCIF_DIR" "$TRAIN_ALIGNMENT_DIR" "$TEMPLATE_MMCIF_DIR" outputs/train "2021-10-10"
+        --deepspeed_config_path deepspeed_config.json
+        --resume_from_ckpt params/finetuning_ptm_2.pt
+        --resume_model_weights_only true
+      required_files:
+        - train_openfold.py
+        - deepspeed_config.json
+        - params/finetuning_ptm_2.pt
+      required_env:
+        - TRAIN_MMCIF_DIR
+        - TRAIN_ALIGNMENT_DIR
+        - TEMPLATE_MMCIF_DIR
+      expected_outputs:
+        - outputs/train/
+      description_zh: 使用用户提供的训练 mmCIF、alignment 和模板目录启动训练或微调入口。
+
+expected_outputs:
+  preflight:
+    - stdout: MODEL_PREFLIGHT_OK
+  inference:
+    - path: monomer/
+      files:
+        - "*.pdb"
+        - "*.cif"
+        - "*_output_dict.pkl"
+      description_zh: 预测结构和可选模型输出字典。
+  train:
+    - path: outputs/train/
+      description_zh: 训练 checkpoint、日志和性能记录。
+
+diagnostics:
+  common_errors:
+    - pattern: MODEL_PREFLIGHT_OK not found
+      reason_zh: 预检失败，可能是文件缺失、Manifest 不可解析、repo_id 不一致或中文乱码。
+      action_zh: 按预检输出修复后重新运行 python tools/preflight_openfold.py --repo-root .。
+    - pattern: ModuleNotFoundError
+      reason_zh: OneScience 或 OpenFold Python 依赖未加载。
+      action_zh: 安装或加载 OneScience bio 域依赖，并确认 Python 可导入相关模块。
+    - pattern: No such file or directory
+      reason_zh: FASTA、alignment、模板目录或 checkpoint 路径错误。
+      action_zh: 检查环境变量和命令参数，确认 params/finetuning_ptm_2.pt 以及用户输入目录存在。
+    - pattern: CUDA out of memory
+      reason_zh: 序列过长或设备显存不足。
+      action_zh: 改用更大显存设备、降低输入规模，或启用长序列推理相关参数。
+
+domain_extension:
+  bio:
+    molecule_type: protein
+    input_format:
+      - fasta
+      - a3m
+      - sto
+      - hhr
+      - mmcif
+    output_format:
+      - pdb
+      - cif
+      - pkl
+    database_dependencies:
+      - id: user_or_external_alphafold_openfold_databases
+        role: msa_template_database
+        required_for:
+          - inference_without_precomputed_alignments
+          - train
+        description_zh: 用户自备或在外部准备的 AlphaFold/OpenFold 数据库，用于 MSA 搜索和模板检索；不是固定 ModelScope 数据集仓库。

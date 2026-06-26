@@ -1,0 +1,8 @@
+resource_id: OneScience/GP_for_TO
+resource_type: model
+relations:
+  required_datasets: []
+  optional_datasets: []
+  compatible_models: []
+notes:
+  zh: GP_for_TO 不依赖外部数据集仓库；配点、边界条件样本和状态变量训练目标由 OneScience 的 onescience.utils.GP_TO.get_data_fluid 在运行时生成。

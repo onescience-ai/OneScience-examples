@@ -1,0 +1,46 @@
+model_id: "OneScience/FuXi/"
+model_ref:
+  platform: modelscope
+  repo_id: "OneScience/FuXi/"
+  repo_type: model
+  url: "https://modelscope.cn/models/OneScience/FuXi/"
+  revision: master
+  readme_path: README.md
+  manifest_path: onescience_run_manifest.yaml
+relations:
+  required_datasets:
+    - id: "OneScience/ERA5"
+      role: train_data
+      required_for:
+        - train
+        - inference
+        - evaluate
+        - visualize
+      resource_ref:
+        platform: modelscope
+        repo_id: "OneScience/ERA5"
+        repo_type: dataset
+        url: "https://modelscope.cn/datasets/OneScience/ERA5"
+        revision: master
+        readme_path: README.md
+        manifest_path: onescience_run_manifest.yaml
+      local_path: data/
+      notes_zh: 本次按要求跳过数据整理，仅声明 FuXi 标准包运行所需 ERA5 数据集 ID 与放置位置。
+  optional_datasets: []
+run_matrix_dataset_refs:
+  - scenario: era5_data_preflight
+    dataset_id: "OneScience/ERA5"
+  - scenario: train_short
+    dataset_id: "OneScience/ERA5"
+  - scenario: infer_short
+    dataset_id: "OneScience/ERA5"
+  - scenario: train_medium
+    dataset_id: "OneScience/ERA5"
+  - scenario: infer_medium
+    dataset_id: "OneScience/ERA5"
+  - scenario: train_long
+    dataset_id: "OneScience/ERA5"
+  - scenario: infer_long
+    dataset_id: "OneScience/ERA5"
+  - scenario: evaluate_and_visualize
+    dataset_id: "OneScience/ERA5"

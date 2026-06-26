@@ -1,0 +1,21 @@
+source_root: /public/share/sugonhpcapp01/onestore/onemodels/AlphaFold3
+linked_root: checkpoints/AlphaFold3
+link_policy: absolute_symlink_to_original_readonly_source
+file_count: 4
+files:
+  - path: checkpoints/AlphaFold3/af3.bin
+    source_path: /public/share/sugonhpcapp01/onestore/onemodels/AlphaFold3/af3.bin
+    size_bytes: 1146811260
+    sha256: a43670ea1fae790cd30ccc8c8bf836c4098014c45250fb310a5338407e321de7
+  - path: checkpoints/AlphaFold3/libflash_atten_c.so
+    source_path: /public/share/sugonhpcapp01/onestore/onemodels/AlphaFold3/libflash_atten_c.so
+    size_bytes: 75882104
+    sha256: 2ea956e8d13317dd795ffce846079f20e502a39df66802f485d5f25900ef493b
+  - path: checkpoints/AlphaFold3/mmseqs/bin/mmseqs
+    source_path: /public/share/sugonhpcapp01/onestore/onemodels/AlphaFold3/mmseqs/bin/mmseqs
+    size_bytes: 14417192
+    sha256: d166c67ca79089ea5f89ec1133f67ab1c216e1734a0408bbc7205e588fe865ed
+  - path: checkpoints/AlphaFold3/mmseqs/lib/libmarv.so
+    source_path: /public/share/sugonhpcapp01/onestore/onemodels/AlphaFold3/mmseqs/lib/libmarv.so
+    size_bytes: 58277568
+    sha256: fdc787467b6d05d36db1f034a2cb8944b5b072bbe6d46172013810a066583928

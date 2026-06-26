@@ -1,0 +1,17 @@
+required_datasets:
+  - id: OneScience/lagrangian
+    role: train_data
+    required_for: [preflight, train, inference, evaluate, visualize]
+    resource_ref:
+      platform: modelscope
+      repo_id: OneScience/lagrangian
+      repo_type: dataset
+      url: https://modelscope.cn/datasets/OneScience/lagrangian
+      revision: main
+      readme_path: README.md
+      manifest_path: onescience_run_manifest.yaml
+    expected_local_path: data/Water
+    env: ONESCIENCE_LAGRANGIAN_DATA_DIR
+    adapter: null
+optional_datasets: []
+compatible_models: []

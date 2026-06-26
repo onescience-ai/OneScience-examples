@@ -1,0 +1,7 @@
+numpy
+tqdm
+torch
+torch-geometric
+pyvista
+scipy
+ruamel.yaml

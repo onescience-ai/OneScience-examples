@@ -1,0 +1,24 @@
+resource:
+  id: OneScience/OpenFold
+  repo_type: model
+  manifest_path: manifest.yaml
+relations:
+  required_datasets: []
+  optional_datasets: []
+  compatible_models: []
+external_inputs:
+  - name: user_fasta
+    required_for:
+      - inference
+    description_zh: 用户提供待预测蛋白序列 FASTA，示例包内提供 monomer/fasta_dir/6kwc.fasta。
+  - name: precomputed_alignments_or_external_databases
+    required_for:
+      - inference
+      - train
+    description_zh: 用户提供预计算 MSA/alignment，或准备 AlphaFold/OpenFold 外部数据库后由脚本生成。
+  - name: template_mmcif_dir
+    required_for:
+      - inference
+      - train
+    description_zh: 用户提供 PDB mmCIF 模板目录或自定义模板目录。
+notes_zh: OpenFold 没有固定 ModelScope 数据集依赖；FASTA、MSA、模板和训练数据由用户提供或外部数据库准备。

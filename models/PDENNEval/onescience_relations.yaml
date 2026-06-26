@@ -1,0 +1,16 @@
+required_datasets:
+  - id: OneScience/pdenneval
+    role: train_data
+    required_for: [preflight, train, evaluate]
+    resource_ref:
+      platform: modelscope
+      repo_id: OneScience/pdenneval
+      repo_type: dataset
+      url: https://modelscope.cn/datasets/OneScience/pdenneval
+      revision: main
+      readme_path: README.md
+      manifest_path: onescience_run_manifest.yaml
+    local_path: data
+    expected_env: ONESCIENCE_PDENNEVAL_DATA_DIR
+optional_datasets: []
+compatible_models: []

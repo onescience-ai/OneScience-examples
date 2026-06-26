@@ -1,0 +1,15 @@
+train-data-paths:
+  - data/evo2_dataset/data_mini/genome_data/preprocessed_data/chr20_21_22_uint8_distinct_byte-level_train
+valid-data-paths:
+  - data/evo2_dataset/data_mini/genome_data/preprocessed_data/chr20_21_22_uint8_distinct_byte-level_val
+test-data-paths:
+  - data/evo2_dataset/data_mini/genome_data/preprocessed_data/chr20_21_22_uint8_distinct_byte-level_test
+train-data-weights:
+  - 1.0
+valid-data-weights:
+  - 1.0
+test-data-weights:
+  - 1.0
+checkpoint_validation_with_forward_pass: false
+wandb_host: https://api.wandb.ai
+wandb_project: evo2

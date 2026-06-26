@@ -1,0 +1,42 @@
+model:
+  repo_id: OneScience/AlphaFold3/
+  checkpoint_dir: checkpoints/AlphaFold3
+  parameter_file: checkpoints/AlphaFold3/af3.bin
+  flash_attention_library: checkpoints/AlphaFold3/libflash_atten_c.so
+  mmseqs_bin_dir: checkpoints/AlphaFold3/mmseqs/bin
+  mmseqs_lib_dir: checkpoints/AlphaFold3/mmseqs/lib
+dataset:
+  repo_id: OneScience/AlphaFold3_dataset
+  expected_root: data/alphafold3_dataset
+  infer_input_data: data/alphafold3_dataset/infer_input_data
+  public_databases: data/alphafold3_dataset/public_databases
+  mmseqs_db: data/alphafold3_dataset/mmseqsDB
+  jackhmmer_split: data/alphafold3_dataset/jackhmmer_split
+runtime:
+  workdir: .
+  output_dir: outputs
+  default_msa_input: inputs/7r6r_data.json
+  default_search_input: inputs/t1119_search.json
+  flash_attention_implementation: triton
+configuration_adaptation:
+  changed_files:
+    - file: conf/alphafold3_paths.yaml
+      yaml_path: model.checkpoint_dir
+      original_value: "${HOME}/models or ${ONESCIENCE_MODELS_DIR}/AlphaFold3 from run_alphafold.py and infer.sh"
+      current_value: checkpoints/AlphaFold3
+      reason: ModelScope 模型包下载后应在包内查找 AlphaFold3 权重和运行二进制，不依赖原始共享目录。
+    - file: conf/alphafold3_paths.yaml
+      yaml_path: dataset.expected_root
+      original_value: "${HOME}/public_databases or ${ONESCIENCE_DATASETS_DIR}/alphafold3 from run_alphafold.py and infer_*.sh"
+      current_value: data/alphafold3_dataset
+      reason: 数据集由 OneScience/AlphaFold3_dataset 单独下载，并放到模型包 data/alphafold3_dataset 下供运行脚本引用。
+    - file: conf/alphafold3_paths.yaml
+      yaml_path: runtime.default_msa_input
+      original_value: ./inputs/7r6r_data.json
+      current_value: inputs/7r6r_data.json
+      reason: 保留已有带 MSA 的最小推理输入，使模型包可在不跑数据库搜索时完成 smoke test。
+    - file: conf/alphafold3_paths.yaml
+      yaml_path: runtime.default_search_input
+      original_value: ./inputs/t1119_search.json
+      current_value: inputs/t1119_search.json
+      reason: 保留无 MSA 搜索输入，配合数据集仓库中的 mmseqsDB 或 jackhmmer_split 运行数据管线预检。

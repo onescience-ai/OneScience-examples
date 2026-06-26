@@ -1,0 +1,495 @@
+onescience_manifest_version: '0.1'
+resource_type: model
+resource:
+  id: OneScience/matris
+  name: MatRIS
+  domain: matchem
+  domain_tags:
+  - matchem
+  - materials
+  - foundation_model
+  task: materials_representation_interaction_simulation
+  task_tags:
+  - energy_prediction
+  - force_prediction
+  - stress_prediction
+  - magmom_prediction
+  - relaxation
+  modalities:
+  - crystal_structure
+  input_formats:
+  - cif
+  - pymatgen_structure
+  - ase_atoms
+  - csv
+  output_formats:
+  - energy
+  - forces
+  - stress
+  - magmom
+  - relaxed_structure
+  summary: MatRIS 材料表征与相互作用模拟模型的 OneScience 标准运行包。
+platform_resource:
+  primary:
+    platform: modelscope
+    repo_id: OneScience/matris
+    repo_type: model
+    url: https://modelscope.cn/models/OneScience/matris
+    revision: main
+    readme_path: README.md
+    manifest_path: manifest.yaml
+  mirrors: []
+  access:
+    visibility: public
+    license: BSD-3-Clause
+website_integration:
+  enabled: true
+  click_target:
+    platform: modelscope
+    resource_url: https://modelscope.cn/models/OneScience/matris
+  llm_handoff:
+    readme_required: true
+    manifest_required: true
+    download_readme_first: true
+    resolve_related_datasets: true
+    default_run_goal: minimal_validation
+runtime:
+  enabled: true
+  onescience_domain: matchem
+  min_onescience_version: null
+  supported_execution:
+  - local
+  - local_slurm
+  - remote_slurm
+  - scnet_mcp
+environment:
+  install_mode: onescience_domain
+  python: '3.11'
+  hardware:
+    cpu: supported
+    gpu: optional
+    dcu: optional
+  extra_dependencies:
+  - torch
+  - pymatgen
+  - ase
+onescience:
+  repo: https://gitee.com/onescience-ai/onescience
+  official_links:
+    gitee:
+      doc: https://gitee.com/onescience-ai/onescience-doc
+      onescience: https://gitee.com/onescience-ai/onescience
+      skills: https://gitee.com/onescience-ai/oneskills
+    github:
+      doc: https://github.com/onescience-ai/OneScience-doc
+      onescience: https://github.com/onescience-ai/OneScience
+      skills: https://github.com/onescience-ai/oneskills
+  install:
+    required_by_default: false
+    command: bash install.sh matchem
+  source_paths:
+  - onescience/examples/matchem/matris
+  compatibility:
+    examples_path: examples/matchem/matris
+    status: examples_compatible
+runtime_package:
+  kind: standard_runtime_package
+  package_root: .
+  standard_layout:
+    workdir: .
+    config_dir: metadata
+    checkpoint_dir: null
+    data_dir: data
+    output_dir: outputs
+  apply_policy:
+    mode: direct_use
+    target: session_workdir
+    overwrite: true
+    protect_installed_onescience: true
+  entry_files:
+  - scripts/preflight_matris.py
+  - test_modularization.py
+  - test_relaxation.py
+  - cif_file/demo.cif
+  - data/pbe.csv
+  - data/pbesol.csv
+  - data/pbe/
+  entrypoints:
+    preflight: scripts/preflight_matris.py
+    inference: test_relaxation.py
+    train: null
+    finetune: null
+    evaluate: scripts/preflight_matris.py
+    visualize: null
+    deploy: null
+configuration_adaptation:
+  adapted_from: onescience/examples/matchem/matris
+  reason: 原始 MatRIS 示例没有 YAML 训练配置；本标准包保留原始示例脚本，并新增预检脚本来检查模块导入、CPU 前向传播和 PBE 数据集可读性。
+  changes:
+  - file: scripts/preflight_matris.py
+    yaml_path: null
+    old_value: 默认读取 data/matris/pbe_phonon_ref.csv 和 data/matris/pbesol_phonon_ref.csv
+    new_value: 默认读取 data/pbe.csv、data/pbesol.csv 和可选 data/pbe/*.yaml.bz2，并兼容旧 data/matris 布局
+    reason: 当前标准化数据集目标 ID 为 OneScience/pbe，真实数据来自 matchem/pbe/pbe。
+files:
+  model_files:
+  - id: preflight_script
+    path: scripts/preflight_matris.py
+    role: script
+    description_zh: MatRIS 标准包预检脚本，检查 CSV 数据、模块导入和 CPU 前向传播。
+    required: true
+    required_for:
+    - preflight
+    - evaluate
+    format: py
+    source:
+      platform: modelscope
+      repo_id: OneScience/matris
+      repo_type: model
+      path: scripts/preflight_matris.py
+      revision: main
+      url: null
+      download_method: command_ref
+      command_ref: commands.download.download_model_package
+    mirrors: []
+    local_path: session_workdir/scripts/preflight_matris.py
+    size: null
+    checksum: null
+    large_file: false
+  - id: modularization_test
+    path: test_modularization.py
+    role: script
+    description_zh: OneScience MatRIS 模块导入、实例化和前向传播测试脚本。
+    required: false
+    required_for:
+    - preflight
+    format: py
+    source:
+      platform: modelscope
+      repo_id: OneScience/matris
+      repo_type: model
+      path: test_modularization.py
+      revision: main
+      url: null
+      download_method: command_ref
+      command_ref: commands.download.download_model_package
+    mirrors: []
+    local_path: session_workdir/test_modularization.py
+    size: null
+    checksum: null
+    large_file: false
+  - id: relaxation_example
+    path: test_relaxation.py
+    role: script
+    description_zh: 使用 MatRIS StructOptimizer 对 demo.cif 执行结构弛豫的示例脚本。
+    required: false
+    required_for:
+    - inference
+    format: py
+    source:
+      platform: modelscope
+      repo_id: OneScience/matris
+      repo_type: model
+      path: test_relaxation.py
+      revision: main
+      url: null
+      download_method: command_ref
+      command_ref: commands.download.download_model_package
+    mirrors: []
+    local_path: session_workdir/test_relaxation.py
+    size: null
+    checksum: null
+    large_file: false
+  dataset_files:
+  - id: pbe_dataset
+    path: data/
+    role: eval_data
+    description_zh: PBE/PBESOL phonon reference CSV 与 PBE YAML.BZ2 数据目录，来自数据集仓库 OneScience/pbe。
+    required: true
+    required_for:
+    - preflight
+    - evaluate
+    format: csv_and_yaml_bz2
+    source:
+      platform: modelscope
+      repo_id: OneScience/pbe
+      repo_type: dataset
+      path: data/
+      revision: main
+      url: null
+      download_method: command_ref
+      command_ref: commands.download.download_required_dataset
+    mirrors: []
+    local_path: session_workdir/data/
+    size: 2.0G
+    checksum: metadata/sha256_manifest.txt
+    large_file: true
+  config_files:
+  - id: checksum_manifest
+    path: metadata/sha256_manifest.txt
+    role: checksum
+    description_zh: 模型包内 MatRIS CSV 数据 SHA256 清单。
+    required: true
+    required_for:
+    - preflight
+    format: txt
+    source:
+      platform: modelscope
+      repo_id: OneScience/matris
+      repo_type: model
+      path: metadata/sha256_manifest.txt
+      revision: main
+      url: null
+      download_method: command_ref
+      command_ref: commands.download.download_model_package
+    mirrors: []
+    local_path: session_workdir/metadata/sha256_manifest.txt
+    size: null
+    checksum: null
+    large_file: false
+  sample_files:
+  - id: demo_cif
+    path: cif_file/demo.cif
+    role: example_input
+    description_zh: MatRIS 结构弛豫示例 CIF 输入。
+    required: false
+    required_for:
+    - inference
+    format: cif
+    source:
+      platform: modelscope
+      repo_id: OneScience/matris
+      repo_type: model
+      path: cif_file/demo.cif
+      revision: main
+      url: null
+      download_method: command_ref
+      command_ref: commands.download.download_model_package
+    mirrors: []
+    local_path: session_workdir/cif_file/demo.cif
+    size: null
+    checksum: null
+    large_file: false
+relations:
+  required_datasets:
+  - id: OneScience/pbe
+    role: eval_data
+    required_for:
+    - preflight
+    - evaluate
+    resource_ref:
+      platform: modelscope
+      repo_id: OneScience/pbe
+      repo_type: dataset
+      url: https://modelscope.cn/datasets/OneScience/pbe
+      revision: main
+      readme_path: README.md
+      manifest_path: manifest.yaml
+    local_path: data
+  optional_datasets: []
+  compatible_models: []
+run_matrix:
+  scenarios:
+  - name: minimal_validation
+    default: true
+    capability: preflight
+    required_datasets:
+    - id: OneScience/pbe
+      role: eval_data
+      local_path: data
+    required_model_files:
+    - scripts/preflight_matris.py
+    required_data_files:
+    - data/pbe.csv
+    - data/pbesol.csv
+    - data/pbe/
+    preconditions:
+    - 数据文件已放在 data/。
+    command_refs:
+    - commands.preflight.check_matris_files
+    outputs:
+    - path: stdout
+      description_zh: CSV 可读性、模块导入和 CPU 前向传播结果。
+  - name: relaxation_demo
+    default: false
+    capability: inference
+    required_datasets:
+    - id: OneScience/pbe
+      role: eval_data
+      local_path: data
+    required_model_files:
+    - test_relaxation.py
+    - cif_file/demo.cif
+    required_data_files: []
+    preconditions:
+    - 预训练模型 key matris_10m_oam 可由当前环境解析或下载。
+    command_refs:
+    - commands.inference.relax_demo
+    outputs:
+    - path: stdout
+      description_zh: 结构弛豫能量、力、应力和磁矩结果。
+capabilities:
+  inference: true
+  train: false
+  finetune: false
+  evaluate: true
+  visualize: false
+  deploy: false
+commands:
+  download:
+  - name: download_model_package
+    target: model
+    repo_id: OneScience/matris
+    source: .
+    local_path: session_workdir/
+    required: true
+    required_for:
+    - preflight
+    - inference
+    - evaluate
+    cwd: .
+    command: modelscope download --model OneScience/matris --local_dir session_workdir
+    expected_outputs:
+    - path: session_workdir/manifest.yaml
+      type: file
+    success_criteria:
+    - exit_code == 0
+    - output_path_exists
+  - name: download_required_dataset
+    target: dataset
+    repo_id: OneScience/pbe
+    source: .
+    local_path: session_workdir/
+    required: true
+    required_for:
+    - preflight
+    - evaluate
+    cwd: .
+    command: modelscope download --dataset OneScience/pbe --local_dir session_workdir
+    expected_outputs:
+    - path: session_workdir/data/pbe.csv
+      type: file
+    - path: session_workdir/data/pbe/
+      type: directory
+    success_criteria:
+    - exit_code == 0
+    - output_path_exists
+  preflight:
+  - name: check_matris_files
+    description: 检查 MatRIS CSV 数据文件和字段，不要求 torch/pymatgen/OneScience 依赖。
+    cwd: .
+    command: python scripts/preflight_matris.py --data-dir data --skip-model-forward
+    required_files:
+    - scripts/preflight_matris.py
+    - data/pbe.csv
+    - data/pbesol.csv
+    - data/pbe/
+    required_env:
+    - python
+    expected_outputs:
+    - path: stdout
+      type: text
+    success_criteria:
+    - exit_code == 0
+  - name: check_matris
+    description: 检查 MatRIS CSV 数据、模块导入和 CPU 前向传播。
+    cwd: .
+    command: python scripts/preflight_matris.py --data-dir data
+    required_files:
+    - scripts/preflight_matris.py
+    - data/pbe.csv
+    - data/pbesol.csv
+    - data/pbe/
+    required_env:
+    - python
+    - torch
+    - pymatgen
+    - ase
+    - onescience
+    expected_outputs:
+    - path: stdout
+      type: text
+    success_criteria:
+    - exit_code == 0
+  prepare: []
+  inference:
+  - name: relax_demo
+    description: 使用 MatRIS 预训练模型 key 对 demo.cif 做结构弛豫。
+    cwd: .
+    command: python test_relaxation.py
+    required_files:
+    - test_relaxation.py
+    - cif_file/demo.cif
+    required_env:
+    - python
+    - torch
+    - pymatgen
+    - ase
+    - onescience
+    expected_outputs:
+    - path: stdout
+      type: text
+    success_criteria:
+    - exit_code == 0
+  train: []
+  finetune: []
+  evaluate:
+  - name: validate_phonon_refs
+    description: 使用预检脚本验证 phonon reference CSV。
+    cwd: .
+    command: python scripts/preflight_matris.py --data-dir data
+    required_files:
+    - data/pbe.csv
+    - data/pbesol.csv
+    - data/pbe/
+    required_env:
+    - python
+    - onescience
+    expected_outputs:
+    - path: stdout
+      type: text
+    success_criteria:
+    - exit_code == 0
+  visualize: []
+  deploy: []
+expected_outputs:
+- path: stdout
+  type: text
+  description_zh: 预检输出 CSV 行数、模块导入和 CPU 前向传播 OK。
+diagnostics:
+- error_pattern: ModuleNotFoundError
+  likely_cause: OneScience matchem 依赖、torch、pymatgen 或 ase 未安装。
+  action: 执行 bash install.sh matchem，或安装 upstream/requirements.txt 中列出的依赖。
+- error_pattern: 数据文件不存在
+  likely_cause: PBE 数据集未下载或未放到 data/。
+  action: 执行 modelscope download --dataset OneScience/pbe --local_dir session_workdir。
+- error_pattern: CUDA
+  likely_cause: 当前环境没有可用 GPU 或 CUDA/DCU 运行时。
+  action: 使用预检 CPU 场景，或在具备 GPU/DCU 的 OneScience 环境运行结构弛豫。
+domain_extension:
+  matchem:
+    chemical_system:
+      elements: []
+    properties:
+    - energy
+    - forces
+    - stress
+    - magmom
+    - phonon_reference
+    - pbe
+    units:
+      energy: eV
+      forces: eV/Angstrom
+      stress: eV/Angstrom^3
+    structure_format:
+    - cif
+    - pymatgen_structure
+    - ase_atoms
+    - csv
+reproducibility:
+  level: minimal
+  goal: 完成 CSV 数据读取预检；完整 MatRIS 环境可进一步运行 commands.preflight.check_matris。
+  command_ref: commands.preflight.check_matris_files
+  expected_runtime: 1-3 minutes
+  expected_outputs:
+  - stdout

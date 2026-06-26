@@ -1,0 +1,582 @@
+onescience_manifest_version: "0.1"
+resource_type: model
+
+resource:
+  id: OneScience/Transolver-Car-Design/mlcfd_data
+  name: Transolver-Car-Design
+  domain: cfd
+  domain_tags:
+    - cfd
+    - external_aerodynamics
+    - car_design
+  task: flow_field_prediction
+  task_tags:
+    - car_design
+    - pressure_prediction
+    - velocity_prediction
+    - drag_coefficient_evaluation
+  modalities:
+    - unstructured_mesh
+    - point_cloud
+    - graph
+  input_formats:
+    - npy
+    - vtk
+  output_formats:
+    - npy
+    - vtk
+    - png
+  summary: Transolver/Transolver++ 汽车外流场预测标准运行包，使用 ShapeNetCar 数据训练并评测速度场、压力场和阻力系数。
+
+platform_resource:
+  primary:
+    platform: modelscope
+    repo_id: OneScience/Transolver-Car-Design/mlcfd_data
+    repo_type: model
+    url: https://modelscope.cn/models/OneScience/Transolver-Car-Design/mlcfd_data
+    revision: main
+    readme_path: README.md
+    manifest_path: manifest.yaml
+  mirrors: []
+  access:
+    visibility: public
+    license: null
+
+website_integration:
+  enabled: true
+  click_target:
+    platform: modelscope
+    resource_url: https://modelscope.cn/models/OneScience/Transolver-Car-Design/mlcfd_data
+  llm_handoff:
+    readme_required: true
+    manifest_required: true
+    download_readme_first: true
+    resolve_related_datasets: true
+    default_run_goal: minimal_validation
+
+runtime:
+  enabled: true
+  onescience_domain: cfd
+  min_onescience_version: null
+  supported_execution:
+    - local
+    - local_slurm
+    - remote_slurm
+    - scnet_mcp
+
+environment:
+  install_mode: onescience_domain
+  python: "3.11"
+  hardware:
+    cpu: supported_for_preflight
+    gpu: recommended_for_train_and_inference
+    dcu: optional
+  extra_dependencies:
+    - numpy
+    - scipy
+    - pyyaml
+    - torch
+
+onescience:
+  repo: https://gitee.com/onescience-ai/onescience
+  official_links:
+    gitee:
+      doc: https://gitee.com/onescience-ai/onescience-doc
+      onescience: https://gitee.com/onescience-ai/onescience
+      skills: https://gitee.com/onescience-ai/oneskills
+    github:
+      doc: https://github.com/onescience-ai/OneScience-doc
+      onescience: https://github.com/onescience-ai/OneScience
+      skills: https://github.com/onescience-ai/oneskills
+  install:
+    required_by_default: false
+    command: bash install.sh cfd
+  source_paths:
+    - onescience.models.transolver
+    - onescience.datapipes.cfd.ShapeNetCarDatapipe
+  compatibility:
+    examples_path: examples/cfd/Transolver-Car-Design
+    status: examples_compatible
+
+runtime_package:
+  kind: standard_runtime_package
+  package_root: .
+  standard_layout:
+    workdir: .
+    config_dir: conf
+    checkpoint_dir: checkpoints
+    data_dir: data
+    output_dir: results
+  apply_policy:
+    mode: direct_use
+    target: session_workdir
+    overwrite: true
+    protect_installed_onescience: true
+  entry_files:
+    - conf/transolver_car.yaml
+    - train.py
+    - inference.py
+    - scripts/preflight_transolver_car.py
+  entrypoints:
+    preflight: scripts/preflight_transolver_car.py
+    inference: inference.py
+    train: train.py
+    finetune: null
+    evaluate: inference.py
+    visualize: inference.py
+    deploy: null
+
+configuration_adaptation:
+  - file: conf/transolver_car.yaml
+    reason_zh: 原始配置依赖 ONESCIENCE_DATASETS_DIR 环境变量和外部全量数据目录；标准运行包要求下载后在模型包根目录即可解析关联数据集，因此改为相对路径 data/mlcfd_data。
+    changes:
+      - yaml_path: datapipe.source.data_dir
+        original_value: ${ONESCIENCE_DATASETS_DIR}/Transolver-Car-Design/mlcfd_data/training_data
+        current_value: ./data/mlcfd_data/training_data
+      - yaml_path: datapipe.source.preprocessed_save_dir
+        original_value: ${ONESCIENCE_DATASETS_DIR}/Transolver-Car-Design/mlcfd_data/preprocessed_data
+        current_value: ./data/mlcfd_data/preprocessed_data
+      - yaml_path: datapipe.source.stats_dir
+        original_value: ${ONESCIENCE_DATASETS_DIR}/Transolver-Car-Design/mlcfd_data/stats
+        current_value: ./data/mlcfd_data/stats
+
+files:
+  model_files:
+    - id: runtime_train_script
+      path: train.py
+      role: script
+      description_zh: 训练入口，读取 conf/transolver_car.yaml 并训练 Transolver 或 Transolver++。
+      required: true
+      required_for: [train]
+      format: py
+      source:
+        platform: modelscope
+        repo_id: OneScience/Transolver-Car-Design/mlcfd_data
+        repo_type: model
+        path: train.py
+        revision: main
+        url: null
+        download_method: command_ref
+        command_ref: commands.download.download_model_package
+      mirrors: []
+      local_path: session_workdir/train.py
+      size: null
+      checksum: null
+      large_file: false
+    - id: runtime_inference_script
+      path: inference.py
+      role: script
+      description_zh: 推理、评测和可视化入口，加载训练产出的 checkpoint 并输出 npy、VTK 和图片。
+      required: true
+      required_for: [inference, evaluate, visualize]
+      format: py
+      source:
+        platform: modelscope
+        repo_id: OneScience/Transolver-Car-Design/mlcfd_data
+        repo_type: model
+        path: inference.py
+        revision: main
+        url: null
+        download_method: command_ref
+        command_ref: commands.download.download_model_package
+      mirrors: []
+      local_path: session_workdir/inference.py
+      size: null
+      checksum: null
+      large_file: false
+    - id: preflight_script
+      path: scripts/preflight_transolver_car.py
+      role: script
+      description_zh: 模型运行包预检脚本，检查配置、数据路径、统计文件和预处理样本 schema。
+      required: true
+      required_for: [preflight]
+      format: py
+      source:
+        platform: modelscope
+        repo_id: OneScience/Transolver-Car-Design/mlcfd_data
+        repo_type: model
+        path: scripts/preflight_transolver_car.py
+        revision: main
+        url: null
+        download_method: command_ref
+        command_ref: commands.download.download_model_package
+      mirrors: []
+      local_path: session_workdir/scripts/preflight_transolver_car.py
+      size: null
+      checksum: null
+      large_file: false
+    - id: generated_checkpoint
+      path: checkpoints/ShapeNetCar/Transolver_plus.pth
+      role: checkpoint
+      description_zh: 训练命令生成的最佳验证 checkpoint；模型仓库当前不内置预训练权重。
+      required: false
+      required_for: [inference, evaluate, visualize]
+      format: pth
+      source:
+        platform: generated
+        repo_id: OneScience/Transolver-Car-Design/mlcfd_data
+        repo_type: model
+        path: checkpoints/ShapeNetCar/Transolver_plus.pth
+        revision: null
+        url: null
+        download_method: generated_by_command
+        generated_by: commands.train.train_from_scratch
+      mirrors: []
+      local_path: session_workdir/checkpoints/ShapeNetCar/Transolver_plus.pth
+      size: null
+      checksum: null
+      large_file: true
+  dataset_files:
+    - id: linked_shapenetcar_data
+      path: data/mlcfd_data
+      role: train_data
+      description_zh: ShapeNetCar 数据集在模型运行包中的期望放置位置，由数据集仓库 OneScience/ShapeNetCar 下载后复制或链接到此处。
+      required: true
+      required_for: [preflight, train, inference, evaluate, visualize]
+      format: directory
+      source:
+        platform: modelscope
+        repo_id: OneScience/ShapeNetCar
+        repo_type: dataset
+        path: data/mlcfd_data
+        revision: main
+        url: https://modelscope.cn/datasets/OneScience/ShapeNetCar
+        download_method: command_ref
+        command_ref: commands.download.download_dataset_package
+      mirrors: []
+      local_path: session_workdir/data/mlcfd_data
+      size: 18G
+      checksum: see_dataset_file_manifest
+      large_file: true
+  config_files:
+    - id: transolver_car_config
+      path: conf/transolver_car.yaml
+      role: training_config
+      description_zh: 模型、数据管道、训练和推理配置；已将数据路径适配为标准运行包相对路径。
+      required: true
+      required_for: [preflight, train, inference, evaluate, visualize]
+      format: yaml
+      source:
+        platform: modelscope
+        repo_id: OneScience/Transolver-Car-Design/mlcfd_data
+        repo_type: model
+        path: conf/transolver_car.yaml
+        revision: main
+        url: null
+        download_method: command_ref
+        command_ref: commands.download.download_model_package
+      mirrors: []
+      local_path: session_workdir/conf/transolver_car.yaml
+      size: null
+      checksum: null
+      large_file: false
+  sample_files: []
+
+relations:
+  required_datasets:
+    - id: OneScience/ShapeNetCar
+      role: train_data
+      required_for: [preflight, train, inference, evaluate, visualize]
+      resource_ref:
+        platform: modelscope
+        repo_id: OneScience/ShapeNetCar
+        repo_type: dataset
+        url: https://modelscope.cn/datasets/OneScience/ShapeNetCar
+        revision: main
+        readme_path: README.md
+        manifest_path: manifest.yaml
+      local_path: data/mlcfd_data
+  optional_datasets: []
+  compatible_models: []
+
+run_matrix:
+  scenarios:
+    - name: minimal_validation
+      default: true
+      capability: preflight
+      description_zh: 下载模型包和 ShapeNetCar 数据集后，只检查配置与数据结构是否匹配，不启动训练。
+      required_datasets:
+        - id: OneScience/ShapeNetCar
+          role: train_data
+          local_path: data/mlcfd_data
+      required_model_files:
+        - conf/transolver_car.yaml
+        - scripts/preflight_transolver_car.py
+      required_dataset_files:
+        - data/mlcfd_data/training_data
+        - data/mlcfd_data/preprocessed_data
+        - data/mlcfd_data/stats
+      command_refs:
+        - commands.preflight.check_runtime_package
+      expected_outputs:
+        - "[OK] Transolver-Car-Design preflight passed"
+      preconditions:
+        - ShapeNetCar 数据集已经下载，并放置或链接到模型包根目录的 data/mlcfd_data。
+    - name: train_shapenetcar
+      default: false
+      capability: train
+      description_zh: 使用 ShapeNetCar 数据从头训练 Transolver++，输出最佳验证 checkpoint。
+      required_datasets:
+        - id: OneScience/ShapeNetCar
+          role: train_data
+          local_path: data/mlcfd_data
+      required_model_files:
+        - conf/transolver_car.yaml
+        - train.py
+      required_dataset_files:
+        - data/mlcfd_data/training_data
+        - data/mlcfd_data/preprocessed_data
+        - data/mlcfd_data/stats
+      command_refs:
+        - commands.train.train_from_scratch
+      outputs:
+        - checkpoints/ShapeNetCar/Transolver_plus.pth
+      preconditions:
+        - 已通过 minimal_validation 预检。
+        - GPU 环境和 OneScience cfd 依赖可用。
+    - name: evaluate_after_training
+      default: false
+      capability: evaluate
+      description_zh: 使用训练产出的 checkpoint 在验证集上推理、计算压力/速度误差和阻力系数误差，并可生成可视化文件。
+      required_datasets:
+        - id: OneScience/ShapeNetCar
+          role: eval_data
+          local_path: data/mlcfd_data
+      required_model_files:
+        - conf/transolver_car.yaml
+        - inference.py
+        - checkpoints/ShapeNetCar/Transolver_plus.pth
+      required_dataset_files:
+        - data/mlcfd_data/training_data
+        - data/mlcfd_data/preprocessed_data
+        - data/mlcfd_data/stats
+      command_refs:
+        - commands.inference.run_inference_and_evaluate
+      outputs:
+        - results/ShapeNetCar/Transolver_plus/npy
+        - results/ShapeNetCar/Transolver_plus/vtk
+        - results/ShapeNetCar/Transolver_plus/vis
+      preconditions:
+        - checkpoints/ShapeNetCar/Transolver_plus.pth 已由训练场景生成，或由用户提供到相同路径。
+
+capabilities:
+  inference: true
+  train: true
+  finetune: false
+  evaluate: true
+  visualize: true
+  deploy: false
+
+commands:
+  download:
+    - name: download_model_package
+      target: model
+      repo_id: OneScience/Transolver-Car-Design/mlcfd_data
+      source: .
+      local_path: session_workdir
+      required: true
+      required_for: [preflight, train, inference, evaluate, visualize]
+      command: modelscope download --model OneScience/Transolver-Car-Design/mlcfd_data --local_dir .
+    - name: download_dataset_package
+      target: dataset
+      repo_id: OneScience/ShapeNetCar
+      source: .
+      local_path: session_workdir/data
+      required: true
+      required_for: [preflight, train, inference, evaluate, visualize]
+      command: modelscope download --dataset OneScience/ShapeNetCar --local_dir data
+  prepare:
+    - name: place_dataset_for_runtime
+      description: 将数据集仓库中的 data/mlcfd_data 放到模型运行包期望路径。
+      cwd: .
+      command: test -d data/mlcfd_data || ln -s ../dataset/cfd_ShapeNetCar/data/mlcfd_data data/mlcfd_data
+      required_files:
+        - conf/transolver_car.yaml
+      required_env: []
+      expected_outputs:
+        - path: data/mlcfd_data
+          type: directory
+      success_criteria:
+        - exit_code == 0
+        - output_path_exists
+  preflight:
+    - name: check_runtime_package
+      description: 检查配置、数据目录、预处理样本和归一化统计量。
+      cwd: .
+      command: python scripts/preflight_transolver_car.py --config conf/transolver_car.yaml
+      required_files:
+        - conf/transolver_car.yaml
+        - scripts/preflight_transolver_car.py
+        - data/mlcfd_data/training_data
+        - data/mlcfd_data/preprocessed_data
+        - data/mlcfd_data/stats
+      required_env:
+        - python
+        - numpy
+        - pyyaml
+      expected_outputs:
+        - path: stdout
+          type: text
+          contains: "[OK] Transolver-Car-Design preflight passed"
+      success_criteria:
+        - exit_code == 0
+  inference:
+    - name: run_inference_and_evaluate
+      description: 加载 checkpoint，在验证集上推理评测并保存结果。
+      cwd: .
+      command: python inference.py
+      required_files:
+        - conf/transolver_car.yaml
+        - inference.py
+        - checkpoints/ShapeNetCar/Transolver_plus.pth
+        - data/mlcfd_data
+      required_env:
+        - onescience
+        - torch
+        - scipy
+      expected_outputs:
+        - path: results/ShapeNetCar/Transolver_plus/npy
+          type: directory
+        - path: results/ShapeNetCar/Transolver_plus/vtk
+          type: directory
+        - path: results/ShapeNetCar/Transolver_plus/vis
+          type: directory
+      success_criteria:
+        - exit_code == 0
+        - output_path_exists
+  train:
+    - name: train_from_scratch
+      description: 使用 ShapeNetCar 数据训练 Transolver++。
+      cwd: .
+      command: python train.py
+      required_files:
+        - conf/transolver_car.yaml
+        - train.py
+        - data/mlcfd_data
+      required_env:
+        - onescience
+        - torch
+      expected_outputs:
+        - path: checkpoints/ShapeNetCar/Transolver_plus.pth
+          type: file
+      success_criteria:
+        - exit_code == 0
+        - output_path_exists
+  finetune: []
+  evaluate:
+    - name: evaluate_after_training
+      description: 与推理入口相同，输出误差指标和可视化结果。
+      cwd: .
+      command: python inference.py
+      required_files:
+        - conf/transolver_car.yaml
+        - inference.py
+        - checkpoints/ShapeNetCar/Transolver_plus.pth
+        - data/mlcfd_data
+      required_env:
+        - onescience
+        - torch
+        - scipy
+      expected_outputs:
+        - path: results/ShapeNetCar/Transolver_plus/npy
+          type: directory
+      success_criteria:
+        - exit_code == 0
+        - output_path_exists
+  visualize:
+    - name: visualize_after_inference
+      description: inference.py 在 save_vtk=True 且 visualize=True 时生成 VTK 和图片。
+      cwd: .
+      command: python inference.py
+      required_files:
+        - conf/transolver_car.yaml
+        - inference.py
+        - checkpoints/ShapeNetCar/Transolver_plus.pth
+        - data/mlcfd_data
+      required_env:
+        - onescience
+        - torch
+        - scipy
+      expected_outputs:
+        - path: results/ShapeNetCar/Transolver_plus/vis
+          type: directory
+      success_criteria:
+        - exit_code == 0
+        - output_path_exists
+  deploy: []
+
+expected_outputs:
+  - path: checkpoints/ShapeNetCar/Transolver_plus.pth
+    type: file
+    produced_by: commands.train.train_from_scratch
+    description_zh: 训练得到的最佳验证 checkpoint。
+  - path: results/ShapeNetCar/Transolver_plus/npy
+    type: directory
+    produced_by: commands.inference.run_inference_and_evaluate
+    description_zh: 预测和真值的反归一化 npy 文件。
+  - path: results/ShapeNetCar/Transolver_plus/vtk
+    type: directory
+    produced_by: commands.inference.run_inference_and_evaluate
+    description_zh: 可用 ParaView 打开的 VTK 可视化文件。
+  - path: results/ShapeNetCar/Transolver_plus/vis
+    type: directory
+    produced_by: commands.inference.run_inference_and_evaluate
+    description_zh: 静态可视化图片。
+
+diagnostics:
+  - error_pattern: "Config file not found"
+    likely_cause: 运行 cwd 不是模型包根目录，或 conf/transolver_car.yaml 缺失。
+    action: 切换到模型下载后的实际包根目录，再运行 python scripts/preflight_transolver_car.py --config conf/transolver_car.yaml。
+  - error_pattern: "data root not found"
+    likely_cause: ShapeNetCar 数据集没有放到 data/mlcfd_data。
+    action: 执行 modelscope download --dataset OneScience/ShapeNetCar --local_dir data，并确认 data/mlcfd_data 存在；如下载到缓存目录，需要把运行 cwd 切到实际模型包根目录。
+  - error_pattern: "Checkpoint not found"
+    likely_cause: 还没有训练生成 checkpoints/ShapeNetCar/Transolver_plus.pth。
+    action: 先运行 python train.py，或将兼容 checkpoint 放到该路径后再运行 inference.py。
+  - error_pattern: "ModuleNotFoundError"
+    likely_cause: OneScience cfd 领域依赖未安装或当前 Python 环境未激活。
+    action: 在 OneScience 环境中执行 bash install.sh cfd，或切换到已安装 OneScience 的运行环境。
+  - error_pattern: "CUDA out of memory"
+    likely_cause: GPU 显存不足。
+    action: 在 conf/transolver_car.yaml 中降低 datapipe.dataloader.batch_size，或使用更大显存设备。
+
+domain_extension:
+  cfd:
+    geometry_type: car_body
+    mesh_type: unstructured_graph
+    variables:
+      - velocity_x
+      - velocity_y
+      - velocity_z
+      - pressure
+      - drag_coefficient
+    metrics:
+      - relative_l2_pressure
+      - relative_l2_velocity
+      - rmse_pressure
+      - rmse_velocity
+      - mean_relative_cd_error
+      - spearman_correlation
+
+large_resource:
+  enabled: true
+  total_size: 18G
+  file_count: 10967
+  download_policy: on_demand
+  default_download: full_for_validation
+  minimal_files:
+    - data/mlcfd_data/stats
+    - data/mlcfd_data/training_data
+    - data/mlcfd_data/preprocessed_data
+  full_download:
+    command: modelscope download --dataset OneScience/ShapeNetCar --local_dir data
+  partial_download:
+    command: null
+
+reproducibility:
+  level: minimal
+  goal: 完成一次配置和数据 schema 预检。
+  command_ref: commands.preflight.check_runtime_package
+  expected_runtime: seconds_to_minutes
+  expected_outputs:
+    - "[OK] Transolver-Car-Design preflight passed"

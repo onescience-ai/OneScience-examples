@@ -1,0 +1,410 @@
+onescience_manifest_version: "0.1"
+resource_type: model
+resource:
+  id: OneScience/protenix/
+  name: protenix
+  domain: bio
+  domain_tags: [bio, protein_structure, molecular_structure]
+  task: protein_complex_structure_prediction
+  task_tags: [structure_prediction, protein_folding, molecular_complex, alphafold3_like]
+  modalities: [protein, dna, rna, ligand, msa, ccd]
+  input_formats: [json, a3m, cif, pdb, sdf, smi]
+  output_formats: [cif, json]
+  summary: Protenix 是基于 AlphaFold3 思路实现的开源生物分子复合物结构预测模型，本标准包包含 OneScience Protenix 示例运行代码、配置、样例输入和 model_v0.5.0.pt 权重。
+
+platform_resource:
+  primary:
+    platform: modelscope
+    repo_id: OneScience/protenix/
+    repo_type: model
+    url: https://modelscope.cn/models/OneScience/protenix/
+    revision: main
+    readme_path: README.md
+    manifest_path: manifest.yaml
+  mirrors: []
+  access:
+    visibility: public
+    license: research
+
+website_integration:
+  enabled: true
+  click_target:
+    platform: modelscope
+    resource_url: https://modelscope.cn/models/OneScience/protenix/
+  llm_handoff:
+    readme_required: true
+    manifest_required: true
+    download_readme_first: true
+    resolve_related_datasets: true
+    default_run_goal: minimal_validation
+
+runtime:
+  enabled: true
+  onescience_domain: bio
+  min_onescience_version: null
+  supported_execution: [local, local_slurm, remote_slurm, scnet_mcp]
+  environment:
+    python: "3.10+"
+    accelerator: gpu_or_dcgu
+    required_python_packages: [torch, numpy, rdkit]
+
+onescience:
+  repo: https://gitee.com/onescience-ai/onescience
+  official_links:
+    gitee:
+      doc: https://gitee.com/onescience-ai/onescience-doc
+      onescience: https://gitee.com/onescience-ai/onescience
+      skills: https://gitee.com/onescience-ai/oneskills
+    github:
+      doc: https://github.com/onescience-ai/OneScience-doc
+      onescience: https://github.com/onescience-ai/OneScience
+      skills: https://github.com/onescience-ai/oneskills
+  install:
+    required_by_default: false
+    command: bash install.sh bio
+  source_paths:
+    - src/onescience/models/protenix
+    - src/onescience/datapipes/protenix
+  compatibility:
+    examples_path: examples/biosciences/protenix
+    status: examples_compatible
+
+runtime_package:
+  kind: standard_runtime_package
+  package_root: .
+  standard_layout:
+    workdir: .
+    config_dir: configs
+    checkpoint_dir: checkpoints
+    data_dir: ../bio_protenix_dataset
+    output_dir: output_unified
+  apply_policy:
+    mode: direct_use
+    target: session_workdir
+    overwrite: true
+    protect_installed_onescience: true
+  entry_files:
+    - inference_unified_demo.sh
+    - train_demo.sh
+    - finetune_demo.sh
+    - runner/inference_unified.py
+    - runner/train.py
+    - configs/inference_config.yaml
+    - scripts/preflight_protenix.py
+  entrypoints:
+    preflight: scripts/preflight_protenix.py
+    inference: inference_unified_demo.sh
+    train: train_demo.sh
+    finetune: finetune_demo.sh
+    evaluate: null
+    visualize: null
+    deploy: null
+
+configuration_adaptation:
+  reason: 原始示例脚本依赖 ONESCIENCE_MODELS_DIR 和 ONESCIENCE_DATASETS_DIR；标准包需要在 ModelScope 下载后的会话工作区中直接运行，并与本次整理的数据集目录 bio_protenix_dataset 匹配。
+  modified_files:
+    - path: inference_unified_demo.sh
+      changes:
+        - yaml_path: shell.load_checkpoint_path
+          original_value: ${ONESCIENCE_MODELS_DIR}/Protenix/model_v0.5.0.pt
+          current_value: ./checkpoints/model_v0.5.0.pt
+          reason: 权重已整理到模型仓库 checkpoints 目录。
+        - yaml_path: shell.DATA_ROOT_DIR
+          original_value: ${ONESCIENCE_DATASETS_DIR}/protenix/
+          current_value: ../bio_protenix_dataset
+          reason: 数据集标准仓库默认与模型仓库相邻放置。
+    - path: train_demo.sh
+      changes:
+        - yaml_path: shell.DATA_ROOT_DIR
+          original_value: ${ONESCIENCE_DATASETS_DIR}/protenix/
+          current_value: ../bio_protenix_dataset
+          reason: 训练数据根目录指向本次整理的数据集。
+    - path: finetune_demo.sh
+      changes:
+        - yaml_path: shell.checkpoint_path
+          original_value: ${ONESCIENCE_MODELS_DIR}/Protenix/model_v0.5.0.pt
+          current_value: ./checkpoints/model_v0.5.0.pt
+          reason: 微调默认加载本仓库权重。
+        - yaml_path: shell.DATA_ROOT_DIR
+          original_value: ${ONESCIENCE_DATASETS_DIR}/protenix/
+          current_value: ../bio_protenix_dataset
+          reason: 微调数据根目录指向本次整理的数据集。
+    - path: configs/inference_config.yaml
+      changes:
+        - yaml_path: inference.load_checkpoint_path
+          original_value: ${ONESCIENCE_MODELS_DIR}/model_v0.5.0.pt
+          current_value: ./checkpoints/model_v0.5.0.pt
+          reason: 与模型仓库内权重位置一致。
+        - yaml_path: inference.dump_dir
+          original_value: ./output
+          current_value: ./output_unified
+          reason: 与标准推理脚本输出目录一致。
+
+files:
+  model_files:
+    - id: protenix_checkpoint
+      path: checkpoints/model_v0.5.0.pt
+      role: checkpoint
+      description_zh: Protenix v0.5.0 预训练权重，用于推理和微调初始化。
+      required: true
+      required_for: [inference, finetune]
+      format: pt
+      source:
+        platform: modelscope
+        repo_id: OneScience/protenix/
+        repo_type: model
+        path: checkpoints/model_v0.5.0.pt
+        revision: main
+        url: https://modelscope.cn/models/OneScience/protenix/
+        download_method: command_ref
+        command_ref: commands.download.download_model_package
+      local_path: checkpoints/model_v0.5.0.pt
+      size: 1474265486
+      checksum:
+        sha256: 9ea20b0aba42f2256711da1d0cd081510a4b291e64375bff6b70ced70b87a5f1
+      large_file: true
+  dataset_files: []
+  config_files:
+    - id: inference_config
+      path: configs/inference_config.yaml
+      role: inference_config
+      description_zh: 推理配置，声明默认输入、输出目录、权重路径和数据依赖。
+      required: true
+      required_for: [inference, preflight]
+      format: yaml
+      source:
+        platform: modelscope
+        repo_id: OneScience/protenix/
+        repo_type: model
+        path: configs/inference_config.yaml
+        revision: main
+        url: https://modelscope.cn/models/OneScience/protenix/
+        download_method: command_ref
+        command_ref: commands.download.download_model_package
+      local_path: configs/inference_config.yaml
+      size: null
+      checksum: null
+      large_file: false
+  sample_files:
+    - id: example_7r6r_json
+      path: infer_datasets/7r6r.json
+      role: example_input
+      description_zh: 最小推理样例输入 JSON。
+      required: true
+      required_for: [inference, preflight]
+      format: json
+      source:
+        platform: modelscope
+        repo_id: OneScience/protenix/
+        repo_type: model
+        path: infer_datasets/7r6r.json
+        revision: main
+        url: https://modelscope.cn/models/OneScience/protenix/
+        download_method: command_ref
+        command_ref: commands.download.download_model_package
+      local_path: infer_datasets/7r6r.json
+      size: 829
+      checksum: null
+      large_file: false
+    - id: example_7r6r_msa
+      path: infer_datasets/7r6r/msa/1/
+      role: example_input
+      description_zh: 7r6r 样例的 pairing/non_pairing A3M MSA 文件。
+      required: true
+      required_for: [inference, preflight]
+      format: directory
+      source:
+        platform: modelscope
+        repo_id: OneScience/protenix/
+        repo_type: model
+        path: infer_datasets/7r6r/msa/1/
+        revision: main
+        url: https://modelscope.cn/models/OneScience/protenix/
+        download_method: command_ref
+        command_ref: commands.download.download_model_package
+      local_path: infer_datasets/7r6r/msa/1/
+      size: null
+      checksum: null
+      large_file: false
+
+relations:
+  required_datasets:
+    - id: OneScience/protenix_dataset
+      role: inference_input
+      required_for: [inference, train, finetune]
+      resource_ref:
+        platform: modelscope
+        repo_id: OneScience/protenix_dataset
+        repo_type: dataset
+        url: https://modelscope.cn/datasets/OneScience/protenix_dataset
+        revision: main
+        readme_path: README.md
+        manifest_path: manifest.yaml
+      local_path: ../bio_protenix_dataset
+  optional_datasets: []
+  compatible_models: []
+
+run_matrix:
+  scenarios:
+    - name: minimal_inference_7r6r
+      default: true
+      capability: inference
+      required_datasets:
+        - id: OneScience/protenix_dataset
+          role: inference_input
+          local_path: ../bio_protenix_dataset
+      required_model_files:
+        - checkpoints/model_v0.5.0.pt
+      required_config_files:
+        - configs/inference_config.yaml
+      required_sample_files:
+        - infer_datasets/7r6r.json
+        - infer_datasets/7r6r/msa/1/
+      command_refs:
+        - commands.preflight.model_preflight
+        - commands.inference.run_unified_inference
+      outputs:
+        - output_unified/7r6r/seed_101/predictions/*.cif
+        - output_unified/7r6r/seed_101/predictions/*summary_confidence*.json
+      prerequisites:
+        - OneScience bio 环境可用。
+        - 数据集已下载到 ../bio_protenix_dataset 或 DATA_ROOT_DIR 指向实际数据集根目录。
+    - name: train_full
+      capability: train
+      required_datasets:
+        - id: OneScience/protenix_dataset
+          role: train_data
+          local_path: ../bio_protenix_dataset
+      required_model_files: []
+      required_config_files:
+        - configs/configs_data.py
+      command_refs:
+        - commands.preflight.model_preflight
+        - commands.train.train_demo
+      outputs:
+        - output/
+      prerequisites:
+        - 完整训练数据、MSA、mmCIF、bioassembly 和索引均可读。
+        - GPU/DCU 显存和磁盘空间满足训练需求。
+    - name: finetune_subset
+      capability: finetune
+      required_datasets:
+        - id: OneScience/protenix_dataset
+          role: train_data
+          local_path: ../bio_protenix_dataset
+      required_model_files:
+        - checkpoints/model_v0.5.0.pt
+      required_config_files:
+        - ft_datasets/finetune_subset.txt
+      command_refs:
+        - commands.preflight.model_preflight
+        - commands.finetune.finetune_demo
+      outputs:
+        - output/
+      prerequisites:
+        - 微调列表 ft_datasets/finetune_subset.txt 对应的数据在数据集根目录中存在。
+
+capabilities:
+  inference: true
+  train: true
+  finetune: true
+  evaluate: false
+  visualize: false
+  deploy: false
+
+commands:
+  preflight:
+    - name: model_preflight
+      cwd: .
+      command: python scripts/preflight_protenix.py --model-root . --data-root ../bio_protenix_dataset
+      required_files:
+        - scripts/preflight_protenix.py
+        - checkpoints/model_v0.5.0.pt
+        - configs/inference_config.yaml
+      expected_outputs:
+        - 模型预检通过
+  download:
+    - name: download_model_package
+      cwd: session_workdir
+      command: modelscope download --model OneScience/protenix/ --local_dir ./bio_protenix
+      notes: 如果网页端使用 --cache_dir 下载模型，运行 cwd 必须切换到实际下载后的模型包根目录 bio_protenix，而不是 cache 根目录。
+    - name: download_required_dataset
+      cwd: session_workdir
+      command: modelscope download --dataset OneScience/protenix_dataset --local_dir ./bio_protenix_dataset
+      notes: 数据集下载后应与模型包相邻，或通过 DATA_ROOT_DIR 指向实际数据根目录。
+  prepare:
+    - name: set_data_root
+      cwd: .
+      command: export DATA_ROOT_DIR=../bio_protenix_dataset
+      required_files:
+        - ../bio_protenix_dataset/components.v20240608.cif
+      expected_outputs:
+        - DATA_ROOT_DIR 指向 Protenix 数据集根目录。
+  inference:
+    - name: run_unified_inference
+      cwd: .
+      command: bash inference_unified_demo.sh
+      required_files:
+        - checkpoints/model_v0.5.0.pt
+        - infer_datasets/7r6r.json
+        - ../bio_protenix_dataset/components.v20240608.cif
+        - ../bio_protenix_dataset/components.v20240608.cif.rdkit_mol.pkl
+      expected_outputs:
+        - output_unified/7r6r/seed_101/predictions/
+  train:
+    - name: train_demo
+      cwd: .
+      command: bash train_demo.sh
+      required_files:
+        - ../bio_protenix_dataset/mmcif
+        - ../bio_protenix_dataset/mmcif_bioassembly
+        - ../bio_protenix_dataset/mmcif_msa
+        - ../bio_protenix_dataset/indices/weightedPDB_indices_before_2021-09-30_wo_posebusters_resolution_below_9.csv.gz
+      expected_outputs:
+        - output/
+  finetune:
+    - name: finetune_demo
+      cwd: .
+      command: bash finetune_demo.sh
+      required_files:
+        - checkpoints/model_v0.5.0.pt
+        - ft_datasets/finetune_subset.txt
+        - ../bio_protenix_dataset/mmcif
+        - ../bio_protenix_dataset/mmcif_bioassembly
+      expected_outputs:
+        - output/
+  evaluate: []
+  visualize: []
+  deploy: []
+
+expected_outputs:
+  - path: output_unified/7r6r/seed_101/predictions/*.cif
+    description_zh: 推理生成的结构预测 CIF 文件。
+  - path: output_unified/7r6r/seed_101/predictions/*summary_confidence*.json
+    description_zh: 每个采样结果的置信度摘要。
+  - path: output/
+    description_zh: 训练或微调输出目录，包含日志和 checkpoint。
+
+diagnostics:
+  - error_pattern: "No such file or directory"
+    likely_cause: 模型权重、样例输入或数据集未下载到 Manifest 声明路径。
+    action: 先执行模型和数据集下载命令，再运行 python scripts/preflight_protenix.py --model-root . --data-root ../bio_protenix_dataset。
+  - error_pattern: "KeyError: 'DATA_ROOT_DIR'"
+    likely_cause: 原始 Protenix 配置需要 DATA_ROOT_DIR 环境变量。
+    action: export DATA_ROOT_DIR=../bio_protenix_dataset，或把变量指向实际数据集根目录。
+  - error_pattern: "ModuleNotFoundError"
+    likely_cause: OneScience bio 环境或 Python 依赖未安装。
+    action: 执行 bash install.sh bio，并确认 PYTHONPATH 包含当前模型包和 OneScience。
+  - error_pattern: "CUDA out of memory"
+    likely_cause: 推理采样数、扩散步数或训练 batch 配置超过显存。
+    action: 降低 N_sample、N_step、diffusion_batch_size 或使用更大显存设备。
+
+domain_extension:
+  bio:
+    molecule_type: multimodal
+    input_format: [json, a3m, cif, pdb, sdf, smi]
+    output_format: [cif, json]
+    database_dependencies:
+      - id: OneScience/protenix_dataset
+        role: inference_input
+        local_path: ../bio_protenix_dataset

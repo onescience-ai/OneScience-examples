@@ -1,0 +1,430 @@
+onescience_manifest_version: "0.1"
+resource_type: model
+resource:
+  id: "OneScience/RFdiffusion"
+  name: "RFdiffusion"
+  domain: bio
+  domain_tags:
+    - bio
+    - protein_design
+    - protein_structure
+    - diffusion_model
+  task: protein_structure_design
+  task_tags:
+    - unconditional_generation
+    - motif_scaffolding
+    - binder_design
+    - symmetric_design
+  modalities:
+    - protein_structure
+  input_formats:
+    - pdb
+  output_formats:
+    - pdb
+    - trb
+  summary: "RFdiffusion 蛋白质结构生成与蛋白设计标准运行包。"
+platform_resource:
+  primary:
+    platform: modelscope
+    repo_id: "OneScience/RFdiffusion"
+    repo_type: model
+    url: "https://modelscope.cn/models/OneScience/RFdiffusion"
+    revision: master
+    readme_path: README.md
+    manifest_path: manifest.yaml
+  mirrors: []
+  access:
+    visibility: public
+    license: null
+website_integration:
+  enabled: true
+  click_target:
+    platform: modelscope
+    resource_url: "https://modelscope.cn/models/OneScience/RFdiffusion"
+  llm_handoff:
+    readme_required: true
+    manifest_required: true
+    download_readme_first: true
+    resolve_related_datasets: false
+    default_run_goal: minimal_validation
+runtime:
+  enabled: true
+  onescience_domain: bio
+  min_onescience_version: null
+  supported_execution:
+    - local
+    - hpc
+    - remote_slurm
+  workdir: "."
+  environment:
+    python: ">=3.8"
+    required_packages:
+      - torch
+      - hydra-core
+      - omegaconf
+      - pyyaml
+onescience:
+  repo: "https://gitee.com/onescience-ai/onescience"
+  official_links:
+    gitee:
+      doc: "https://gitee.com/onescience-ai/onescience-doc"
+      onescience: "https://gitee.com/onescience-ai/onescience"
+      skills: "https://gitee.com/onescience-ai/oneskills"
+    github:
+      doc: "https://github.com/onescience-ai/OneScience-doc"
+      onescience: "https://github.com/onescience-ai/OneScience"
+      skills: "https://github.com/onescience-ai/oneskills"
+  install:
+    required_by_default: true
+    command: "bash install.sh bio"
+  source_paths:
+    - "onescience/utils/rfdiffusion"
+  compatibility:
+    examples_path: "examples/biosciences/RFdiffusion"
+    status: examples_compatible
+runtime_package:
+  kind: standard_runtime_package
+  package_root: "."
+  standard_layout:
+    workdir: "."
+    config_dir: config
+    checkpoint_dir: models
+    data_dir: examples
+    output_dir: example_outputs
+  apply_policy:
+    mode: direct_use
+    target: session_workdir
+    overwrite: false
+    protect_installed_onescience: true
+  entry_files:
+    - scripts/run_inference.py
+    - config/inference/base.yaml
+    - config/inference/symmetry.yaml
+    - examples/design_unconditional.sh
+    - tools/preflight_check.py
+  entrypoints:
+    preflight: tools/preflight_check.py
+    inference: scripts/run_inference.py
+    train: null
+    finetune: null
+    evaluate: null
+    visualize: null
+    deploy: null
+files:
+  model_files:
+    - path: "models/Base_ckpt.pt"
+      role: model_checkpoint
+      description_zh: "基础 RFdiffusion checkpoint，默认无条件生成使用。"
+      required: true
+      required_for: [inference, minimal_validation]
+      source:
+        platform: modelscope
+        repo_id: "OneScience/RFdiffusion"
+        repo_type: model
+        path: "models/Base_ckpt.pt"
+        download_method: command_ref
+        command_ref: download_model
+      local_path: "models/Base_ckpt.pt"
+    - path: "models/Complex_base_ckpt.pt"
+      role: model_checkpoint
+      description_zh: "复合物和结合蛋白设计 checkpoint。"
+      required: false
+      required_for: [inference]
+      source:
+        platform: modelscope
+        repo_id: "OneScience/RFdiffusion"
+        repo_type: model
+        path: "models/Complex_base_ckpt.pt"
+        download_method: command_ref
+        command_ref: download_model
+      local_path: "models/Complex_base_ckpt.pt"
+    - path: "models/Complex_Fold_base_ckpt.pt"
+      role: model_checkpoint
+      description_zh: "复合物折叠条件设计 checkpoint。"
+      required: false
+      required_for: [inference]
+      source:
+        platform: modelscope
+        repo_id: "OneScience/RFdiffusion"
+        repo_type: model
+        path: "models/Complex_Fold_base_ckpt.pt"
+        download_method: command_ref
+        command_ref: download_model
+      local_path: "models/Complex_Fold_base_ckpt.pt"
+    - path: "models/InpaintSeq_ckpt.pt"
+      role: model_checkpoint
+      description_zh: "序列补全相关 checkpoint。"
+      required: false
+      required_for: [inference]
+      source:
+        platform: modelscope
+        repo_id: "OneScience/RFdiffusion"
+        repo_type: model
+        path: "models/InpaintSeq_ckpt.pt"
+        download_method: command_ref
+        command_ref: download_model
+      local_path: "models/InpaintSeq_ckpt.pt"
+    - path: "models/InpaintSeq_Fold_ckpt.pt"
+      role: model_checkpoint
+      description_zh: "序列补全与折叠条件设计 checkpoint。"
+      required: false
+      required_for: [inference]
+      source:
+        platform: modelscope
+        repo_id: "OneScience/RFdiffusion"
+        repo_type: model
+        path: "models/InpaintSeq_Fold_ckpt.pt"
+        download_method: command_ref
+        command_ref: download_model
+      local_path: "models/InpaintSeq_Fold_ckpt.pt"
+    - path: "models/ActiveSite_ckpt.pt"
+      role: model_checkpoint
+      description_zh: "活性位点和酶设计 checkpoint。"
+      required: false
+      required_for: [inference]
+      source:
+        platform: modelscope
+        repo_id: "OneScience/RFdiffusion"
+        repo_type: model
+        path: "models/ActiveSite_ckpt.pt"
+        download_method: command_ref
+        command_ref: download_model
+      local_path: "models/ActiveSite_ckpt.pt"
+    - path: "models/Base_epoch8_ckpt.pt"
+      role: model_checkpoint
+      description_zh: "备用基础 checkpoint。"
+      required: false
+      required_for: [inference]
+      source:
+        platform: modelscope
+        repo_id: "OneScience/RFdiffusion"
+        repo_type: model
+        path: "models/Base_epoch8_ckpt.pt"
+        download_method: command_ref
+        command_ref: download_model
+      local_path: "models/Base_epoch8_ckpt.pt"
+    - path: "models/Complex_beta_ckpt.pt"
+      role: model_checkpoint
+      description_zh: "复合物 beta checkpoint。"
+      required: false
+      required_for: [inference]
+      source:
+        platform: modelscope
+        repo_id: "OneScience/RFdiffusion"
+        repo_type: model
+        path: "models/Complex_beta_ckpt.pt"
+        download_method: command_ref
+        command_ref: download_model
+      local_path: "models/Complex_beta_ckpt.pt"
+    - path: "models/RF_structure_prediction_weights.pt"
+      role: auxiliary_weights
+      description_zh: "原始 RoseTTAFold 结构预测辅助权重。"
+      required: false
+      required_for: [advanced_inference]
+      source:
+        platform: modelscope
+        repo_id: "OneScience/RFdiffusion"
+        repo_type: model
+        path: "models/RF_structure_prediction_weights.pt"
+        download_method: command_ref
+        command_ref: download_model
+      local_path: "models/RF_structure_prediction_weights.pt"
+  runtime_files:
+    - path: "scripts/run_inference.py"
+      role: inference_script
+      description_zh: "RFdiffusion 推理入口脚本。"
+      required: true
+      required_for: [inference]
+      source:
+        platform: modelscope
+        repo_id: "OneScience/RFdiffusion"
+        repo_type: model
+        path: "scripts/run_inference.py"
+        download_method: command_ref
+        command_ref: download_model
+      local_path: "scripts/run_inference.py"
+    - path: "config/inference/base.yaml"
+      role: config
+      description_zh: "基础推理配置。"
+      required: true
+      required_for: [inference]
+      source:
+        platform: modelscope
+        repo_id: "OneScience/RFdiffusion"
+        repo_type: model
+        path: "config/inference/base.yaml"
+        download_method: command_ref
+        command_ref: download_model
+      local_path: "config/inference/base.yaml"
+    - path: "examples/input_pdbs/"
+      role: sample_inputs
+      description_zh: "内置 PDB 示例输入，用户也可以提供自己的 PDB。"
+      required: false
+      required_for: [inference_examples]
+      source:
+        platform: modelscope
+        repo_id: "OneScience/RFdiffusion"
+        repo_type: model
+        path: "examples/input_pdbs/"
+        download_method: command_ref
+        command_ref: download_model
+      local_path: "examples/input_pdbs/"
+    - path: "tools/preflight_check.py"
+      role: preflight
+      description_zh: "标准包预检脚本。"
+      required: true
+      required_for: [preflight]
+      source:
+        platform: modelscope
+        repo_id: "OneScience/RFdiffusion"
+        repo_type: model
+        path: "tools/preflight_check.py"
+        download_method: command_ref
+        command_ref: download_model
+      local_path: "tools/preflight_check.py"
+relations:
+  required_datasets: []
+  optional_datasets: []
+  optional_inputs:
+    - id: user_provided_pdb
+      type: pdb
+      required_for:
+        - motif_scaffolding
+        - binder_design
+        - partial_diffusion
+      description_zh: "用户提供的 PDB 输入；也可以使用 examples/input_pdbs/ 内置样例。"
+      local_path_hint: "examples/input_pdbs/*.pdb"
+run_matrix:
+  scenarios:
+    - name: minimal_validation
+      default: true
+      capability: preflight
+      model_files:
+        - "models/Base_ckpt.pt"
+      dataset_files: []
+      input_files: []
+      command_ref: runtime_preflight
+      outputs:
+        - "MODEL_PREFLIGHT_OK"
+      prerequisites:
+        - "Python 和 PyYAML 可用"
+    - name: unconditional_inference
+      capability: inference
+      model_files:
+        - "models/Base_ckpt.pt"
+      dataset_files: []
+      input_files: []
+      command_ref: inference_unconditional
+      outputs:
+        - "example_outputs/design_unconditional_0.pdb"
+        - "example_outputs/design_unconditional_0.trb"
+      prerequisites:
+        - "OneScience RFdiffusion 运行依赖可用"
+    - name: motif_scaffolding
+      capability: inference
+      model_files:
+        - "models/Complex_base_ckpt.pt"
+      dataset_files: []
+      input_files:
+        - "examples/input_pdbs/1YCR.pdb"
+      command_ref: inference_motif
+      outputs:
+        - "example_outputs/design_motifscaffolding_0.pdb"
+        - "example_outputs/design_motifscaffolding_0.trb"
+      prerequisites:
+        - "OneScience RFdiffusion 运行依赖可用"
+capabilities:
+  preflight: true
+  inference: true
+  train: false
+  finetune: false
+  evaluate: false
+  visualize: false
+  deploy: false
+commands:
+  download:
+    - name: download_model
+      cwd: "."
+      command: "modelscope download --model OneScience/RFdiffusion --local_dir ./RFdiffusion"
+      required_files: []
+      expected_outputs:
+        - "RFdiffusion/manifest.yaml"
+        - "RFdiffusion/models/Base_ckpt.pt"
+  preflight:
+    - name: runtime_preflight
+      cwd: "."
+      command: "python tools/preflight_check.py --repo-root ."
+      required_files:
+        - "manifest.yaml"
+        - "README.md"
+        - "models/Base_ckpt.pt"
+      expected_outputs:
+        - "MODEL_PREFLIGHT_OK"
+  inference:
+    - name: inference_unconditional
+      cwd: "."
+      command: "python scripts/run_inference.py inference.model_directory_path=$PWD/models inference.output_prefix=example_outputs/design_unconditional 'contigmap.contigs=[100-120]' inference.num_designs=1"
+      required_files:
+        - "scripts/run_inference.py"
+        - "config/inference/base.yaml"
+        - "models/Base_ckpt.pt"
+      expected_outputs:
+        - "example_outputs/design_unconditional_0.pdb"
+        - "example_outputs/design_unconditional_0.trb"
+    - name: inference_motif
+      cwd: "."
+      command: "python scripts/run_inference.py inference.model_directory_path=$PWD/models inference.output_prefix=example_outputs/design_motifscaffolding inference.input_pdb=examples/input_pdbs/1YCR.pdb 'contigmap.contigs=[A25-109/0 0-70/B17-29/0-70]' contigmap.length=70-120 inference.num_designs=1 inference.ckpt_override_path=$PWD/models/Complex_base_ckpt.pt"
+      required_files:
+        - "scripts/run_inference.py"
+        - "config/inference/base.yaml"
+        - "examples/input_pdbs/1YCR.pdb"
+        - "models/Complex_base_ckpt.pt"
+      expected_outputs:
+        - "example_outputs/design_motifscaffolding_0.pdb"
+        - "example_outputs/design_motifscaffolding_0.trb"
+expected_outputs:
+  preflight:
+    - "MODEL_PREFLIGHT_OK"
+  inference:
+    - "example_outputs/*.pdb"
+    - "example_outputs/*.trb"
+    - "example_outputs/traj/*.pdb"
+diagnostics:
+  - code: missing_weights
+    message_zh: "缺少 RFdiffusion checkpoint。"
+    check: "test -f models/Base_ckpt.pt"
+    fix_zh: "重新下载 OneScience/RFdiffusion，或确认 models/ 目录完整。"
+  - code: missing_input_pdb
+    message_zh: "需要 PDB 输入的任务找不到输入文件。"
+    check: "test -f examples/input_pdbs/1YCR.pdb"
+    fix_zh: "使用 examples/input_pdbs/ 中的样例，或通过 inference.input_pdb 指定用户 PDB。"
+  - code: missing_runtime_dependency
+    message_zh: "运行推理时缺少 OneScience、PyTorch、Hydra 或 RFdiffusion 依赖。"
+    check: "python -c 'import torch, hydra, omegaconf'"
+    fix_zh: "进入 OneScience 生物信息运行环境后重试。"
+  - code: encoding_corruption
+    message_zh: "README 或 Manifest 出现乱码。"
+    check: "python tools/preflight_check.py --repo-root ."
+    fix_zh: "使用 UTF-8 重新生成 README.md 和 manifest.yaml。"
+domain_extension:
+  bio:
+    molecule_type: protein
+    input_format:
+      - pdb
+    output_format:
+      - pdb
+      - trb
+    database_dependencies: []
+    design_modes:
+      - unconditional_generation
+      - motif_scaffolding
+      - binder_design
+      - symmetric_design
+configuration_adaptation:
+  adapted: true
+  changes:
+    - file: "config/inference/base.yaml"
+      yaml_path: "inference.model_directory_path"
+      original_value: "${oc.env:ONESCIENCE_MODELS_DIR}/RFdiffusion/models"
+      current_value: "${oc.env:ONESCIENCE_MODELS_DIR}/RFdiffusion/models"
+      reason_zh: "保留 OneScience 示例原配置；标准运行命令使用 Hydra 覆盖 inference.model_directory_path=$PWD/models，使下载目录名称不影响权重定位。"

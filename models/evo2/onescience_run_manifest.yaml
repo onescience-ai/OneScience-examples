@@ -1,0 +1,480 @@
+onescience_manifest_version: "0.1"
+resource_type: model
+resource:
+  id: "OneScience/evo2/"
+  name: "Evo2"
+  domain: bio
+  domain_tags:
+    - bio
+    - genomics
+    - dna_language_model
+  task: genome_sequence_modeling
+  task_tags:
+    - prompt_generation
+    - fasta_logit_prediction
+    - mini_finetune
+    - preflight
+  modalities:
+    - dna_sequence
+  input_formats:
+    - fasta
+    - prompt_text
+    - indexed_dataset_bin_idx
+  output_formats:
+    - generated_sequence
+    - logits
+    - lightning_logs
+    - checkpoints
+  summary: "Evo2 7B 基因组基础模型 OneScience 标准运行包，包含 NeMo2 权重、运行脚本、mini 数据适配配置和预检脚本。"
+
+platform_resource:
+  primary:
+    platform: modelscope
+    repo_id: "OneScience/evo2/"
+    repo_type: model
+    url: "https://modelscope.cn/models/OneScience/evo2/"
+    revision: main
+    readme_path: README.md
+    manifest_path: manifest.yaml
+  mirrors: []
+  access:
+    visibility: public
+    license: "Apache-2.0 for code; checkpoint license follows upstream Evo2/NeMo weight terms"
+
+website_integration:
+  enabled: true
+  click_target:
+    platform: modelscope
+    resource_url: "https://modelscope.cn/models/OneScience/evo2/"
+  llm_handoff:
+    readme_required: true
+    manifest_required: true
+    download_readme_first: true
+    resolve_related_datasets: true
+    default_run_goal: minimal_validation
+    cwd_rule: "如果使用 modelscope download --cache_dir 下载，运行 cwd 必须切换到实际下载后的模型包根目录，即包含 README.md 和 manifest.yaml 的目录。"
+
+runtime:
+  enabled: true
+  onescience_domain: bio
+  min_onescience_version: null
+  supported_execution:
+    - local
+    - local_slurm
+    - remote_slurm
+    - scnet_mcp
+  hardware:
+    accelerator: gpu
+    tested_target: "DTK/CUDA-compatible OneScience environment"
+    notes: "7B 推理和训练需要可用 GPU；预检和数据结构校验可在 CPU 上运行。"
+
+onescience:
+  repo: "https://gitee.com/onescience-ai/onescience"
+  official_links:
+    gitee:
+      doc: "https://gitee.com/onescience-ai/onescience-doc"
+      onescience: "https://gitee.com/onescience-ai/onescience"
+      skills: "https://gitee.com/onescience-ai/oneskills"
+    github:
+      doc: "https://github.com/onescience-ai/OneScience-doc"
+      onescience: "https://github.com/onescience-ai/OneScience"
+      skills: "https://github.com/onescience-ai/oneskills"
+  install:
+    required_by_default: false
+    command: "pip install -c constraints.txt .[bio]"
+  source_paths:
+    - "src/onescience/models/evo2"
+  compatibility:
+    examples_path: "examples/biosciences/evo2"
+    status: examples_compatible
+
+runtime_package:
+  kind: standard_runtime_package
+  package_root: .
+  standard_layout:
+    workdir: .
+    config_dir: config
+    checkpoint_dir: checkpoints
+    data_dir: data
+    output_dir: outputs
+  apply_policy:
+    mode: direct_use
+    target: session_workdir
+    overwrite: true
+    protect_installed_onescience: true
+  entry_files:
+    - infer.py
+    - predict.py
+    - train_one_node.py
+    - train_slurm.py
+    - train_single_node_evo2_7b.sh
+    - inference.sh
+    - config/genome_data_config.yaml
+    - config/genome_preprocess_config.yaml
+    - config/opengenome2.yml
+    - scripts/preflight_evo2.py
+  entrypoints:
+    preflight: scripts/preflight_evo2.py
+    inference: infer.py
+    train: train_one_node.py
+    finetune: train_one_node.py
+    evaluate: null
+    visualize: null
+    deploy: null
+
+files:
+  model_files:
+    - id: nemo_checkpoint
+      path: checkpoints/evo2_nemo_7b/
+      role: checkpoint
+      format: nemo2_torch_dist
+      description_zh: "Evo2 7B NeMo2 torch_dist 权重目录，包含 context 和 weights 子目录。"
+      required: true
+      required_for:
+        - preflight
+        - inference
+        - predict
+      source:
+        platform: modelscope
+        repo_id: "OneScience/evo2/"
+        repo_type: model
+        path: checkpoints/evo2_nemo_7b/
+        revision: main
+        download_method: command_ref
+        command_ref: commands.download.download_model
+      local_path: checkpoints/evo2_nemo_7b/
+      checksum_manifest:
+        sha256: metadata/evo2_nemo_7b.sha256
+        sizes: metadata/evo2_nemo_7b.files.tsv
+    - id: evo2_runtime_code
+      path: .
+      role: code
+      format: python_shell
+      description_zh: "Evo2 推理、预测、训练脚本和工具目录。"
+      required: true
+      required_for:
+        - preflight
+        - inference
+        - train
+      source:
+        platform: modelscope
+        repo_id: "OneScience/evo2/"
+        repo_type: model
+        path: .
+        revision: main
+        download_method: command_ref
+        command_ref: commands.download.download_model
+      local_path: .
+  dataset_files:
+    - id: evo2_dataset_mini
+      path: data/evo2_dataset/data_mini/genome_data/
+      role: train_data
+      format: fasta_and_indexed_dataset
+      description_zh: "从数据集仓库 OneScience/evo2_dataset 下载后放置的 chr20/chr21/chr22 mini 基因组数据。"
+      required: true
+      required_for:
+        - preflight
+        - train
+        - predict
+      source:
+        platform: modelscope
+        repo_id: "OneScience/evo2_dataset"
+        repo_type: dataset
+        path: data_mini/genome_data/
+        revision: main
+        download_method: command_ref
+        command_ref: commands.download.download_dataset
+      local_path: data/evo2_dataset/data_mini/genome_data/
+  config_files:
+    - id: genome_data_config
+      path: config/genome_data_config.yaml
+      role: train_dataset_config
+      format: yaml
+      description_zh: "训练脚本读取的 mini 数据 split 配置，使用相对 preprocessed_data 前缀。"
+      required: true
+      required_for:
+        - preflight
+        - train
+      source:
+        platform: modelscope
+        repo_id: "OneScience/evo2/"
+        repo_type: model
+        path: config/genome_data_config.yaml
+        revision: main
+        download_method: command_ref
+        command_ref: commands.download.download_model
+      local_path: config/genome_data_config.yaml
+    - id: genome_preprocess_config
+      path: config/genome_preprocess_config.yaml
+      role: preprocess_config
+      format: yaml
+      description_zh: "从 chr20_21_22.fa 生成 bin/idx 的预处理配置。"
+      required: true
+      required_for:
+        - preflight
+        - preprocess
+      source:
+        platform: modelscope
+        repo_id: "OneScience/evo2/"
+        repo_type: model
+        path: config/genome_preprocess_config.yaml
+        revision: main
+        download_method: command_ref
+        command_ref: commands.download.download_model
+      local_path: config/genome_preprocess_config.yaml
+    - id: opengenome2_mini_config
+      path: config/opengenome2.yml
+      role: adapted_full_dataset_config
+      format: yaml
+      description_zh: "由全量 OpenGenome2 配置适配而来的 mini 数据配置，只引用 OneScience/evo2_dataset 的 chr20/21/22 split。"
+      required: true
+      required_for:
+        - preflight
+        - train
+      source:
+        platform: modelscope
+        repo_id: "OneScience/evo2/"
+        repo_type: model
+        path: config/opengenome2.yml
+        revision: main
+        download_method: command_ref
+        command_ref: commands.download.download_model
+      local_path: config/opengenome2.yml
+  sample_files:
+    - id: prompts_csv
+      path: data/prompts.csv
+      role: sample_prompt
+      format: csv
+      description_zh: "推理 prompt 示例。"
+      required: false
+      required_for:
+        - inference
+      source:
+        platform: modelscope
+        repo_id: "OneScience/evo2/"
+        repo_type: model
+        path: data/prompts.csv
+        revision: main
+        download_method: command_ref
+        command_ref: commands.download.download_model
+      local_path: data/prompts.csv
+
+relations:
+  required_datasets:
+    - id: "OneScience/evo2_dataset"
+      role: train_data
+      required_for:
+        - preflight
+        - train
+        - predict
+      resource_ref:
+        platform: modelscope
+        repo_id: "OneScience/evo2_dataset"
+        repo_type: dataset
+        url: "https://modelscope.cn/datasets/OneScience/evo2_dataset"
+        revision: main
+        readme_path: README.md
+        manifest_path: manifest.yaml
+      expected_local_path: data/evo2_dataset/data_mini/genome_data/
+      adapter: "config/genome_data_config.yaml and config/opengenome2.yml"
+  optional_datasets: []
+  compatible_models: []
+
+run_matrix:
+  scenarios:
+    - name: minimal_validation
+      default: true
+      capability: preflight
+      description_zh: "检查模型包、权重、配置和已下载数据集是否匹配。"
+      required_model_files:
+        - nemo_checkpoint
+        - evo2_runtime_code
+      required_datasets:
+        - id: "OneScience/evo2_dataset"
+          role: train_data
+          local_path: data/evo2_dataset/data_mini/genome_data/
+      required_config_files:
+        - genome_data_config
+        - genome_preprocess_config
+        - opengenome2_mini_config
+      preconditions:
+        - "已下载模型仓库 OneScience/evo2/，cwd 位于模型包根目录。"
+        - "已下载数据集仓库 OneScience/evo2_dataset，并将 data_mini 放到 data/evo2_dataset/data_mini 或通过 --data-root 指定实际路径。"
+      command_refs:
+        - commands.preflight.model_preflight
+      outputs:
+        - "终端输出 [OK] Evo2 model package..."
+    - name: prompt_generation
+      capability: inference
+      description_zh: "使用 NeMo2 权重对 DNA prompt 做生成式推理。"
+      required_model_files:
+        - nemo_checkpoint
+      required_datasets: []
+      required_config_files: []
+      preconditions:
+        - "OneScience bio 依赖、NeMo、Megatron 和 GPU 环境可用。"
+        - "cwd 位于模型包根目录。"
+      command_refs:
+        - commands.inference.prompt_generation
+      outputs:
+        - outputs/evo2_prompt.txt
+    - name: mini_train
+      capability: train
+      description_zh: "使用 OneScience/evo2_dataset mini 数据进行短步数训练或微调冒烟测试。"
+      required_model_files:
+        - evo2_runtime_code
+      required_datasets:
+        - id: "OneScience/evo2_dataset"
+          role: train_data
+          local_path: data/evo2_dataset/data_mini/genome_data/
+      required_config_files:
+        - genome_data_config
+      preconditions:
+        - "OneScience bio 依赖、NeMo、Megatron 和多卡 GPU 环境可用。"
+        - "将数据集 data_mini 放置到 data/evo2_dataset/data_mini。"
+      command_refs:
+        - commands.train.train_mini
+      outputs:
+        - outputs/evo2_train/
+    - name: fasta_prediction
+      capability: inference
+      description_zh: "对 FASTA 文件做 logit 或 log probability 预测。"
+      required_model_files:
+        - nemo_checkpoint
+      required_datasets:
+        - id: "OneScience/evo2_dataset"
+          role: inference_input
+          local_path: data/evo2_dataset/data_mini/genome_data/
+      required_config_files: []
+      preconditions:
+        - "OneScience bio 依赖、NeMo、Megatron 和 GPU 环境可用。"
+        - "数据集中存在 FASTA 文件。"
+      command_refs:
+        - commands.inference.fasta_prediction
+      outputs:
+        - outputs/evo2_predict/
+
+capabilities:
+  inference: true
+  train: true
+  finetune: true
+  evaluate: false
+  visualize: false
+  deploy: false
+  preflight: true
+
+commands:
+  download:
+    - name: download_model
+      cwd: .
+      command: "modelscope download --model OneScience/evo2/"
+      description_zh: "下载模型标准运行包。若使用 --cache_dir，下载完成后必须 cd 到包含 README.md 和 manifest.yaml 的模型包根目录。"
+    - name: download_dataset
+      cwd: .
+      command: "modelscope download --dataset OneScience/evo2_dataset"
+      description_zh: "下载适配数据集。推荐将数据集目录放到模型包的 data/evo2_dataset/ 下。"
+  prepare:
+    - name: place_dataset
+      cwd: .
+      command: "mkdir -p data/evo2_dataset && cp -a <DATASET_REPO_ROOT>/data_mini data/evo2_dataset/data_mini"
+      description_zh: "把数据集仓库中的 data_mini 放入模型包默认数据路径。"
+  preflight:
+    - name: model_preflight
+      cwd: .
+      command: "python scripts/preflight_evo2.py --package-root . --data-root data/evo2_dataset/data_mini/genome_data"
+      description_zh: "检查模型权重、配置、数据路径、必需文件、大小和 SHA256。"
+  inference:
+    - name: prompt_generation
+      cwd: .
+      command: "python infer.py --ckpt-dir checkpoints/evo2_nemo_7b --prompt ATGCGT --max-new-tokens 32 --output-file outputs/evo2_prompt.txt"
+      description_zh: "最小 prompt 推理。需要 GPU 环境。"
+    - name: fasta_prediction
+      cwd: .
+      command: "python predict.py --fasta data/evo2_dataset/data_mini/genome_data/chr22.fa --ckpt-dir checkpoints/evo2_nemo_7b --model-size 7b --output-dir outputs/evo2_predict"
+      description_zh: "对 mini 数据中的 FASTA 文件做预测。需要 GPU 环境。"
+  train:
+    - name: train_mini
+      cwd: .
+      command: "python train_one_node.py -d config/genome_data_config.yaml --dataset-dir data/evo2_dataset/data_mini/genome_data --model-size 1b --devices 1 --num-nodes 1 --seq-length 8192 --micro-batch-size 1 --lr 0.0001 --warmup-steps 5 --max-steps 10 --clip-grad 1 --wd 0.01 --val-check-interval 5"
+      description_zh: "mini 数据短步数训练冒烟测试。按硬件情况调整 model-size、devices、seq-length 和 max-steps。"
+  finetune: []
+  evaluate: []
+  visualize: []
+  deploy: []
+
+expected_outputs:
+  - id: preflight_ok
+    path: stdout
+    description_zh: "预检成功时输出 [OK] Evo2 model package..."
+    produced_by: commands.preflight.model_preflight
+  - id: prompt_output
+    path: outputs/evo2_prompt.txt
+    description_zh: "prompt 生成结果。"
+    produced_by: commands.inference.prompt_generation
+  - id: prediction_output
+    path: outputs/evo2_predict/
+    description_zh: "FASTA 预测输出目录，包含预测结果和 seq_idx_map 等文件。"
+    produced_by: commands.inference.fasta_prediction
+  - id: train_logs
+    path: outputs/evo2_train/
+    description_zh: "训练日志、Lightning 日志或 checkpoint 输出，具体路径可能受 NeMo logger 配置影响。"
+    produced_by: commands.train.train_mini
+
+diagnostics:
+  - id: missing_dataset
+    symptom: "preflight reports missing dataset file"
+    likely_cause_zh: "未下载 OneScience/evo2_dataset，或 data_mini 未放到 data/evo2_dataset/data_mini。"
+    fix_zh: "运行 modelscope download --dataset OneScience/evo2_dataset 后，将 data_mini 放到模型包 data/evo2_dataset/data_mini，或用 --data-root 指定实际 genome_data 路径。"
+  - id: repo_id_mismatch
+    symptom: "download command points to another repo_id"
+    likely_cause_zh: "README 或 Manifest 被改成了非上传目标 ID。"
+    fix_zh: "模型 ID 必须保持 OneScience/evo2/，数据集 ID 必须保持 OneScience/evo2_dataset。"
+  - id: gpu_unavailable
+    symptom: "torch.cuda.device_count is 0 or model parallel size error"
+    likely_cause_zh: "当前环境没有可用 GPU，或 tensor/pipeline/context 并行乘积超过 GPU 数。"
+    fix_zh: "换到 GPU 节点运行，或降低并行参数。"
+  - id: checkpoint_hash_mismatch
+    symptom: "sha256 mismatch for checkpoint file"
+    likely_cause_zh: "权重文件损坏、复制不完整或上传下载中断。"
+    fix_zh: "重新下载 OneScience/evo2/，并重新运行预检。"
+  - id: nemo_import_error
+    symptom: "ModuleNotFoundError for nemo, megatron, onescience or bionemo"
+    likely_cause_zh: "OneScience bio 依赖环境未激活。"
+    fix_zh: "进入 OneScience 环境并安装 bio 依赖，或按 README 的环境安装章节执行。"
+
+configuration_adaptation:
+  - file: config/opengenome2.yml
+    reason_zh: "原始配置面向全量 OpenGenome2 训练数据，当前 ModelScope 数据集仅包含 chr20/chr21/chr22 mini 数据，因此整理后的模型包必须改为 mini 数据路径。"
+    changes:
+      - yaml_path: train-data-paths
+        original_value_summary: "47 个 /datasets/evo2/... 全量训练前缀，覆盖 metagenomics、gtdb_imgpr、imgvr、hg38、ncrna、mrna_splice、promoters 和 eukaryote_ncbi 多批次数据。"
+        current_value:
+          - data/evo2_dataset/data_mini/genome_data/preprocessed_data/chr20_21_22_uint8_distinct_byte-level_train
+      - yaml_path: valid-data-paths
+        original_value_summary: "46 个 /datasets/evo2/... 全量验证前缀。"
+        current_value:
+          - data/evo2_dataset/data_mini/genome_data/preprocessed_data/chr20_21_22_uint8_distinct_byte-level_val
+      - yaml_path: test-data-paths
+        original_value_summary: "46 个 /datasets/evo2/... 全量测试前缀。"
+        current_value:
+          - data/evo2_dataset/data_mini/genome_data/preprocessed_data/chr20_21_22_uint8_distinct_byte-level_test
+      - yaml_path: train-data-weights
+        original_value_summary: "与全量训练前缀一一对应的多源采样权重。"
+        current_value:
+          - 1.0
+      - yaml_path: valid-data-weights
+        original_value_summary: "与全量验证前缀一一对应的多源采样权重。"
+        current_value:
+          - 1.0
+      - yaml_path: test-data-weights
+        original_value_summary: "与全量测试前缀一一对应的多源采样权重。"
+        current_value:
+          - 1.0
+
+domain_extension:
+  bio:
+    organism_scope_zh: "人类 chr20、chr21、chr22 mini 基因组样例和对应预处理 split。"
+    sequence_alphabet: "DNA byte-level tokenizer"
+    model_architecture: "StripedHyena 2 / Hyena 7B NeMo2"
+    max_context_length: 8192
+    dataset_adapter: "config/genome_data_config.yaml"

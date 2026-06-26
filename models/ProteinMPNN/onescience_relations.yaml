@@ -1,0 +1,24 @@
+resource:
+  id: OneScience/ProteinMPNN
+  repo_type: model
+relations:
+  required_datasets:
+    - id: OneScience/proteinmpnn
+      purpose: training_and_evaluation_data
+      required_for:
+        - training
+        - evaluation
+        - reproducibility
+      optional_for:
+        - minimal_validation
+        - inference
+      resource_ref:
+        platform: modelscope
+        repo_id: OneScience/proteinmpnn
+        repo_type: dataset
+        url: https://modelscope.cn/datasets/OneScience/proteinmpnn
+        revision: master
+        readme_path: README.md
+        manifest_path: manifest.yaml
+  compatible_models: []
+notes_zh: 最小推理使用模型仓库内置 PDB 示例；训练和评测需要下载数据集 OneScience/proteinmpnn。

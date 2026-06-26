@@ -1,0 +1,427 @@
+onescience_manifest_version: "0.1"
+resource_type: model
+
+resource:
+  id: OneScience/BENO
+  name: BENO
+  domain: cfd
+  domain_tags:
+    - cfd
+    - elliptic_pde
+    - neural_operator
+  task: elliptic_pde_surrogate
+  task_tags:
+    - train
+    - inference
+    - evaluation
+    - visualization
+  modalities:
+    - gridded_field
+    - boundary_condition
+    - heterogeneous_graph
+  input_formats:
+    - npy
+  output_formats:
+    - pt
+    - png
+  summary: BENO 边界嵌入神经算子标准运行包，用于含复杂边界形状和非均匀边界值的椭圆 PDE 求解。
+
+platform_resource:
+  primary:
+    platform: modelscope
+    repo_id: OneScience/BENO
+    repo_type: model
+    url: https://modelscope.cn/models/OneScience/BENO
+    revision: main
+    readme_path: README.md
+    manifest_path: onescience_run_manifest.yaml
+  mirrors: []
+  access:
+    visibility: public
+    license: unknown
+
+website_integration:
+  enabled: true
+  click_target:
+    platform: modelscope
+    resource_url: https://modelscope.cn/models/OneScience/BENO
+  llm_handoff:
+    readme_required: true
+    manifest_required: true
+    download_readme_first: true
+    resolve_related_datasets: true
+    default_run_goal: minimal_validation
+    cwd_note: 如果使用 modelscope download --cache_dir 下载模型，请先 cd 到实际下载后的模型包根目录再执行 commands 中的命令。
+
+runtime:
+  enabled: true
+  onescience_domain: cfd
+  min_onescience_version: null
+  supported_execution:
+    - local_cpu_preflight
+    - local_gpu_training
+    - distributed_gpu_training
+    - local_gpu_inference
+  environment:
+    required_env:
+      ONESCIENCE_BENO_DATA_DIR: 指向 OneScience/beno 数据集仓库中的 data 目录。
+    optional_env:
+      MODELSCOPE_CACHE: ModelScope 下载缓存目录。
+  dependencies:
+    python: ">=3.10"
+    python_packages:
+      - onescience
+      - torch
+      - torch_geometric
+      - torchvision
+      - numpy
+      - matplotlib
+      - tqdm
+      - omegaconf
+      - pyyaml
+
+onescience:
+  repo: https://gitee.com/onescience-ai/onescience
+  official_links:
+    gitee:
+      doc: https://gitee.com/onescience-ai/onescience-doc
+      onescience: https://gitee.com/onescience-ai/onescience
+      skills: https://gitee.com/onescience-ai/oneskills
+    github:
+      doc: https://github.com/onescience-ai/OneScience-doc
+      onescience: https://github.com/onescience-ai/OneScience
+      skills: https://github.com/onescience-ai/oneskills
+  install:
+    required_by_default: true
+    command: bash install.sh cfd
+  source_paths:
+    - onescience/src/onescience/models/beno
+    - onescience/src/onescience/datapipes/cfd/beno.py
+  compatibility:
+    examples_path: onescience/examples/cfd/BENO
+    status: examples_compatible
+  config_loader: onescience.utils.YParams
+  datapipe: onescience.datapipes.cfd.BENODatapipe
+  model_classes:
+    - onescience.models.beno.BE_MPNN.HeteroGNS
+
+runtime_package:
+  kind: standard_runtime_package
+  package_root: .
+  standard_layout:
+    workdir: .
+    config_dir: conf
+    checkpoint_dir: model
+    data_dir: external
+    output_dir: picture
+  apply_policy:
+    mode: direct_use
+    target: session_workdir
+    overwrite: true
+    protect_installed_onescience: true
+  entry_files:
+    - train.py
+    - inference.py
+    - conf/beno.yaml
+    - scripts/preflight_check.py
+  entrypoints:
+    preflight: scripts/preflight_check.py
+    inference: inference.py
+    train: train.py
+    finetune: null
+    evaluate: inference.py
+    visualize: inference.py
+    deploy: null
+
+files:
+  model_files:
+    - path: train.py
+      role: training_entry
+      description_zh: BENO 单卡或分布式训练入口，读取 conf/beno.yaml 和 OneScience/beno 数据集。
+      required: true
+      required_for: [train]
+      source:
+        platform: modelscope
+        repo_id: OneScience/BENO
+        repo_type: model
+        download_method: command_ref
+        command_ref: commands.download.download_model
+      local_path: train.py
+    - path: inference.py
+      role: inference_evaluate_visualize_entry
+      description_zh: BENO 推理、误差统计和图片生成入口；如果没有 checkpoint，会以随机权重运行并给出警告。
+      required: true
+      required_for: [inference, evaluate, visualize]
+      source:
+        platform: modelscope
+        repo_id: OneScience/BENO
+        repo_type: model
+        download_method: command_ref
+        command_ref: commands.download.download_model
+      local_path: inference.py
+  dataset_files: []
+  config_files:
+    - path: conf/beno.yaml
+      role: model_datapipe_training_config
+      description_zh: 训练、推理和数据管道配置；已适配为通过 ONESCIENCE_BENO_DATA_DIR 读取数据集。
+      required: true
+      required_for: [preflight, train, inference, evaluate]
+      source:
+        platform: modelscope
+        repo_id: OneScience/BENO
+        repo_type: model
+        download_method: command_ref
+        command_ref: commands.download.download_model
+      local_path: conf/beno.yaml
+  sample_files:
+    - path: scripts/preflight_check.py
+      role: preflight
+      description_zh: 模型运行前检查脚本，验证配置、数据路径、必需 NPY 文件、shape、dtype 和缓存目录。
+      required: true
+      required_for: [preflight]
+      source:
+        platform: modelscope
+        repo_id: OneScience/BENO
+        repo_type: model
+        download_method: command_ref
+        command_ref: commands.download.download_model
+      local_path: scripts/preflight_check.py
+    - path: slurm.sh
+      role: cluster_example
+      description_zh: Slurm 训练示例脚本。
+      required: false
+      required_for: [train]
+      source:
+        platform: modelscope
+        repo_id: OneScience/BENO
+        repo_type: model
+        download_method: command_ref
+        command_ref: commands.download.download_model
+      local_path: slurm.sh
+    - path: run_beno.ipynb
+      role: notebook_example
+      description_zh: BENO notebook 示例。
+      required: false
+      required_for: [train, inference]
+      source:
+        platform: modelscope
+        repo_id: OneScience/BENO
+        repo_type: model
+        download_method: command_ref
+        command_ref: commands.download.download_model
+      local_path: run_beno.ipynb
+
+relations:
+  required_datasets:
+    - id: OneScience/beno
+      role: train_data
+      required_for: [preflight, train, inference, evaluate, visualize]
+      resource_ref:
+        platform: modelscope
+        repo_id: OneScience/beno
+        repo_type: dataset
+        url: https://modelscope.cn/datasets/OneScience/beno
+        revision: main
+        readme_path: README.md
+        manifest_path: onescience_run_manifest.yaml
+      local_path: data
+      expected_env: ONESCIENCE_BENO_DATA_DIR
+  optional_datasets: []
+  compatible_models: []
+
+configuration_adaptation:
+  - file: conf/beno.yaml
+    yaml_path: beno_config.datapipe.source.data_dir
+    original_value: ${ONESCIENCE_DATASETS_DIR}/BENO/data/Dirichlet/
+    current_value: ${ONESCIENCE_BENO_DATA_DIR}/Dirichlet/
+    reason: 模型与数据集分仓上传后，网页端或用户下载 OneScience/beno 数据集，再通过 ONESCIENCE_BENO_DATA_DIR 指向数据集仓库的 data 目录。
+  - file: conf/beno.yaml
+    yaml_path: beno_config.datapipe.source.file_prefix
+    original_value: N32_4c
+    current_value: N32_4c
+    reason: 当前数据集包含 Dirichlet/N32_4c 所需的 RHS、SOL、BC 文件，且 1000 个样本满足 ntrain=900、ntest=100，无需裁剪。
+  - file: conf/beno.yaml
+    yaml_path: beno_config.datapipe.data.ntrain
+    original_value: 900
+    current_value: 900
+    reason: 当前数据文件每个子集均为 1000 个样本，训练切分与原始配置匹配。
+  - file: conf/beno.yaml
+    yaml_path: beno_config.datapipe.data.ntest
+    original_value: 100
+    current_value: 100
+    reason: 当前数据文件每个子集均为 1000 个样本，测试切分与原始配置匹配。
+
+run_matrix:
+  scenarios:
+    - name: preflight_beno_dirichlet_n32_4c
+      capability: preflight
+      default: true
+      required_datasets:
+        - id: OneScience/beno
+          role: train_data
+          local_path: data
+      required_model_files:
+        - conf/beno.yaml
+        - scripts/preflight_check.py
+      required_dataset_files:
+        - data/Dirichlet/RHS_N32_4c_all.npy
+        - data/Dirichlet/SOL_N32_4c_all.npy
+        - data/Dirichlet/BC_N32_4c_all.npy
+      preconditions:
+        - 已下载 OneScience/beno 数据集。
+        - ONESCIENCE_BENO_DATA_DIR 指向数据集仓库的 data 目录。
+      command_refs:
+        - commands.preflight.model_preflight
+      outputs:
+        - 控制台输出 [OK] model preflight completed
+    - name: train_dirichlet_n32_4c
+      capability: train
+      default: true
+      required_datasets:
+        - id: OneScience/beno
+          role: train_data
+          local_path: data
+      required_model_files:
+        - train.py
+        - conf/beno.yaml
+      required_dataset_files:
+        - data/Dirichlet/RHS_N32_4c_all.npy
+        - data/Dirichlet/SOL_N32_4c_all.npy
+        - data/Dirichlet/BC_N32_4c_all.npy
+      preconditions:
+        - 通过 model_preflight。
+        - 已安装 OneScience CFD 依赖、PyTorch 和 PyG。
+      command_refs:
+        - commands.train.train_single_gpu
+      outputs:
+        - model/model_epoch_*.pt
+        - cache_data/cached_N32_4c_train_900.pt
+        - cache_data/cached_N32_4c_test_100.pt
+    - name: inference_after_training
+      capability: inference
+      default: true
+      required_datasets:
+        - id: OneScience/beno
+          role: inference_input
+          local_path: data
+      required_model_files:
+        - inference.py
+        - conf/beno.yaml
+        - model/model_epoch_*.pt
+      required_dataset_files:
+        - data/Dirichlet/RHS_N32_4c_all.npy
+        - data/Dirichlet/SOL_N32_4c_all.npy
+        - data/Dirichlet/BC_N32_4c_all.npy
+      preconditions:
+        - 通过 model_preflight。
+        - 推荐先运行 train_dirichlet_n32_4c 生成 checkpoint；没有 checkpoint 时 inference.py 会以随机权重运行。
+      command_refs:
+        - commands.inference.run_inference
+      outputs:
+        - picture/forcing_solution_comparison.png
+
+capabilities:
+  preflight: true
+  inference: true
+  train: true
+  finetune: false
+  evaluate: true
+  visualize: true
+  deploy: false
+  distributed_training: true
+
+commands:
+  download:
+    - name: download_model
+      command: modelscope download --model OneScience/BENO
+      cwd: session_workdir
+    - name: download_dataset
+      command: modelscope download --dataset OneScience/beno
+      cwd: session_workdir
+  prepare:
+    - name: set_dataset_env
+      command: export ONESCIENCE_BENO_DATA_DIR=/path/to/OneScience_beno/data
+      cwd: .
+  preflight:
+    - name: model_preflight
+      command: python scripts/preflight_check.py
+      cwd: .
+  train:
+    - name: train_single_gpu
+      command: python train.py
+      cwd: .
+    - name: train_multi_gpu_mpirun
+      command: mpirun -np <num_GPUs> --allow-run-as-root python train.py
+      cwd: .
+    - name: train_multi_gpu_torchrun
+      command: torchrun --standalone --nnodes=<num_nodes> --nproc_per_node=<num_GPUs> train.py
+      cwd: .
+  inference:
+    - name: run_inference
+      command: python inference.py
+      cwd: .
+  finetune: []
+  evaluate:
+    - name: run_evaluation
+      command: python inference.py
+      cwd: .
+  visualize:
+    - name: run_visualization
+      command: python inference.py
+      cwd: .
+  deploy: []
+
+expected_outputs:
+  - name: model_preflight
+    paths: []
+    success_criteria:
+      - 控制台输出 [OK] model preflight completed
+  - name: training
+    paths:
+      - model/model_epoch_*.pt
+      - cache_data/cached_N32_4c_train_900.pt
+      - cache_data/cached_N32_4c_test_100.pt
+    success_criteria:
+      - 控制台输出 Epoch 指标并周期性保存 checkpoint。
+  - name: inference
+    paths:
+      - picture/forcing_solution_comparison.png
+    success_criteria:
+      - 控制台输出 Mean L2 Loss 和 Mean MAE。
+
+diagnostics:
+  - name: missing_dataset_env
+    symptom: ONESCIENCE_BENO_DATA_DIR is not set
+    action: 下载 OneScience/beno 后，将 ONESCIENCE_BENO_DATA_DIR 设置为数据集仓库中的 data 目录。
+  - name: missing_npy
+    symptom: Data file not found 或 missing required data file
+    action: 确认 ONESCIENCE_BENO_DATA_DIR 指向 data 目录，且 data/Dirichlet 下存在 RHS/SOL/BC_N32_4c_all.npy。
+  - name: missing_dependency
+    symptom: ModuleNotFoundError
+    action: 安装 OneScience CFD 环境，并确认 torch、torch_geometric、torchvision、omegaconf 可导入。
+  - name: missing_checkpoint
+    symptom: No checkpoints found. Running with random weights.
+    action: 先运行 python train.py 生成 model/model_epoch_*.pt，或放入兼容 checkpoint。
+  - name: cache_not_writable
+    symptom: cache_dir is not writable
+    action: 检查模型包根目录写权限，或修改 conf/beno.yaml 中的 cache_dir。
+
+domain_extension:
+  cfd:
+    physics: elliptic partial differential equation
+    geometry: square grid with embedded boundary
+    boundary_types:
+      - Dirichlet
+      - Neumann
+    default_boundary_type: Dirichlet
+    default_prefix: N32_4c
+    resolution: 32
+    train_samples: 900
+    test_samples: 100
+    graph_type: heterogeneous_graph
+    input_variables:
+      - boundary_information
+      - source_term
+      - cell_state
+    output_variables:
+      - solution_field

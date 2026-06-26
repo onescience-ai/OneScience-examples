@@ -1,0 +1,406 @@
+onescience_manifest_version: '0.1'
+resource_type: model
+resource:
+  id: OneScience/NEP
+  name: NEP
+  domain: matchem
+  domain_tags:
+  - matchem
+  - nep
+  - matpl
+  - mlip
+  task: neural_evolution_potential_training
+  task_tags:
+  - energy_prediction
+  - force_prediction
+  - virial_prediction
+  - movement
+  modalities:
+  - atomistic_structure
+  input_formats:
+  - json
+  - pwmat_movement
+  - pwmlff_npy
+  output_formats:
+  - nep_model
+  - logs
+  summary: 基于 MatPL 的 NEP Cu 入门训练标准运行包。
+platform_resource:
+  primary:
+    platform: modelscope
+    repo_id: OneScience/NEP
+    repo_type: model
+    url: https://modelscope.cn/models/OneScience/NEP
+    revision: main
+    readme_path: README.md
+    manifest_path: manifest.yaml
+  mirrors: []
+  access:
+    visibility: public
+    license: null
+website_integration:
+  enabled: true
+  click_target:
+    platform: modelscope
+    resource_url: https://modelscope.cn/models/OneScience/NEP
+  llm_handoff:
+    readme_required: true
+    manifest_required: true
+    download_readme_first: true
+    resolve_related_datasets: true
+    default_run_goal: minimal_validation
+runtime:
+  enabled: true
+  onescience_domain: matchem
+  min_onescience_version: null
+  supported_execution:
+  - local
+  - local_slurm
+  - remote_slurm
+  - scnet_mcp
+environment:
+  install_mode: onescience_domain
+  python: '3.11'
+  hardware:
+    cpu: preflight_only
+    gpu: optional
+    dcu: supported
+  extra_dependencies:
+  - numpy
+  - MatPL
+onescience:
+  repo: https://gitee.com/onescience-ai/onescience
+  official_links:
+    gitee:
+      doc: https://gitee.com/onescience-ai/onescience-doc
+      onescience: https://gitee.com/onescience-ai/onescience
+      skills: https://gitee.com/onescience-ai/oneskills
+    github:
+      doc: https://github.com/onescience-ai/OneScience-doc
+      onescience: https://github.com/onescience-ai/OneScience
+      skills: https://github.com/onescience-ai/oneskills
+  install:
+    required_by_default: false
+    command: bash install.sh matchem
+  source_paths:
+  - onescience/examples/matchem/nep
+  compatibility:
+    examples_path: examples/matchem/nep
+    status: examples_compatible
+runtime_package:
+  kind: standard_runtime_package
+  package_root: .
+  standard_layout:
+    workdir: .
+    config_dir: conf
+    checkpoint_dir: null
+    data_dir: data
+    output_dir: outputs
+  apply_policy:
+    mode: direct_use
+    target: session_workdir
+    overwrite: true
+    protect_installed_onescience: true
+  entry_files:
+  - scripts/preflight_nep.py
+  - conf/Cu_nep_train_modelscope.json
+  - upstream/matpl_install.sh
+  - upstream/demo/nep_Cu/submit.sh
+  entrypoints:
+    preflight: scripts/preflight_nep.py
+    inference: null
+    train: conf/Cu_nep_train_modelscope.json
+    finetune: null
+    evaluate: scripts/preflight_nep.py
+    visualize: null
+    deploy: null
+configuration_adaptation:
+  adapted_from: onescience/examples/matchem/nep/demo/nep_Cu/Cu_nep_train.json
+  reason: 原始 NEP Cu 配置使用公共数据目录绝对路径；标准包需要使用 ModelScope 下载后的相对路径。
+  changes:
+  - file: conf/Cu_nep_train_modelscope.json
+    yaml_path: train_data
+    old_value:
+    - /public/share/sugonhpcapp01/onestore/onedatasets/matchem/matpl/Cu/pwdata/0_300_MOVEMENT
+    - /public/share/sugonhpcapp01/onestore/onedatasets/matchem/matpl/Cu/pwdata/1_500_MOVEMENT
+    new_value:
+    - data/MatPL/Cu/pwdata/0_300_MOVEMENT
+    - data/MatPL/Cu/pwdata/1_500_MOVEMENT
+    reason: 匹配 OneScience/MatPL 下载到模型包根目录后的布局。
+  - file: conf/Cu_nep_train_modelscope.json
+    yaml_path: valid_data
+    old_value:
+    - /public/share/sugonhpcapp01/onestore/onedatasets/matchem/matpl/Cu/pwdata/valid_movement
+    new_value:
+    - data/MatPL/Cu/pwdata/valid_movement
+    reason: 匹配 OneScience/MatPL 下载到模型包根目录后的布局。
+files:
+  model_files:
+  - id: preflight_script
+    path: scripts/preflight_nep.py
+    role: script
+    description_zh: NEP 标准包预检脚本。
+    required: true
+    required_for:
+    - preflight
+    format: py
+    source:
+      platform: modelscope
+      repo_id: OneScience/NEP
+      repo_type: model
+      path: scripts/preflight_nep.py
+      revision: main
+      url: null
+      download_method: command_ref
+      command_ref: commands.download.download_model_package
+    mirrors: []
+    local_path: session_workdir/scripts/preflight_nep.py
+    size: null
+    checksum: metadata/sha256_manifest.txt
+    large_file: false
+  - id: adapted_config
+    path: conf/Cu_nep_train_modelscope.json
+    role: config
+    description_zh: ModelScope 下载布局适配后的 NEP Cu 训练配置。
+    required: true
+    required_for:
+    - preflight
+    - train
+    format: json
+    source:
+      platform: modelscope
+      repo_id: OneScience/NEP
+      repo_type: model
+      path: conf/Cu_nep_train_modelscope.json
+      revision: main
+      url: null
+      download_method: command_ref
+      command_ref: commands.download.download_model_package
+    mirrors: []
+    local_path: session_workdir/conf/Cu_nep_train_modelscope.json
+    size: null
+    checksum: metadata/sha256_manifest.txt
+    large_file: false
+  - id: upstream_nep_code
+    path: upstream/
+    role: runtime_code
+    description_zh: NEP 原始示例脚本和配置。
+    required: true
+    required_for:
+    - train
+    format: directory
+    source:
+      platform: modelscope
+      repo_id: OneScience/NEP
+      repo_type: model
+      path: upstream/
+      revision: main
+      url: null
+      download_method: command_ref
+      command_ref: commands.download.download_model_package
+    mirrors: []
+    local_path: session_workdir/upstream/
+    size: null
+    checksum: metadata/sha256_manifest.txt
+    large_file: false
+  dataset_files:
+  - id: matpl_dataset
+    path: data/MatPL/
+    role: training_data
+    description_zh: NEP Cu 入门训练所需 MatPL 数据，来自 OneScience/MatPL。
+    required: true
+    required_for:
+    - preflight
+    - train
+    - evaluate
+    format: pwmat_movement_and_pwmlff_npy
+    source:
+      platform: modelscope
+      repo_id: OneScience/MatPL
+      repo_type: dataset
+      path: data/MatPL/
+      revision: main
+      url: null
+      download_method: command_ref
+      command_ref: commands.download.download_required_dataset
+    mirrors: []
+    local_path: session_workdir/data/MatPL/
+    size: 38M
+    checksum: metadata/sha256_manifest.txt
+    large_file: false
+  config_files:
+  - id: checksum_manifest
+    path: metadata/sha256_manifest.txt
+    role: checksum
+    description_zh: 模型包文件 SHA256 清单。
+    required: true
+    required_for:
+    - preflight
+    format: txt
+    source:
+      platform: modelscope
+      repo_id: OneScience/NEP
+      repo_type: model
+      path: metadata/sha256_manifest.txt
+      revision: main
+      url: null
+      download_method: command_ref
+      command_ref: commands.download.download_model_package
+    mirrors: []
+    local_path: session_workdir/metadata/sha256_manifest.txt
+    size: null
+    checksum: null
+    large_file: false
+  sample_files: []
+relations:
+  required_datasets:
+  - id: OneScience/MatPL
+    role: training_data
+    required_for:
+    - preflight
+    - train
+    - evaluate
+    resource_ref:
+      platform: modelscope
+      repo_id: OneScience/MatPL
+      repo_type: dataset
+      url: https://modelscope.cn/datasets/OneScience/MatPL
+      revision: main
+      readme_path: README.md
+      manifest_path: manifest.yaml
+    local_path: data/MatPL
+  optional_datasets: []
+  compatible_models: []
+run_matrix:
+  scenarios:
+  - name: minimal_validation
+    default: true
+    capability: preflight
+    required_datasets:
+    - id: OneScience/MatPL
+      role: training_data
+      local_path: data/MatPL
+    required_model_files:
+    - scripts/preflight_nep.py
+    - conf/Cu_nep_train_modelscope.json
+    required_data_files:
+    - data/MatPL/Cu/pwdata/0_300_MOVEMENT
+    - data/MatPL/Cu/pwdata/1_500_MOVEMENT
+    - data/MatPL/Cu/pwdata/valid_movement
+    preconditions:
+    - OneScience/MatPL 已下载到模型包根目录 data/MatPL。
+    command_refs:
+    - commands.preflight.check_nep_package
+    outputs:
+    - path: stdout
+      description_zh: 配置和数据路径检查结果。
+capabilities:
+  inference: false
+  train: true
+  finetune: false
+  evaluate: true
+  visualize: false
+  deploy: false
+commands:
+  download:
+  - name: download_model_package
+    target: model
+    repo_id: OneScience/NEP
+    source: .
+    local_path: session_workdir/
+    required: true
+    required_for:
+    - preflight
+    - train
+    cwd: .
+    command: modelscope download --model OneScience/NEP --local_dir session_workdir
+    expected_outputs:
+    - path: session_workdir/manifest.yaml
+      type: file
+    success_criteria:
+    - exit_code == 0
+    - output_path_exists
+  - name: download_required_dataset
+    target: dataset
+    repo_id: OneScience/MatPL
+    source: .
+    local_path: session_workdir/
+    required: true
+    required_for:
+    - preflight
+    - train
+    cwd: .
+    command: modelscope download --dataset OneScience/MatPL --local_dir session_workdir
+    expected_outputs:
+    - path: session_workdir/data/MatPL/Cu/pwdata/0_300_MOVEMENT
+      type: file
+    success_criteria:
+    - exit_code == 0
+    - output_path_exists
+  preflight:
+  - name: check_nep_package
+    description: 检查 NEP 标准包、Cu 配置和 MatPL 数据路径。
+    cwd: .
+    command: python scripts/preflight_nep.py --package-root .
+    required_files:
+    - scripts/preflight_nep.py
+    - conf/Cu_nep_train_modelscope.json
+    - data/MatPL/Cu/pwdata/0_300_MOVEMENT
+    - data/MatPL/Cu/pwdata/1_500_MOVEMENT
+    - data/MatPL/Cu/pwdata/valid_movement
+    required_env:
+    - python
+    expected_outputs:
+    - path: stdout
+      type: text
+    success_criteria:
+    - exit_code == 0
+  prepare: []
+  inference: []
+  train:
+  - name: train_cu
+    description: 使用 MatPL 训练 NEP Cu 入门配置。
+    cwd: .
+    command: MatPL train conf/Cu_nep_train_modelscope.json
+    required_files:
+    - conf/Cu_nep_train_modelscope.json
+    - data/MatPL/Cu/pwdata/0_300_MOVEMENT
+    - data/MatPL/Cu/pwdata/valid_movement
+    required_env:
+    - MatPL
+    expected_outputs:
+    - path: stdout
+      type: text
+    success_criteria:
+    - exit_code == 0
+  finetune: []
+  evaluate: []
+  visualize: []
+  deploy: []
+expected_outputs:
+- path: stdout
+  type: text
+  description_zh: 预检输出 NEP 配置和 MatPL 数据路径 OK。
+diagnostics:
+- error_pattern: missing file
+  likely_cause: MatPL 数据集未下载或没有放到 data/MatPL。
+  action: 执行 modelscope download --dataset OneScience/MatPL --local_dir session_workdir。
+- error_pattern: 'MatPL: command not found'
+  likely_cause: MatPL 未安装或环境未加载。
+  action: 执行 bash install.sh matchem 后进入 upstream 运行 bash matpl_install.sh。
+domain_extension:
+  matchem:
+    model_family: NEP
+    dataset_family: MatPL
+    default_case: Cu
+    data_format:
+    - pwmat/movement
+    - pwmlff/npy
+    - extxyz
+reproducibility:
+  level: minimal
+  goal: 完成 NEP Cu 配置和 MatPL 数据路径预检。
+  command_ref: commands.preflight.check_nep_package
+  expected_runtime: 1 minute
+  expected_outputs:
+  - stdout

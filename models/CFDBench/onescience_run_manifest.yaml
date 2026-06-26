@@ -1,0 +1,361 @@
+onescience_manifest_version: "0.1"
+resource_type: model
+
+resource:
+  id: OneScience/CFDBench
+  name: CFDBench
+  domain: cfd
+  domain_tags: [cfd, fluid_dynamics, benchmark, surrogate_model]
+  task: cfd_surrogate_benchmark
+  task_tags: [train, inference, evaluation, autoregressive, static]
+  modalities: [gridded_field, velocity_field, case_parameters]
+  input_formats: [npy, json]
+  output_formats: [pt, json, png]
+  summary: CFDBench 标准运行包，提供自回归和非自回归 CFD 替代模型训练、推理和评测入口。
+
+platform_resource:
+  primary:
+    platform: modelscope
+    repo_id: OneScience/CFDBench
+    repo_type: model
+    url: https://modelscope.cn/models/OneScience/CFDBench
+    revision: main
+    readme_path: README.md
+    manifest_path: onescience_run_manifest.yaml
+  mirrors: []
+  access:
+    visibility: public
+    license: unknown
+
+website_integration:
+  enabled: true
+  click_target:
+    platform: modelscope
+    resource_url: https://modelscope.cn/models/OneScience/CFDBench
+  llm_handoff:
+    readme_required: true
+    manifest_required: true
+    download_readme_first: true
+    resolve_related_datasets: true
+    default_run_goal: minimal_validation
+    cwd_note: 如果使用 modelscope download --cache_dir 下载模型，请先 cd 到实际下载后的模型包根目录再执行 commands 中的命令。
+
+runtime:
+  enabled: true
+  onescience_domain: cfd
+  min_onescience_version: null
+  supported_execution: [local_cpu_preflight, local_gpu_training, distributed_gpu_training, local_gpu_inference]
+  environment:
+    required_env:
+      ONESCIENCE_CFDBENCH_DATA_DIR: 指向 OneScience/cfdbench 数据集仓库中的 data 目录。
+    optional_env:
+      MODELSCOPE_CACHE: ModelScope 下载缓存目录。
+  dependencies:
+    python: ">=3.10"
+    python_packages: [onescience, torch, numpy, matplotlib, tqdm, pyyaml]
+
+onescience:
+  repo: https://gitee.com/onescience-ai/onescience
+  official_links:
+    gitee:
+      doc: https://gitee.com/onescience-ai/onescience-doc
+      onescience: https://gitee.com/onescience-ai/onescience
+      skills: https://gitee.com/onescience-ai/oneskills
+    github:
+      doc: https://github.com/onescience-ai/OneScience-doc
+      onescience: https://github.com/onescience-ai/OneScience
+      skills: https://github.com/onescience-ai/oneskills
+  install:
+    required_by_default: true
+    command: bash install.sh cfd
+  source_paths:
+    - onescience/src/onescience/datapipes/cfd/cfdbench.py
+    - onescience/src/onescience/models/cfdbench
+    - onescience/src/onescience/utils/cfdbench
+  compatibility:
+    examples_path: onescience/examples/cfd/CFDBench
+    status: examples_compatible
+  config_loader: onescience.utils.YParams
+  datapipe: onescience.datapipes.cfd.CFDBenchDatapipe
+  model_classes:
+    - onescience.models.cfdbench.deeponet.DeepONet
+    - onescience.models.cfdbench.ffn.FfnModel
+    - onescience.models.cfdbench.fno
+    - onescience.models.cfdbench.resnet
+    - onescience.models.cfdbench.unet
+
+runtime_package:
+  kind: standard_runtime_package
+  package_root: .
+  standard_layout:
+    workdir: .
+    config_dir: conf
+    checkpoint_dir: result
+    data_dir: external
+    output_dir: result
+  apply_policy:
+    mode: direct_use
+    target: session_workdir
+    overwrite: true
+    protect_installed_onescience: true
+  entry_files:
+    - train.py
+    - train_auto.py
+    - conf/cfdbench.yaml
+    - scripts/preflight_check.py
+  entrypoints:
+    preflight: scripts/preflight_check.py
+    inference: train_auto.py
+    train: train_auto.py
+    finetune: null
+    evaluate: train_auto.py
+    visualize: train_auto.py
+    deploy: null
+
+files:
+  model_files:
+    - path: train_auto.py
+      role: autoregressive_training_inference_entry
+      description_zh: 自回归 CFDBench 训练、测试、评测和可视化入口，默认配合 FNO 和 tube_prop_bc_geo。
+      required: true
+      required_for: [train, inference, evaluate, visualize]
+      source: {platform: modelscope, repo_id: OneScience/CFDBench, repo_type: model, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: train_auto.py
+    - path: train.py
+      role: static_training_inference_entry
+      description_zh: 非自回归 DeepONet/FFN 训练和测试入口。
+      required: true
+      required_for: [train, evaluate]
+      source: {platform: modelscope, repo_id: OneScience/CFDBench, repo_type: model, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: train.py
+  dataset_files: []
+  config_files:
+    - path: conf/cfdbench.yaml
+      role: model_datapipe_training_config
+      description_zh: CFDBench 数据、模型和训练配置；已适配为通过 ONESCIENCE_CFDBENCH_DATA_DIR 读取数据集，默认使用 tube_prop_bc_geo + auto + fno。
+      required: true
+      required_for: [preflight, train, inference, evaluate]
+      source: {platform: modelscope, repo_id: OneScience/CFDBench, repo_type: model, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: conf/cfdbench.yaml
+  sample_files:
+    - path: scripts/preflight_check.py
+      role: preflight
+      description_zh: 运行前检查脚本，验证配置、数据路径、tube_prop_bc_geo 数据文件、case schema、数组 shape/dtype 和输出目录。
+      required: true
+      required_for: [preflight]
+      source: {platform: modelscope, repo_id: OneScience/CFDBench, repo_type: model, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: scripts/preflight_check.py
+    - path: slurm.sh
+      role: cluster_example
+      description_zh: Slurm 多卡训练示例脚本。
+      required: false
+      required_for: [train]
+      source: {platform: modelscope, repo_id: OneScience/CFDBench, repo_type: model, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: slurm.sh
+    - path: run_cfdbench.ipynb
+      role: notebook_example
+      description_zh: CFDBench notebook 示例。
+      required: false
+      required_for: [train, inference]
+      source: {platform: modelscope, repo_id: OneScience/CFDBench, repo_type: model, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: run_cfdbench.ipynb
+
+relations:
+  required_datasets:
+    - id: OneScience/cfdbench
+      role: train_data
+      required_for: [preflight, train, inference, evaluate, visualize]
+      resource_ref:
+        platform: modelscope
+        repo_id: OneScience/cfdbench
+        repo_type: dataset
+        url: https://modelscope.cn/datasets/OneScience/cfdbench
+        revision: main
+        readme_path: README.md
+        manifest_path: onescience_run_manifest.yaml
+      local_path: data
+      expected_env: ONESCIENCE_CFDBENCH_DATA_DIR
+  optional_datasets: []
+  compatible_models: []
+
+configuration_adaptation:
+  - file: conf/cfdbench.yaml
+    yaml_path: root.datapipe.source.data_dir
+    original_value: ${ONESCIENCE_DATASETS_DIR}/CFDBench/
+    current_value: ${ONESCIENCE_CFDBENCH_DATA_DIR}
+    reason: 模型与数据集分仓上传后，网页端或用户下载 OneScience/cfdbench 数据集，再通过 ONESCIENCE_CFDBENCH_DATA_DIR 指向数据集仓库的 data 目录。
+  - file: conf/cfdbench.yaml
+    yaml_path: root.datapipe.source.data_name
+    original_value: tube_prop_bc_geo
+    current_value: tube_prop_bc_geo
+    reason: 当前数据集包含 tube/prop、tube/bc、tube/geo 三个子集，默认场景与数据匹配。
+  - file: conf/cfdbench.yaml
+    yaml_path: root.datapipe.data.task_type
+    original_value: auto
+    current_value: auto
+    reason: 默认运行入口 train_auto.py 会强制使用自回归任务，配置与入口保持一致。
+  - file: conf/cfdbench.yaml
+    yaml_path: root.model.name
+    original_value: deeponet
+    current_value: fno
+    reason: 原 README 的自回归示例使用 FNO；默认入口 train_auto.py 适合自回归模型，改为 fno 避免 deeponet 与 auto 入口不匹配。
+
+run_matrix:
+  scenarios:
+    - name: preflight_tube_prop_bc_geo
+      capability: preflight
+      default: true
+      required_datasets:
+        - id: OneScience/cfdbench
+          role: train_data
+          local_path: data
+      required_model_files: [conf/cfdbench.yaml, scripts/preflight_check.py]
+      required_dataset_files:
+        - data/tube/prop/case*/case.json
+        - data/tube/prop/case*/u.npy
+        - data/tube/prop/case*/v.npy
+        - data/tube/bc/case*/case.json
+        - data/tube/geo/case*/case.json
+      preconditions:
+        - 已下载 OneScience/cfdbench 数据集。
+        - ONESCIENCE_CFDBENCH_DATA_DIR 指向数据集仓库的 data 目录。
+      command_refs: [commands.preflight.model_preflight]
+      outputs:
+        - "控制台输出 [OK] model preflight completed"
+    - name: train_auto_fno_tube_prop_bc_geo
+      capability: train
+      default: true
+      required_datasets:
+        - id: OneScience/cfdbench
+          role: train_data
+          local_path: data
+      required_model_files: [train_auto.py, conf/cfdbench.yaml]
+      required_dataset_files:
+        - data/tube/prop/case*/u.npy
+        - data/tube/prop/case*/v.npy
+        - data/tube/bc/case*/u.npy
+        - data/tube/geo/case*/u.npy
+      preconditions:
+        - 通过 model_preflight。
+        - 已安装 OneScience CFD 运行环境和 PyTorch。
+      command_refs: [commands.train.train_auto_single_gpu]
+      outputs:
+        - result/**/ckpt-*/model.pt
+        - result/**/train_losses.json
+    - name: test_auto_fno_tube_prop_bc_geo
+      capability: inference
+      default: true
+      required_datasets:
+        - id: OneScience/cfdbench
+          role: inference_input
+          local_path: data
+      required_model_files: [train_auto.py, conf/cfdbench.yaml, result/**/ckpt-*/model.pt]
+      required_dataset_files:
+        - data/tube/prop/case*/u.npy
+        - data/tube/bc/case*/u.npy
+        - data/tube/geo/case*/u.npy
+      preconditions:
+        - 通过 model_preflight。
+        - 推荐先运行训练生成 checkpoint；若无 checkpoint，脚本会用当前权重测试并给出警告。
+      command_refs: [commands.inference.run_auto_test]
+      outputs:
+        - result/**/test/scores.json
+        - result/**/test/preds.pt
+        - result/**/test/images/*.png
+
+capabilities:
+  preflight: true
+  inference: true
+  train: true
+  finetune: false
+  evaluate: true
+  visualize: true
+  deploy: false
+  distributed_training: true
+
+commands:
+  download:
+    - name: download_model
+      command: modelscope download --model OneScience/CFDBench
+      cwd: session_workdir
+    - name: download_dataset
+      command: modelscope download --dataset OneScience/cfdbench
+      cwd: session_workdir
+  prepare:
+    - name: set_dataset_env
+      command: export ONESCIENCE_CFDBENCH_DATA_DIR=/path/to/OneScience_cfdbench/data
+      cwd: .
+  preflight:
+    - name: model_preflight
+      command: python scripts/preflight_check.py
+      cwd: .
+  train:
+    - name: train_auto_single_gpu
+      command: python train_auto.py
+      cwd: .
+    - name: train_auto_multi_gpu_mpirun
+      command: mpirun -np <num_GPUs> --allow-run-as-root python train_auto.py
+      cwd: .
+    - name: train_auto_multi_gpu_torchrun
+      command: torchrun --standalone --nnodes=<num_nodes> --nproc_per_node=<num_GPUs> train_auto.py
+      cwd: .
+    - name: train_static_single_gpu
+      command: python train.py
+      cwd: .
+  inference:
+    - name: run_auto_test
+      command: python train_auto.py
+      cwd: .
+  finetune: []
+  evaluate:
+    - name: run_auto_evaluation
+      command: python train_auto.py
+      cwd: .
+  visualize:
+    - name: run_auto_visualization
+      command: python train_auto.py
+      cwd: .
+  deploy: []
+
+expected_outputs:
+  - name: model_preflight
+    paths: []
+    success_criteria:
+      - "控制台输出 [OK] model preflight completed"
+  - name: training
+    paths: [result/**/ckpt-*/model.pt, result/**/train_losses.json, result/**/train_losses.png]
+    success_criteria:
+      - 训练日志输出 epoch/step loss，评估周期生成 checkpoint
+  - name: inference_evaluation_visualization
+    paths: [result/**/test/scores.json, result/**/test/preds.pt, result/**/test/images/*.png]
+    success_criteria:
+      - 测试阶段输出 Prediction nmse 等指标
+
+diagnostics:
+  - name: missing_dataset_env
+    symptom: ONESCIENCE_CFDBENCH_DATA_DIR is not set
+    action: 下载 OneScience/cfdbench 后，将 ONESCIENCE_CFDBENCH_DATA_DIR 设置为数据集仓库中的 data 目录。
+  - name: missing_case_files
+    symptom: missing required file 或 No cases found
+    action: 确认数据集中存在 tube/prop、tube/bc、tube/geo 的 case*/case.json、u.npy、v.npy。
+  - name: missing_dependency
+    symptom: ModuleNotFoundError
+    action: 安装 OneScience CFD 环境，并确认 torch、numpy、matplotlib、tqdm 可导入。
+  - name: checkpoint_warning
+    symptom: Could not load best checkpoint
+    action: 先运行训练生成 result/**/ckpt-*/model.pt，或放入兼容 checkpoint。
+  - name: memory_or_runtime_large
+    symptom: 训练加载或显存不足
+    action: 降低 batch_size/eval_batch_size，或先切换到较小子集做验证。
+
+domain_extension:
+  cfd:
+    benchmark: CFDBench
+    problems: [cavity, tube, dam, cylinder]
+    subsets: [bc, geo, prop]
+    default_data_name: tube_prop_bc_geo
+    default_task_type: auto
+    default_model: fno
+    grid_resolution: 64x64
+    variables: [u_velocity, v_velocity]
+    case_metadata: case.json

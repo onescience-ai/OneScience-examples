@@ -1,0 +1,559 @@
+onescience_manifest_version: "0.1"
+resource_type: model
+resource:
+  id: OneScience/Transolver-Airfoil-Design
+  name: Transolver-Airfoil-Design
+  domain: cfd
+  domain_tags:
+    - cfd
+    - airfoil
+    - surrogate_modeling
+  task: airfoil_design_surrogate
+  task_tags:
+    - airfoil_design
+    - flow_field_prediction
+    - cfd_surrogate
+  modalities:
+    - unstructured_mesh
+    - vtk
+  input_formats:
+    - vtu
+    - vtp
+  output_formats:
+    - pth
+    - json
+    - vtu
+    - vtp
+  summary: Transolver/Transolver++ 二维翼型 CFD 代理模型标准运行包。
+
+platform_resource:
+  primary:
+    platform: modelscope
+    repo_id: OneScience/Transolver-Airfoil-Design
+    repo_type: model
+    url: https://modelscope.cn/models/OneScience/Transolver-Airfoil-Design
+    revision: main
+    readme_path: README.md
+    manifest_path: onescience_run_manifest.yaml
+  mirrors: []
+  access:
+    visibility: public
+    license: unknown
+
+website_integration:
+  enabled: true
+  click_target:
+    platform: modelscope
+    resource_url: https://modelscope.cn/models/OneScience/Transolver-Airfoil-Design
+  llm_handoff:
+    readme_required: true
+    manifest_required: true
+    download_readme_first: true
+    resolve_related_datasets: true
+    default_run_goal: minimal_validation
+    cwd_note: 如果使用 modelscope download --cache_dir 下载，请先 cd 到实际下载后的模型包根目录再执行 commands 中的命令。
+
+runtime:
+  enabled: true
+  onescience_domain: cfd
+  min_onescience_version: null
+  supported_execution:
+    - local
+    - local_slurm
+    - remote_slurm
+    - scnet_mcp
+  environment:
+    required_env:
+      ONESCIENCE_AIRFRANS_DATA_DIR: 指向 OneScience/airfrans 数据集仓库中的 data/Dataset 目录。
+    optional_env:
+      MODELSCOPE_CACHE: ModelScope 下载缓存目录。
+  dependencies:
+    pip_requirements: requirements.txt
+    python_packages:
+      - onescience
+      - torch
+      - torch_geometric
+      - pyvista
+      - scipy
+      - ruamel.yaml
+
+onescience:
+  repo: https://gitee.com/onescience-ai/onescience
+  official_links:
+    gitee:
+      doc: https://gitee.com/onescience-ai/onescience-doc
+      onescience: https://gitee.com/onescience-ai/onescience
+      skills: https://gitee.com/onescience-ai/oneskills
+    github:
+      doc: https://github.com/onescience-ai/OneScience-doc
+      onescience: https://github.com/onescience-ai/OneScience
+      skills: https://github.com/onescience-ai/oneskills
+  install:
+    required_by_default: false
+    command: bash install.sh cfd
+  source_paths:
+    - onescience/examples/cfd/Transolver-Airfoil-Design
+  compatibility:
+    examples_path: onescience/examples/cfd/Transolver-Airfoil-Design
+    status: examples_compatible
+  config_loader: onescience.utils.YParams
+  datapipe: onescience.datapipes.cfd.AirfRANSDatapipe
+
+runtime_package:
+  kind: standard_runtime_package
+  package_root: .
+  standard_layout:
+    workdir: .
+    config_dir: conf
+    checkpoint_dir: checkpoints/transolver_airfrans
+    data_dir: external
+    output_dir: results
+  apply_policy:
+    mode: direct_use
+    target: session_workdir
+    overwrite: true
+    protect_installed_onescience: true
+  entry_files:
+    - train.py
+    - inference.py
+    - conf/transolver_airfrans.yaml
+    - scripts/preflight_check.py
+  entrypoints:
+    preflight: scripts/preflight_check.py
+    inference: inference.py
+    train: train.py
+    finetune: train.py
+    evaluate: inference.py
+    visualize: inference.py
+    deploy: null
+
+files:
+  model_files:
+    - id: train_script
+      path: train.py
+      role: script
+      description_zh: 单机和分布式训练入口，训练后生成 checkpoint 和归一化统计量。
+      required: true
+      required_for: [train, finetune]
+      format: py
+      source:
+        platform: modelscope
+        repo_id: OneScience/Transolver-Airfoil-Design
+        repo_type: model
+        path: train.py
+        revision: main
+        url: null
+        download_method: command_ref
+        command_ref: commands.download.download_model_package
+      mirrors: []
+      local_path: session_workdir/train.py
+      size: null
+      checksum: null
+      large_file: false
+    - id: inference_script
+      path: inference.py
+      role: script
+      description_zh: 推理、评测和可视化入口，读取训练生成的 checkpoint 和统计文件。
+      required: true
+      required_for: [inference, evaluate, visualize]
+      format: py
+      source:
+        platform: modelscope
+        repo_id: OneScience/Transolver-Airfoil-Design
+        repo_type: model
+        path: inference.py
+        revision: main
+        url: null
+        download_method: command_ref
+        command_ref: commands.download.download_model_package
+      mirrors: []
+      local_path: session_workdir/inference.py
+      size: null
+      checksum: null
+      large_file: false
+    - id: preflight_script
+      path: scripts/preflight_check.py
+      role: script
+      description_zh: 运行前检查脚本，校验配置、数据路径、split manifest、VTK 文件、统计目录和 checkpoint 状态。
+      required: true
+      required_for: [preflight, train, inference, evaluate]
+      format: py
+      source:
+        platform: modelscope
+        repo_id: OneScience/Transolver-Airfoil-Design
+        repo_type: model
+        path: scripts/preflight_check.py
+        revision: main
+        url: null
+        download_method: command_ref
+        command_ref: commands.download.download_model_package
+      mirrors: []
+      local_path: session_workdir/scripts/preflight_check.py
+      size: null
+      checksum: null
+      large_file: false
+  dataset_files: []
+  config_files:
+    - id: transolver_config
+      path: conf/transolver_airfrans.yaml
+      role: training_config
+      description_zh: 模型结构、AirfRANS 数据管道、训练参数、checkpoint 路径和结果路径配置。
+      required: true
+      required_for: [preflight, train, inference, evaluate, visualize]
+      format: yaml
+      source:
+        platform: modelscope
+        repo_id: OneScience/Transolver-Airfoil-Design
+        repo_type: model
+        path: conf/transolver_airfrans.yaml
+        revision: main
+        url: null
+        download_method: command_ref
+        command_ref: commands.download.download_model_package
+      mirrors: []
+      local_path: session_workdir/conf/transolver_airfrans.yaml
+      size: null
+      checksum: null
+      large_file: false
+  sample_files:
+    - id: notebook_example
+      path: run_Transolver-Airfoil-Design.ipynb
+      role: example_input
+      description_zh: Notebook 示例，用于人工查看训练和推理流程。
+      required: false
+      required_for: [visualize]
+      format: ipynb
+      source:
+        platform: modelscope
+        repo_id: OneScience/Transolver-Airfoil-Design
+        repo_type: model
+        path: run_Transolver-Airfoil-Design.ipynb
+        revision: main
+        url: null
+        download_method: command_ref
+        command_ref: commands.download.download_model_package
+      mirrors: []
+      local_path: session_workdir/run_Transolver-Airfoil-Design.ipynb
+      size: null
+      checksum: null
+      large_file: false
+
+relations:
+  required_datasets:
+    - id: OneScience/airfrans
+      role: train_data
+      required_for: [preflight, train, inference, evaluate, visualize]
+      resource_ref:
+        platform: modelscope
+        repo_id: OneScience/airfrans
+        repo_type: dataset
+        url: https://modelscope.cn/datasets/OneScience/airfrans
+        revision: main
+        readme_path: README.md
+        manifest_path: onescience_run_manifest.yaml
+      local_path: data/airfrans/data/Dataset
+      expected_env: ONESCIENCE_AIRFRANS_DATA_DIR
+  optional_datasets: []
+  compatible_models: []
+
+configuration_adaptation:
+  - file: conf/transolver_airfrans.yaml
+    yaml_path: datapipe.source.data_dir
+    original_value: ${ONESCIENCE_DATASETS_DIR}/Transolver-Airfoil-Design/Dataset
+    current_value: ${ONESCIENCE_AIRFRANS_DATA_DIR}
+    reason: 模型和数据集分仓上传后，运行时必须显式指向 OneScience/airfrans 下载目录中的 data/Dataset。
+  - file: conf/transolver_airfrans.yaml
+    yaml_path: datapipe.data.splits
+    original_value:
+      task: full
+      train_name: full_train
+      test_name: full_test
+    current_value:
+      task: full
+      train_name: full_train
+      test_name: full_test
+    reason: 当前 OneScience/airfrans 数据 manifest 包含 full_train 800 个样本和 full_test 200 个样本，配置与当前整理数据匹配。
+
+run_matrix:
+  scenarios:
+    - name: minimal_validation
+      default: true
+      capability: preflight
+      required_datasets:
+        - id: OneScience/airfrans
+          role: train_data
+          local_path: data/airfrans/data/Dataset
+      required_model_files:
+        - conf/transolver_airfrans.yaml
+        - scripts/preflight_check.py
+      required_dataset_files:
+        - data/Dataset/manifest.json
+        - data/Dataset/<case>/<case>_internal.vtu
+        - data/Dataset/<case>/<case>_freestream.vtp
+        - data/Dataset/<case>/<case>_aerofoil.vtp
+      preconditions:
+        - 已下载 OneScience/airfrans。
+        - ONESCIENCE_AIRFRANS_DATA_DIR 指向数据集仓库的 data/Dataset。
+      command_refs:
+        - commands.preflight.model_preflight
+      outputs:
+        - 控制台输出 [OK] model preflight completed。
+    - name: train_full
+      capability: train
+      required_datasets:
+        - id: OneScience/airfrans
+          role: train_data
+          local_path: data/airfrans/data/Dataset
+      required_model_files:
+        - train.py
+        - conf/transolver_airfrans.yaml
+      required_dataset_files:
+        - data/Dataset/manifest.json
+        - data/Dataset/<case>/<case>_internal.vtu
+        - data/Dataset/<case>/<case>_aerofoil.vtp
+      preconditions:
+        - 已通过 minimal_validation。
+        - 已安装 OneScience CFD 依赖和与设备匹配的 PyTorch/PyG。
+      command_refs:
+        - commands.train.train_single_gpu
+      outputs:
+        - checkpoints/transolver_airfrans/Transolver.pth
+        - dataset/mean_in.npy
+        - dataset/std_in.npy
+        - dataset/mean_out.npy
+        - dataset/std_out.npy
+    - name: inference_full_test
+      capability: inference
+      required_datasets:
+        - id: OneScience/airfrans
+          role: eval_data
+          local_path: data/airfrans/data/Dataset
+      required_model_files:
+        - inference.py
+        - conf/transolver_airfrans.yaml
+        - checkpoints/transolver_airfrans/Transolver.pth
+        - dataset/mean_in.npy
+        - dataset/std_in.npy
+        - dataset/mean_out.npy
+        - dataset/std_out.npy
+      required_dataset_files:
+        - data/Dataset/manifest.json
+        - data/Dataset/<case>/<case>_internal.vtu
+        - data/Dataset/<case>/<case>_aerofoil.vtp
+      preconditions:
+        - 已通过 minimal_validation。
+        - checkpoint 和 dataset/*.npy 统计文件已存在，通常由 train_full 生成。
+      command_refs:
+        - commands.inference.run_inference
+      outputs:
+        - results/full/score_Transolver.json
+
+capabilities:
+  inference: true
+  train: true
+  finetune: true
+  evaluate: true
+  visualize: true
+  deploy: false
+
+commands:
+  download:
+    - name: download_model_package
+      description: 下载完整模型标准运行包。
+      target: model
+      repo_id: OneScience/Transolver-Airfoil-Design
+      source: .
+      local_path: session_workdir/
+      required: true
+      required_for: [preflight, train, inference, evaluate, visualize]
+      command: modelscope download --model OneScience/Transolver-Airfoil-Design
+    - name: download_dataset_package
+      description: 下载配套 AirfRANS 数据集标准包。
+      target: dataset
+      repo_id: OneScience/airfrans
+      source: .
+      local_path: data/airfrans/
+      required: true
+      required_for: [preflight, train, inference, evaluate, visualize]
+      command: modelscope download --dataset OneScience/airfrans
+  preflight:
+    - name: model_preflight
+      description: 校验模型配置和 AirfRANS 数据目录。
+      cwd: .
+      command: python scripts/preflight_check.py
+      required_files:
+        - conf/transolver_airfrans.yaml
+        - scripts/preflight_check.py
+      required_env:
+        - ONESCIENCE_AIRFRANS_DATA_DIR
+      expected_outputs:
+        - path: stdout
+          type: text
+      success_criteria:
+        - exit_code == 0
+        - stdout_contains: "[OK] model preflight completed"
+  prepare:
+    - name: set_dataset_env
+      description: 设置模型读取 AirfRANS 数据集所需环境变量。
+      cwd: .
+      command: export ONESCIENCE_AIRFRANS_DATA_DIR=/path/to/OneScience_airfrans/data/Dataset
+      required_files:
+        - data/airfrans/data/Dataset/manifest.json
+      required_env: []
+      expected_outputs:
+        - path: shell_environment
+          type: environment
+      success_criteria:
+        - env_var_points_to_dataset
+  inference:
+    - name: run_inference
+      description: 在 full_test split 上执行推理、评测并保存结果。
+      cwd: .
+      command: python inference.py
+      required_files:
+        - inference.py
+        - conf/transolver_airfrans.yaml
+        - checkpoints/transolver_airfrans/Transolver.pth
+        - dataset/mean_in.npy
+        - dataset/std_in.npy
+        - dataset/mean_out.npy
+        - dataset/std_out.npy
+      required_env:
+        - ONESCIENCE_AIRFRANS_DATA_DIR
+      expected_outputs:
+        - path: results/full/score_Transolver.json
+          type: file
+      success_criteria:
+        - exit_code == 0
+        - output_path_exists
+  train:
+    - name: train_single_gpu
+      description: 单卡训练 Transolver，并生成 checkpoint 与归一化统计文件。
+      cwd: .
+      command: python train.py
+      required_files:
+        - train.py
+        - conf/transolver_airfrans.yaml
+      required_env:
+        - ONESCIENCE_AIRFRANS_DATA_DIR
+      expected_outputs:
+        - path: checkpoints/transolver_airfrans/Transolver.pth
+          type: file
+        - path: dataset/mean_in.npy
+          type: file
+        - path: dataset/std_in.npy
+          type: file
+        - path: dataset/mean_out.npy
+          type: file
+        - path: dataset/std_out.npy
+          type: file
+      success_criteria:
+        - exit_code == 0
+        - output_path_exists
+    - name: train_multi_gpu_torchrun
+      description: torchrun 多卡训练入口。
+      cwd: .
+      command: torchrun --standalone --nnodes=<num_nodes> --nproc_per_node=<num_GPUs> train.py
+      required_files:
+        - train.py
+        - conf/transolver_airfrans.yaml
+      required_env:
+        - ONESCIENCE_AIRFRANS_DATA_DIR
+      expected_outputs:
+        - path: checkpoints/transolver_airfrans/Transolver.pth
+          type: file
+      success_criteria:
+        - exit_code == 0
+  finetune: []
+  evaluate:
+    - name: evaluate_full_test
+      description: inference.py 同时完成 full_test 评测并输出 JSON 指标。
+      cwd: .
+      command: python inference.py
+      required_files:
+        - inference.py
+        - conf/transolver_airfrans.yaml
+        - checkpoints/transolver_airfrans/Transolver.pth
+      required_env:
+        - ONESCIENCE_AIRFRANS_DATA_DIR
+      expected_outputs:
+        - path: results/full/score_Transolver.json
+          type: file
+      success_criteria:
+        - exit_code == 0
+        - output_path_exists
+  visualize:
+    - name: visualize_full_test
+      description: inference.py 保存随机抽样翼型的 VTK 可视化结果。
+      cwd: .
+      command: python inference.py
+      required_files:
+        - inference.py
+        - conf/transolver_airfrans.yaml
+        - checkpoints/transolver_airfrans/Transolver.pth
+      required_env:
+        - ONESCIENCE_AIRFRANS_DATA_DIR
+      expected_outputs:
+        - path: results/full/
+          type: directory
+      success_criteria:
+        - exit_code == 0
+        - output_path_exists
+  deploy: []
+
+expected_outputs:
+  - id: preflight_ok
+    path: stdout
+    type: text
+    description_zh: 输出 [OK] model preflight completed。
+  - id: train_checkpoint
+    path: checkpoints/transolver_airfrans/Transolver.pth
+    type: file
+    description_zh: 训练生成的 Transolver checkpoint。
+  - id: normalization_stats
+    path: dataset/*.npy
+    type: file_group
+    description_zh: 训练生成的输入输出归一化统计文件。
+  - id: inference_score
+    path: results/full/score_Transolver.json
+    type: file
+    description_zh: 推理和评测指标结果。
+
+diagnostics:
+  - error_pattern: ONESCIENCE_AIRFRANS_DATA_DIR is not set
+    likely_cause: 未设置数据集目录环境变量。
+    action: 下载 OneScience/airfrans 后，将变量设置为数据集仓库中的 data/Dataset 绝对路径。
+  - error_pattern: manifest.json not found
+    likely_cause: 数据目录变量指向了数据集仓库根目录或错误路径。
+    action: 将 ONESCIENCE_AIRFRANS_DATA_DIR 指向 OneScience/airfrans/data/Dataset。
+  - error_pattern: Normalization stats not found
+    likely_cause: 尚未训练生成 dataset/*.npy，或统计文件与训练 split 不匹配。
+    action: 先运行 python train.py 生成统计文件，或放入与 full_train 一致的统计文件。
+  - error_pattern: Checkpoint not found
+    likely_cause: 推理前缺少 checkpoints/transolver_airfrans/Transolver.pth。
+    action: 先运行训练，或放入兼容 checkpoint。
+  - error_pattern: ModuleNotFoundError
+    likely_cause: OneScience CFD 依赖或 Python 包未安装完整。
+    action: 执行 bash install.sh cfd，并检查 requirements.txt 中的依赖。
+
+domain_extension:
+  cfd:
+    geometry_type: 2D airfoil
+    mesh_type: unstructured
+    variables:
+      - velocity_u
+      - velocity_v
+      - pressure
+      - turbulent_viscosity
+    metrics:
+      - relative_l2
+      - mse
+      - spearman_correlation
+
+reproducibility:
+  level: minimal
+  goal: 完成模型预检，确认配置和 AirfRANS 数据可被 OneScience 运行包读取。
+  command_ref: commands.preflight.model_preflight
+  expected_runtime: seconds_to_minutes
+  expected_outputs:
+    - stdout

@@ -1,0 +1,53 @@
+deeponet_config:
+  datapipe:
+    source:
+      data_dir: "YOUR_DATASET_DIR_PATH"
+      file_name: "1D_Allen-Cahn_0.0001_5.hdf5"
+    verbose: True    
+    data:
+      name: "1D_Allen_Cahn"
+      single_file: True
+      reduced_resolution: 4
+      reduced_resolution_t: 1
+      reduced_batch: 1
+      initial_step: 1
+      test_ratio: 0.1
+      seed: 0
+
+    dataloader:
+      batch_size: 50
+      num_workers: 1
+      pin_memory: False
+
+  model:
+    name: "DeepONet"
+    base_model: "MLP"
+    input_size: 256
+    act: "tanh"
+    in_channels: 1
+    out_channels: 1
+    query_dim: 2
+
+  training:
+    scenario: "1D_Allen_Cahn"
+    save_name: "1d_Allen_Cahn"
+    training_type: "single"
+    
+    if_training: True
+    continue_training: False
+    model_path: null
+    output_dir: "./checkpoint/"
+    
+    epochs: 500
+    save_period: 20
+    seed: 0
+    
+    optimizer:
+      name: 'Adam'
+      lr: 1.0e-3
+      weight_decay: 1.0e-4
+    
+    scheduler:
+      name: "StepLR"
+      step_size: 100
+      gamma: 0.5

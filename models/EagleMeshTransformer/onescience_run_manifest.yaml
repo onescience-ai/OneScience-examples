@@ -1,0 +1,371 @@
+onescience_manifest_version: "0.1"
+resource_type: model
+resource:
+  id: OneScience/EagleMeshTransformer
+  name: EagleMeshTransformer
+  domain: cfd
+  domain_tags: [cfd, turbulent_flow, unsteady_flow, mesh_transformer]
+  task: eagle_flow_forecasting
+  task_tags: [train, inference, evaluation, visualization]
+  modalities: [unstructured_mesh, temporal_field]
+  input_formats: [npz, npy]
+  output_formats: [pth, gif, metrics]
+  summary: EagleMeshTransformer 是面向 EAGLE 非定常二维流体数据集的 GraphViT 网格变换器标准运行包。
+  language: zh
+  license: unknown
+
+platform_resource:
+  primary:
+    platform: modelscope
+    repo_id: OneScience/EagleMeshTransformer
+    repo_type: model
+    url: https://modelscope.cn/models/OneScience/EagleMeshTransformer
+    revision: main
+    readme_path: README.md
+    manifest_path: onescience_run_manifest.yaml
+  mirrors: []
+  access:
+    visibility: public
+    license: null
+
+website_integration:
+  enabled: true
+  click_target:
+    platform: modelscope
+    resource_url: https://modelscope.cn/models/OneScience/EagleMeshTransformer
+  llm_handoff:
+    readme_required: true
+    manifest_required: true
+    download_readme_first: true
+    resolve_related_datasets: true
+    default_run_goal: minimal_validation
+    default_workdir: .
+    cwd_note: 如果使用 modelscope download --cache_dir 下载，请先 cd 到实际下载后的模型包根目录，再执行 commands 中的命令。
+
+runtime:
+  enabled: true
+  onescience_domain: cfd
+  min_onescience_version: null
+  supported_execution: [local_cpu_preflight, local_gpu_training, distributed_gpu_training, local_gpu_evaluation]
+  environment:
+    required_env:
+      ONESCIENCE_EAGLE_DATA_DIR: 指向 OneScience/eagle 数据集仓库中的 data/Eagle_dataset 目录。
+    optional_env:
+      MODELSCOPE_CACHE: ModelScope 下载缓存目录。
+  dependencies:
+    python_packages: [onescience, torch, numpy, matplotlib, pillow, tqdm, ruamel.yaml]
+
+onescience:
+  repo: https://gitee.com/onescience-ai/onescience
+  official_links:
+    gitee:
+      doc: https://gitee.com/onescience-ai/onescience-doc
+      onescience: https://gitee.com/onescience-ai/onescience
+      skills: https://gitee.com/onescience-ai/oneskills
+    github:
+      doc: https://github.com/onescience-ai/OneScience-doc
+      onescience: https://github.com/onescience-ai/OneScience
+      skills: https://github.com/onescience-ai/oneskills
+  install:
+    required_by_default: true
+    command: bash install.sh cfd
+  source_paths:
+    - onescience.datapipes.cfd.EagleDatapipe
+    - onescience.models.graphvit.GraphViT
+  compatibility:
+    examples_path: onescience/examples/cfd/EagleMeshTransformer
+    status: examples_compatible
+  config_loader: onescience.utils.YParams
+  datapipe: onescience.datapipes.cfd.EagleDatapipe
+  model_classes:
+    - onescience.models.graphvit.GraphViT
+
+runtime_package:
+  kind: standard_runtime_package
+  package_root: .
+  standard_layout:
+    workdir: .
+    config_dir: conf
+    checkpoint_dir: checkpoints/eagle_graphvit
+    data_dir: external
+    output_dir: animation_results
+  apply_policy:
+    mode: direct_use
+    target: session_workdir
+    overwrite: true
+    protect_installed_onescience: true
+  entry_files:
+    - train_graphvit.py
+    - eval_graphvit.py
+    - clusterize_eagle.py
+    - conf/graphvit_eagle.yaml
+    - scripts/preflight_check.py
+    - splits/train.txt
+    - splits/valid.txt
+    - splits/test.txt
+  entrypoints:
+    preflight: scripts/preflight_check.py
+    inference: eval_graphvit.py
+    train: train_graphvit.py
+    finetune: null
+    evaluate: eval_graphvit.py
+    visualize: eval_graphvit.py
+    deploy: null
+
+files:
+  model_files: []
+  config_files:
+    - id: graphvit_eagle_config
+      path: conf/graphvit_eagle.yaml
+      role: model_datapipe_training_config
+      description_zh: GraphViT/EagleMeshTransformer 数据、模型和训练配置。
+      required: true
+      required_for: [preflight, train, evaluate, visualize]
+      source:
+        platform: modelscope
+        repo_id: OneScience/EagleMeshTransformer
+        repo_type: model
+        path: conf/graphvit_eagle.yaml
+        revision: main
+        download_method: command_ref
+        command_ref: commands.download.download_model
+      local_path: conf/graphvit_eagle.yaml
+  code_files:
+    - id: train_entry
+      path: train_graphvit.py
+      role: training_entry
+      description_zh: 训练 GraphViT 并保存 best_model.pth。
+      required: true
+      required_for: [train]
+      source: {platform: modelscope, repo_id: OneScience/EagleMeshTransformer, repo_type: model, path: train_graphvit.py, revision: main, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: train_graphvit.py
+    - id: evaluate_entry
+      path: eval_graphvit.py
+      role: evaluation_visualization_entry
+      description_zh: 加载 checkpoint，在测试集上计算 N-RMSE 并输出 GIF 动画。
+      required: true
+      required_for: [inference, evaluate, visualize]
+      source: {platform: modelscope, repo_id: OneScience/EagleMeshTransformer, repo_type: model, path: eval_graphvit.py, revision: main, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: eval_graphvit.py
+    - id: preflight_entry
+      path: scripts/preflight_check.py
+      role: preflight
+      description_zh: 检查配置、数据根目录、split、NPZ schema、三角网格和聚类文件。
+      required: true
+      required_for: [preflight]
+      source: {platform: modelscope, repo_id: OneScience/EagleMeshTransformer, repo_type: model, path: scripts/preflight_check.py, revision: main, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: scripts/preflight_check.py
+  dataset_files:
+    - id: eagle_dataset_root
+      path: data/Eagle_dataset
+      role: train_eval_data
+      description_zh: 来自 OneScience/eagle 的 EAGLE 数据集根目录，包含 Cre/Spl/Tri。
+      required: true
+      required_for: [preflight, train, evaluate, visualize]
+      source:
+        platform: modelscope
+        repo_id: OneScience/eagle
+        repo_type: dataset
+        path: data/Eagle_dataset
+        revision: main
+        download_method: command_ref
+        command_ref: commands.download.download_dataset
+      local_path: ${ONESCIENCE_EAGLE_DATA_DIR}
+  sample_files:
+    - id: eagle_splits
+      path: splits/
+      role: split_files
+      description_zh: 训练、验证、测试样本相对路径列表。
+      required: true
+      required_for: [preflight, train, evaluate]
+      source: {platform: modelscope, repo_id: OneScience/EagleMeshTransformer, repo_type: model, path: splits/, revision: main, download_method: command_ref, command_ref: commands.download.download_model}
+      local_path: splits/
+
+relations:
+  required_datasets:
+    - id: OneScience/eagle
+      name: eagle
+      role: train_data
+      required_for: [preflight, train, inference, evaluate, visualize]
+      resource_ref:
+        platform: modelscope
+        repo_id: OneScience/eagle
+        repo_type: dataset
+        url: https://modelscope.cn/datasets/OneScience/eagle
+        revision: main
+        readme_path: README.md
+        manifest_path: onescience_run_manifest.yaml
+      local_path: ${ONESCIENCE_EAGLE_DATA_DIR}
+      expected_local_env: ONESCIENCE_EAGLE_DATA_DIR
+      expected_subdir: data/Eagle_dataset
+  optional_datasets: []
+  compatible_models: []
+
+configuration_adaptation:
+  - file: conf/graphvit_eagle.yaml
+    yaml_path: datapipe.source.data_dir
+    original_value: ${ONESCIENCE_DATASETS_DIR}/Eagle/Eagle_dataset
+    current_value: ${ONESCIENCE_EAGLE_DATA_DIR}
+    reason: 模型与数据集分仓上传，网页端或用户下载 OneScience/eagle 后需要显式传入数据集目录。
+  - file: conf/graphvit_eagle.yaml
+    yaml_path: datapipe.source.cluster_dir
+    original_value: ${ONESCIENCE_DATASETS_DIR}/Eagle/Eagle_dataset
+    current_value: ${ONESCIENCE_EAGLE_DATA_DIR}
+    reason: Eagle 聚类文件随数据集一起上传，cluster_dir 必须指向下载后的 OneScience/eagle 数据目录。
+  - file: conf/graphvit_eagle.yaml
+    yaml_path: datapipe.source.splits_dir
+    original_value: ./splits/
+    current_value: ./splits/
+    reason: 原始 split 文件与当前数据目录完全匹配，整理包复制 split 文件到模型仓库根目录下的 splits/。
+  - file: conf/graphvit_eagle.yaml
+    yaml_path: datapipe.data.n_cluster
+    original_value: 40
+    current_value: 40
+    reason: 当前数据集中每个样本都包含 constrained_kmeans_40.npy，配置无需裁剪。
+
+run_matrix:
+  scenarios:
+    - name: preflight
+      capability: preflight
+      default: true
+      required_datasets:
+        - id: OneScience/eagle
+          role: train_data
+          local_path: ${ONESCIENCE_EAGLE_DATA_DIR}
+      required_model_files:
+        - conf/graphvit_eagle.yaml
+        - scripts/preflight_check.py
+        - splits/train.txt
+        - splits/valid.txt
+        - splits/test.txt
+      required_dataset_files:
+        - data/Eagle_dataset/Cre|Spl|Tri/<case>/<traj>/sim.npz
+        - data/Eagle_dataset/Cre|Spl|Tri/<case>/<traj>/triangles.npy
+        - data/Eagle_dataset/Cre|Spl|Tri/<case>/<traj>/constrained_kmeans_40.npy
+      preconditions:
+        - 已下载 OneScience/eagle。
+        - ONESCIENCE_EAGLE_DATA_DIR 指向数据集仓库的 data/Eagle_dataset。
+      command_refs: [commands.preflight.check_model]
+      outputs:
+        - '控制台输出 "[OK] model preflight completed"'
+    - name: train_full
+      capability: train
+      required_datasets:
+        - id: OneScience/eagle
+          role: train_data
+          local_path: ${ONESCIENCE_EAGLE_DATA_DIR}
+      required_model_files:
+        - train_graphvit.py
+        - conf/graphvit_eagle.yaml
+        - splits/train.txt
+        - splits/valid.txt
+      required_dataset_files:
+        - data/Eagle_dataset/**/sim.npz
+        - data/Eagle_dataset/**/triangles.npy
+        - data/Eagle_dataset/**/constrained_kmeans_40.npy
+      preconditions:
+        - 通过 preflight。
+        - 已安装 OneScience CFD 环境、PyTorch 和 GPU 运行环境。
+      command_refs: [commands.train.train_single_gpu, commands.train.train_torchrun]
+      outputs:
+        - checkpoints/eagle_graphvit/best_model.pth
+    - name: evaluate_test
+      capability: evaluate
+      required_datasets:
+        - id: OneScience/eagle
+          role: eval_data
+          local_path: ${ONESCIENCE_EAGLE_DATA_DIR}
+      required_model_files:
+        - eval_graphvit.py
+        - conf/graphvit_eagle.yaml
+        - checkpoints/eagle_graphvit/best_model.pth
+        - splits/test.txt
+      required_dataset_files:
+        - data/Eagle_dataset/**/sim.npz
+        - data/Eagle_dataset/**/triangles.npy
+        - data/Eagle_dataset/**/constrained_kmeans_40.npy
+      preconditions:
+        - 通过 preflight。
+        - checkpoints/eagle_graphvit/best_model.pth 已由训练产生或由用户放入。
+      command_refs: [commands.evaluate.evaluate_test]
+      outputs:
+        - animation_results/comparison_*.gif
+        - 控制台 Final N-RMSE 日志
+
+capabilities:
+  inference: true
+  train: true
+  finetune: false
+  evaluate: true
+  visualize: true
+  deploy: false
+  dataset_preflight: true
+
+commands:
+  download:
+    - name: download_model
+      cwd: session_workdir
+      command: modelscope download --model OneScience/EagleMeshTransformer
+    - name: download_dataset
+      cwd: session_workdir
+      command: modelscope download --dataset OneScience/eagle
+  prepare:
+    - name: export_dataset_env
+      cwd: .
+      command: export ONESCIENCE_EAGLE_DATA_DIR=/path/to/OneScience_eagle/data/Eagle_dataset
+  preflight:
+    - name: check_model
+      cwd: .
+      command: python scripts/preflight_check.py
+  train:
+    - name: train_single_gpu
+      cwd: .
+      command: python train_graphvit.py
+    - name: train_torchrun
+      cwd: .
+      command: torchrun --standalone --nnodes=1 --nproc_per_node=<num_GPUs> train_graphvit.py
+  inference:
+    - name: run_eval_as_inference
+      cwd: .
+      command: python eval_graphvit.py
+  evaluate:
+    - name: evaluate_test
+      cwd: .
+      command: python eval_graphvit.py
+  visualize:
+    - name: visualize_test
+      cwd: .
+      command: python eval_graphvit.py
+  finetune: []
+  deploy: []
+
+expected_outputs:
+  preflight: ["[OK] model preflight completed"]
+  train: [checkpoints/eagle_graphvit/best_model.pth]
+  evaluate: [animation_results/comparison_*.gif, Final N-RMSE]
+
+diagnostics:
+  - id: missing_dataset_env
+    symptom: ONESCIENCE_EAGLE_DATA_DIR is not set
+    action: 下载 OneScience/eagle 后执行 export ONESCIENCE_EAGLE_DATA_DIR=/path/to/data/Eagle_dataset。
+  - id: missing_cluster_file
+    symptom: Cluster file not found
+    action: 确认数据集包含 constrained_kmeans_40.npy，或同步修改 n_cluster 为 10/20/30 并更新 Manifest。
+  - id: missing_checkpoint
+    symptom: Checkpoint file not found
+    action: 先执行 python train_graphvit.py，或把兼容的 best_model.pth 放到 checkpoints/eagle_graphvit/。
+  - id: module_missing
+    symptom: ModuleNotFoundError
+    action: 安装 OneScience CFD 环境，并确认当前 Python 可导入 onescience、torch、numpy、matplotlib。
+
+domain_extension:
+  cfd:
+    geometry_types: [Cre, Spl, Tri]
+    mesh_type: unstructured_triangular_mesh
+    variables: [pointcloud, mask, VX, VY, PS, PG]
+    temporal_steps_per_sample: 990
+    normalization:
+      pressure_mean: [-0.8322, 4.6050]
+      pressure_std: [7.4013, 9.7232]
+      velocity_mean: [-0.0015, 0.2211]
+      velocity_std: [1.7970, 2.0258]

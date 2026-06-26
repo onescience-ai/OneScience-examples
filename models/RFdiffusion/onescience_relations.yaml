@@ -1,0 +1,17 @@
+resource:
+  id: "OneScience/RFdiffusion"
+  repo_type: model
+  platform: modelscope
+relations:
+  required_datasets: []
+  optional_datasets: []
+  optional_inputs:
+    - id: user_provided_pdb
+      type: pdb
+      description_zh: "RFdiffusion 推理输入由用户提供，或使用模型包 examples/input_pdbs/ 内置 PDB 样例。"
+      local_path_hint: "examples/input_pdbs/*.pdb"
+download:
+  model:
+    repo_id: "OneScience/RFdiffusion"
+    repo_type: model
+    command: "modelscope download --model OneScience/RFdiffusion --local_dir ./RFdiffusion"
