@@ -1,0 +1,8 @@
+# 忽略特定的隐藏文件
+.msc
+.mv
+.mdl
+
+# 忽略特定的隐藏目录
+.___temp/
+.ipynb_checkpoints/
