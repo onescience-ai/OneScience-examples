@@ -1,37 +1,45 @@
 import logging
 import os
-import sys
 import time
 
 import numpy as np
 import torch
 import torch.distributed as dist
 
+from _bootstrap import prepare_runtime
+
+current_path = str(prepare_runtime())
+
 from torch.nn.parallel import DistributedDataParallel
 
-from onescience.datapipes.climate import CMEMSDatapipe
-from onescience.models.xihe import Xihe
-from onescience.utils.YParams import YParams
-from onescience.utils.fcn.darcy_loss import LpLoss
+from xihe_src.datapipes.climate import CMEMSDatapipe
+from xihe_src.models.xihe import Xihe
+from xihe_src.utils import LpLoss, YParams
+
+
+def get_device(local_rank: int) -> torch.device:
+    if torch.cuda.is_available():
+        return torch.device(f"cuda:{local_rank}")
+    return torch.device("cpu")
 
 
 def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     logger = logging.getLogger()
 
-    config_file_path = os.path.join(current_path, "conf/config.yaml")
+    config_file_path = os.path.join(current_path, "config/config.yaml")
     cfg = YParams(config_file_path, "model")
 
-    cfg.world_size = 1
-    if "WORLD_SIZE" in os.environ:
-        cfg.world_size = int(os.environ["WORLD_SIZE"])
-
+    cfg.world_size = int(os.environ.get("WORLD_SIZE", "1"))
     world_rank = 0
     local_rank = 0
     if cfg.world_size > 1:
-        dist.init_process_group(backend="nccl", init_method="env://")
-        local_rank = int(os.environ["LOCAL_RANK"])
+        backend = "nccl" if torch.cuda.is_available() else "gloo"
+        dist.init_process_group(backend=backend, init_method="env://")
+        local_rank = int(os.environ.get("LOCAL_RANK", "0"))
         world_rank = dist.get_rank()
+
+    device = get_device(local_rank)
 
     cfg_data = YParams(config_file_path, "datapipe")
     datapipe = CMEMSDatapipe(
@@ -53,7 +61,7 @@ def main():
     )
     val_dataloader, val_sampler = datapipe.get_dataloader("valid")
 
-    model = Xihe(config=cfg).to(local_rank)
+    model = Xihe(config=cfg).to(device)
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=cfg.lr,
@@ -77,22 +85,19 @@ def main():
         total_params = sum(p.numel() for p in model.parameters())
         print("\n")
         print("-" * 50)
-        print(f"📂 now params is {total_params}, {total_params / 1e6:.2f}M, {total_params / 1e9:.2f}B")
+        print(f"now params is {total_params}, {total_params / 1e6:.2f}M, {total_params / 1e9:.2f}B")
         print("-" * 50, "\n")
 
-    if os.path.exists(f"{cfg.checkpoint_dir}/model_bak.pth"):
+    checkpoint_path = f"{cfg.checkpoint_dir}/model_bak.pth"
+    if os.path.exists(checkpoint_path):
         if world_rank == 0:
             print("\n")
             print("-" * 50)
-            print("✅ There has a model weight, load and continue training...")
-            print(f"If you want to train a new model, ensure there is no *.pth file in {cfg.checkpoint_dir}")
+            print("There is an existing model weight. Loading it and continuing training...")
+            print(f"To train from scratch, remove *.pth files in {cfg.checkpoint_dir}")
             print("-" * 50, "\n")
 
-        ckpt = torch.load(
-            f"{cfg.checkpoint_dir}/model_bak.pth",
-            map_location=f"cuda:{local_rank}",
-            weights_only=False,
-        )
+        ckpt = torch.load(checkpoint_path, map_location=device, weights_only=False)
         model.load_state_dict(ckpt["model_state_dict"])
         optimizer.load_state_dict(ckpt["optimizer_state_dict"])
         scheduler.load_state_dict(ckpt["scheduler_state_dict"])
@@ -102,9 +107,13 @@ def main():
         valid_losses = np.load(valid_loss_file)
 
     if cfg.world_size > 1:
-        model = DistributedDataParallel(model, device_ids=[local_rank], output_device=local_rank)
+        if torch.cuda.is_available():
+            model = DistributedDataParallel(model, device_ids=[local_rank], output_device=local_rank)
+        else:
+            model = DistributedDataParallel(model)
 
-    world_rank == 0 and logger.info("start training ...")
+    if world_rank == 0:
+        logger.info("start training ...")
 
     for epoch in range(cfg.max_epoch):
         if dist.is_initialized():
@@ -115,8 +124,8 @@ def main():
         train_loss = 0.0
         start_time = time.time()
         for j, data in enumerate(train_dataloader):
-            invar = data[0].to(local_rank, dtype=torch.float32)
-            outvar = data[1].to(local_rank, dtype=torch.float32)
+            invar = data[0].to(device, dtype=torch.float32)
+            outvar = data[1].to(device, dtype=torch.float32)
             outvar_pred = model(invar)
             loss = loss_obj(outvar, outvar_pred)
 
@@ -140,13 +149,13 @@ def main():
         val_start_time = time.time()
         with torch.no_grad():
             for j, data in enumerate(val_dataloader):
-                invar = data[0].to(local_rank, dtype=torch.float32)
-                outvar = data[1].to(local_rank, dtype=torch.float32)
+                invar = data[0].to(device, dtype=torch.float32)
+                outvar = data[1].to(device, dtype=torch.float32)
                 outvar_pred = model(invar)
                 loss = loss_obj(outvar, outvar_pred)
 
                 if cfg.world_size > 1:
-                    loss_tensor = loss.detach().to(local_rank)
+                    loss_tensor = loss.detach().to(device)
                     dist.all_reduce(loss_tensor)
                     loss = loss_tensor.item() / cfg.world_size
                     valid_loss += loss
@@ -166,14 +175,15 @@ def main():
         if valid_loss < best_valid_loss:
             best_valid_loss = valid_loss
             best_loss_epoch = epoch
-            world_rank == 0 and save_checkpoint(
-                model,
-                optimizer,
-                scheduler,
-                best_valid_loss,
-                best_loss_epoch,
-                cfg.checkpoint_dir,
-            )
+            if world_rank == 0:
+                save_checkpoint(
+                    model,
+                    optimizer,
+                    scheduler,
+                    best_valid_loss,
+                    best_loss_epoch,
+                    cfg.checkpoint_dir,
+                )
             is_save_ckp = True
 
         scheduler.step(valid_loss)
@@ -192,8 +202,8 @@ def main():
             np.save(valid_loss_file, valid_losses)
 
         if epoch - best_loss_epoch > cfg.patience:
-            print(f"Loss has not decrease in {cfg.patience} epochs, stopping training...")
-            exit()
+            print(f"Loss has not decreased in {cfg.patience} epochs, stopping training...")
+            break
 
 
 def save_checkpoint(model, optimizer, scheduler, best_valid_loss, best_loss_epoch, model_path):
@@ -205,11 +215,11 @@ def save_checkpoint(model, optimizer, scheduler, best_valid_loss, best_loss_epoc
         "best_valid_loss": best_valid_loss,
         "best_loss_epoch": best_loss_epoch,
     }
-    torch.save(state, f"{model_path}/model.pth")
-    os.system(f"mv {model_path}/model.pth {model_path}/model_bak.pth")
+    tmp_path = f"{model_path}/model.pth"
+    final_path = f"{model_path}/model_bak.pth"
+    torch.save(state, tmp_path)
+    os.replace(tmp_path, final_path)
 
 
 if __name__ == "__main__":
-    current_path = os.getcwd()
-    sys.path.append(current_path)
     main()

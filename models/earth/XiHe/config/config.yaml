@@ -34,9 +34,9 @@ datapipe:
     data_dir: './data/' # "$ONESCIENCE_DATASETS_DIR/ERA5/newh5/" 
 
     
-    train_time: [1993, 1994, 1995, 1996, 1997]
-    val_time: [1998]
-    test_time: [1999]
+    train_time: [2010]
+    val_time: [2013]
+    test_time: [2014]
     img_size: [2041, 4320]
     verbose: true
     cache: false
@@ -66,7 +66,7 @@ datapipe:
       "sea_water_potential_temperature_19",sea_water_salinity_19,"eastward_sea_water_velocity_19","northward_sea_water_velocity_19",
       "sea_water_potential_temperature_20",sea_water_salinity_20,"eastward_sea_water_velocity_20","northward_sea_water_velocity_20",
       "sea_water_potential_temperature_21",sea_water_salinity_21,"eastward_sea_water_velocity_21","northward_sea_water_velocity_21",
-      "sea_water_potential_temperature_22",sea_water_salinity_22,"eastward_sea_water_velocity_21","northward_sea_water_velocity_22",
+      "sea_water_potential_temperature_22",sea_water_salinity_22,"eastward_sea_water_velocity_22","northward_sea_water_velocity_22",
       "sea_water_potential_temperature_23",sea_water_salinity_23,"eastward_sea_water_velocity_23","northward_sea_water_velocity_23",
     ]
 
@@ -86,7 +86,7 @@ datapipe:
              
     
     # 时间配置
-    time_range: ["1993-01-01", "1999-12-31"] 
+    time_range: ["2010-01-01", "2014-12-31"] 
     time_steps: 1
     time_res: 24
     

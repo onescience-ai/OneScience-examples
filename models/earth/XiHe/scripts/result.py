@@ -1,6 +1,5 @@
 import glob
 import os
-import sys
 
 from datetime import datetime
 
@@ -11,7 +10,11 @@ import numpy as np
 from matplotlib import rcParams
 from tqdm import tqdm
 
-from onescience.utils.YParams import YParams
+from _bootstrap import prepare_runtime
+
+current_path = str(prepare_runtime())
+
+from xihe_src.utils import YParams
 
 rcParams["mathtext.fontset"] = "stix"
 rcParams["axes.linewidth"] = 0.9
@@ -162,14 +165,12 @@ def plot_loss(train_loss, valid_loss):
 
 
 if __name__ == "__main__":
-    current_path = os.getcwd()
-    sys.path.append(current_path)
-    config_file_path = os.path.join(current_path, "conf/config.yaml")
+    config_file_path = os.path.join(current_path, "config/config.yaml")
     cfg = YParams(config_file_path, "model")
     cfg_data = YParams(config_file_path, "datapipe")
 
-    train_loss = np.load("./data/checkpoints/trloss.npy")
-    valid_loss = np.load("./data/checkpoints/valoss.npy")
+    train_loss = np.load(os.path.join(cfg.checkpoint_dir, "trloss.npy"))
+    valid_loss = np.load(os.path.join(cfg.checkpoint_dir, "valoss.npy"))
     plot_loss(train_loss, valid_loss)
 
     data_dir = cfg_data.dataset.data_dir

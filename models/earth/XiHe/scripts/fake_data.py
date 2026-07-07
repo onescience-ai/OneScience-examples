@@ -4,7 +4,11 @@ import os
 import h5py
 import numpy as np
 
-from onescience.utils.YParams import YParams
+from _bootstrap import prepare_runtime
+
+prepare_runtime()
+
+from xihe_src.utils import YParams
 
 
 DATASET_DIMS = {"T": 10, "H": 2041, "W": 4320, "time_step": 24}
@@ -62,12 +66,12 @@ def generate_mask(save_path, shape, one_ratio=0.7, seed=42):
 
 
 def main():
-    cfg_model = YParams("conf/config.yaml", "model")
-    cfg_datapipe = YParams("conf/config.yaml", "datapipe")
+    cfg_model = YParams("config/config.yaml", "model")
+    cfg_datapipe = YParams("config/config.yaml", "datapipe")
 
     if cfg_datapipe.dataset.data_dir.startswith("/public/onestore"):
         print("Please check config and ensure local test paths are used.")
-        exit()
+        raise SystemExit(1)
 
     years = (
         cfg_datapipe.dataset.train_time
@@ -76,12 +80,15 @@ def main():
     )
     channels = cfg_datapipe.dataset.channels
 
-    generate_fake_h5(cfg_datapipe.dataset.data_dir, channels, years, DATASET_DIMS)
+    dims = dict(DATASET_DIMS)
+    dims["H"], dims["W"] = cfg_model.img_size
+
+    generate_fake_h5(cfg_datapipe.dataset.data_dir, channels, years, dims)
     generate_metadata(cfg_datapipe.dataset.data_dir, channels, years)
     generate_stats(cfg_datapipe.dataset.stats_dir, len(channels))
-    generate_mask(cfg_model.mask, (DATASET_DIMS["H"], DATASET_DIMS["W"]))
+    generate_mask(cfg_model.mask, (dims["H"], dims["W"]))
 
-    print("\n✅ Fake CMEMS datasets generated.")
+    print("\nFake CMEMS datasets generated.")
 
 
 if __name__ == "__main__":

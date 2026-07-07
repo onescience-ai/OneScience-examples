@@ -1,6 +1,5 @@
 import glob
 import os
-import sys
 
 import h5py
 import numpy as np
@@ -8,9 +7,19 @@ import torch
 
 from tqdm import tqdm
 
-from onescience.datapipes.climate import CMEMSDatapipe
-from onescience.models.xihe import Xihe
-from onescience.utils.YParams import YParams
+from _bootstrap import prepare_runtime
+
+current_path = str(prepare_runtime())
+
+from xihe_src.datapipes.climate import CMEMSDatapipe
+from xihe_src.models.xihe import Xihe
+from xihe_src.utils import YParams
+
+
+def get_device() -> torch.device:
+    if torch.cuda.is_available():
+        return torch.device("cuda:0")
+    return torch.device("cpu")
 
 
 def get_stats(data_dir, stats_dir, channels):
@@ -28,12 +37,10 @@ def get_stats(data_dir, stats_dir, channels):
 
 
 if __name__ == "__main__":
-    current_path = os.getcwd()
-    sys.path.append(current_path)
-
-    config_file_path = os.path.join(current_path, "conf/config.yaml")
+    config_file_path = os.path.join(current_path, "config/config.yaml")
     cfg = YParams(config_file_path, "model")
     cfg_data = YParams(config_file_path, "datapipe")
+    device = get_device()
 
     means, stds = get_stats(
         cfg_data.dataset.data_dir,
@@ -51,16 +58,16 @@ if __name__ == "__main__":
     )
     test_dataloader, _ = datapipe.get_dataloader("test")
 
-    ckpt = torch.load(f"{cfg.checkpoint_dir}/model_bak.pth", map_location="cuda:0")
-    model = Xihe(cfg).to("cuda:0")
+    ckpt = torch.load(f"{cfg.checkpoint_dir}/model_bak.pth", map_location=device, weights_only=False)
+    model = Xihe(cfg).to(device)
     model.load_state_dict(ckpt["model_state_dict"])
 
     model.eval()
     os.makedirs("result/output/", exist_ok=True)
-    print("📂 samples will be generated to './result/output/'")
+    print("samples will be generated to './result/output/'")
     with torch.no_grad():
         for data in tqdm(test_dataloader, desc="Inferring testset", unit="batch"):
-            invar = data[0].to("cuda:0", dtype=torch.float32)
+            invar = data[0].to(device, dtype=torch.float32)
             filename = data[4][-1][0]
 
             outvar_pred = model(invar)
