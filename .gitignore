@@ -6,3 +6,4 @@
 # 忽略特定的隐藏目录
 .___temp/
 .ipynb_checkpoints/
+**/__pycache__/

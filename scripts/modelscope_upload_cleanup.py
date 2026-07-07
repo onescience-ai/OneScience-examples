@@ -32,14 +32,14 @@
 
 示例：
     export MODELSCOPE_TOKEN=你的token
-    python modelscope_upload_cleanup.py --model hweh --model-dir /root/private_data/guancl/upmodels/hweh_446k_test
+    python modelscope_upload_cleanup.py --model hweh --model-dir /path_to_file/hweh_446k_test
 
 Git 精确同步示例：
     export MODELSCOPE_TOKEN=你的token
-    python modelscope_upload_cleanup.py --model hweh --model-dir /root/private_data/guancl/upmodels/hweh_446k_test --sync-mode git
+    python modelscope_upload_cleanup.py --model hweh --model-dir /path_to_file/hweh_446k_test --sync-mode git
 
 跳过删除确认：
-    python modelscope_upload_cleanup.py --model hweh --model-dir /root/private_data/guancl/upmodels/hweh_446k_test --yes
+    python modelscope_upload_cleanup.py --model hweh --model-dir /path_to_file/hweh_446k_test --yes
 """
 
 from __future__ import annotations
