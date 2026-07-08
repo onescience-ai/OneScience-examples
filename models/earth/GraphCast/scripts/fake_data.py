@@ -2,11 +2,7 @@ import os
 import h5py
 import numpy as np
 import xarray as xr
-from _bootstrap import prepare_runtime
-
-prepare_runtime()
-
-from graphcast_src.utils.YParams import YParams
+from onescience.utils.YParams import YParams
 
 
 # 各数据集固定的空间和时间维度
@@ -80,7 +76,7 @@ def get_static(data_dir, var, name):
 
 
 if __name__ == "__main__":
-    cfg_datapipe = YParams("config/config.yaml", "datapipe")
+    cfg_datapipe = YParams("conf/config.yaml", "datapipe")
 
     if cfg_datapipe.dataset.data_dir.startswith("/public/") or cfg_datapipe.dataset.data_dir.startswith("/work2/"):
         print("请检查 config，确保各 *_dir 指向本地测试路径而非生产路径。")

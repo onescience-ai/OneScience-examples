@@ -1,3 +1,10 @@
+import sys
+from pathlib import Path
+
+# 获取项目根目录（train.py上级的上级）
+root_path = Path(__file__).parent.parent
+sys.path.append(str(root_path))
+
 import torch
 import os
 import sys
@@ -6,22 +13,15 @@ import torch.distributed as dist
 import logging
 import time
 
-from _bootstrap import prepare_runtime
-
-current_path = str(prepare_runtime())
-
 from torch.nn.parallel import DistributedDataParallel
 from torch.optim.lr_scheduler import SequentialLR, LinearLR, CosineAnnealingLR, LambdaLR
-from graphcast_src.datapipes.climate import ERA5Datapipe
-from graphcast_src.utils.YParams import YParams
-from graphcast_src.modules.utils.graphcast.data_utils import StaticData
-from graphcast_src.modules.utils.graphcast.graph_utils import deg2rad
-from graphcast_src.models.graphcast.graph_cast_net import GraphCastNet
-from graphcast_src.modules.utils.graphcast.loss import GraphCastLossFunction
-try:
-    from apex import optimizers
-except ImportError:
-    optimizers = None
+from onescience.datapipes.climate import ERA5Datapipe
+from onescience.utils.YParams import YParams
+from onescience.modules.utils.graphcast.data_utils import StaticData
+from onescience.modules.utils.graphcast.graph_utils import deg2rad
+from model.graph_cast_net import GraphCastNet
+from onescience.modules.utils.graphcast.loss import GraphCastLossFunction
+from apex import optimizers
 
 
 def main():
@@ -29,7 +29,7 @@ def main():
     logger = logging.getLogger()
 
     ## Model config init
-    config_file_path = os.path.join(current_path, "config/config.yaml")
+    config_file_path = os.path.join(current_path, "conf/config.yaml")
     cfg = YParams(config_file_path, "model")
 
     ## Distributed config init
@@ -76,7 +76,7 @@ def main():
         latitudes = model.latitudes
         longitudes = model.longitudes
         lat_lon_grid = model.lat_lon_grid
-    static_dir = os.path.join(cfg_data.dataset.data_dir, "static")
+    tatic_dir = os.path.join(cfg_data.dataset.data_dir, "static")
     
     static_data = StaticData(static_dir, latitudes, longitudes).get().to(device=local_rank)
     channels_list = [i for i in range(len(cfg_data.dataset.channels))]
@@ -84,15 +84,10 @@ def main():
     area /= torch.mean(area)
     area = area.to(dtype=torch.bfloat16 if cfg.full_bf16 else torch.float32).to(device=local_rank)
     criterion = GraphCastLossFunction(area, channels_list, cfg_data.dataset.dataset_metadata_path, cfg_data.dataset.time_diff_std_path)
-    if optimizers is not None:
-        optimizer = optimizers.FusedAdam(model.parameters(),
-                                         lr=cfg.lr, betas=(0.9, 0.95),
-                                         adam_w_mode=True,
-                                         weight_decay=0.1)
-    else:
-        optimizer = torch.optim.AdamW(model.parameters(),
-                                      lr=cfg.lr, betas=(0.9, 0.95),
-                                      weight_decay=0.1)
+    optimizer = optimizers.FusedAdam(model.parameters(),
+                                     lr=cfg.lr, betas=(0.9, 0.95),
+                                     adam_w_mode=True,
+                                     weight_decay=0.1)
     scheduler1 = LinearLR(optimizer, start_factor=1e-3, end_factor=1.0, total_iters=cfg.num_iters_step1, )
     scheduler2 = CosineAnnealingLR(optimizer, T_max=cfg.num_iters_step2, eta_min=0.0)
     scheduler3 = LambdaLR(optimizer, lr_lambda=lambda epoch: (cfg.lr_step3 / cfg.lr))
@@ -331,4 +326,6 @@ def save_checkpoint(model, optimizer, scheduler, best_valid_loss, best_loss_epoc
 
 
 if __name__ == "__main__":
+    current_path = os.getcwd()
+    sys.path.append(current_path)
     main()

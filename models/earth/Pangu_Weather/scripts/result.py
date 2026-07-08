@@ -2,15 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import sys
-
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(PROJECT_ROOT, "model"))
-
 import glob
 import h5py
 from datetime import datetime
 from tqdm import tqdm
-from pangu_weather.utils import YParams
+from onescience.utils.fcn.YParams import YParams
 from matplotlib import rcParams
 
 # rcParams['font.family'] = 'serif'
@@ -188,9 +184,9 @@ def plot_loss(train_loss, valid_loss):
 
 
 if __name__ == "__main__":
-    current_path = PROJECT_ROOT
-    os.chdir(current_path)
-    config_file_path = os.path.join(current_path, 'config/config.yaml')
+    current_path = os.getcwd()
+    sys.path.append(current_path)
+    config_file_path = os.path.join(current_path, 'conf/config.yaml')
     cfg = YParams(config_file_path, 'model')
     cfg_data = YParams(config_file_path, "datapipe")
 

@@ -1,3 +1,9 @@
+import sys
+from pathlib import Path
+
+# 获取项目根目录（train.py上级的上级）
+root_path = Path(__file__).parent.parent
+sys.path.append(str(root_path))
 import os
 import numpy as np
 import glob
@@ -6,16 +12,12 @@ import sys
 import h5py
 from tqdm import tqdm
 
-from _bootstrap import prepare_runtime
-
-current_path = str(prepare_runtime())
-
-from graphcast_src.utils.YParams import YParams
-from graphcast_src.datapipes.climate import ERA5Datapipe
+from onescience.utils.YParams import YParams
+from onescience.datapipes.climate import ERA5Datapipe
 from ruamel.yaml.scalarfloat import ScalarFloat
-from graphcast_src.modules.utils.graphcast.data_utils import StaticData
-from graphcast_src.modules.utils.graphcast.graph_utils import deg2rad
-from graphcast_src.models.graphcast.graph_cast_net import GraphCastNet
+from onescience.modules.utils.graphcast.data_utils import StaticData
+from onescience.modules.utils.graphcast.graph_utils import deg2rad
+from model.graph_cast_net import GraphCastNet
 
 
 torch.serialization.add_safe_globals([ScalarFloat])
@@ -37,8 +39,11 @@ def get_stats(data_dir, channels):
 
 
 if __name__ == "__main__":
+    current_path = os.getcwd()
+    sys.path.append(current_path)
+
     ## Model config init
-    config_file_path = os.path.join(current_path, "config/config.yaml")
+    config_file_path = os.path.join(current_path, "conf/config.yaml")
     cfg = YParams(config_file_path, "model")
     ## DataLoader init
     cfg_data = YParams(config_file_path, "datapipe")
@@ -87,7 +92,7 @@ if __name__ == "__main__":
         longitudes = model.longitudes
     static_dir = os.path.join(cfg_data.dataset.data_dir, "static")
     
-    static_data = StaticData(static_dir, latitudes, longitudes).get().to(device="cuda:0")
+    static_data = StaticData(static_dir, latitudes, longitudes).get().to(device=local_rank)
     model.eval()
     os.makedirs('./result/output/', exist_ok=True)
     print(f"📂 samples will be generated to './result/output/'")

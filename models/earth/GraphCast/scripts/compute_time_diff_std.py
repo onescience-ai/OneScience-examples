@@ -3,18 +3,13 @@ import os
 import sys
 import numpy as np
 from tqdm import tqdm
-
-from _bootstrap import prepare_runtime
-
-current_path = str(prepare_runtime())
-
-from graphcast_src.datapipes.climate import ERA5Datapipe
-from graphcast_src.utils.YParams import YParams
+from onescience.datapipes.climate import ERA5Datapipe
+from onescience.utils.YParams import YParams
 
 
 def main():
     # instantiate the training datapipe
-    config_file_path = os.path.join(current_path, 'config/config.yaml')
+    config_file_path = os.path.join(current_path, 'conf/config.yaml')
     cfg_data = YParams(config_file_path, "datapipe")
     datapipe = ERA5Datapipe(
         dataset_dir=cfg_data.dataset.data_dir,
@@ -48,4 +43,6 @@ def main():
 
 
 if __name__ == "__main__":
+    current_path = os.getcwd()
+    sys.path.append(current_path)
     main()

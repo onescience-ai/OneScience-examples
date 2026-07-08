@@ -1,18 +1,18 @@
+import sys
+from pathlib import Path
+
+# 获取项目根目录（train.py上级的上级）
+root_path = Path(__file__).parent.parent
+sys.path.append(str(root_path))
 import torch
 import os
-import sys
 import glob
 import numpy as np
 import h5py
 from tqdm import tqdm
-
-from _bootstrap import prepare_runtime
-
-current_path = str(prepare_runtime())
-
-from fourcastnet_src.models.fourcastnet import FourCastNet
-from fourcastnet_src.utils import YParams
-from fourcastnet_src.datapipes.climate import ERA5Datapipe
+from model.fourcastnet import FourCastNet
+from onescience.utils.YParams import YParams
+from onescience.datapipes.climate import ERA5Datapipe
 
 
 def get_stats(data_dir, channels):
@@ -31,8 +31,11 @@ def get_stats(data_dir, channels):
 
 
 if __name__ == "__main__":
+    current_path = os.getcwd()
+    sys.path.append(current_path)
+
     ## Model config init
-    config_file_path = os.path.join(current_path, "config/config.yaml")
+    config_file_path = os.path.join(current_path, "conf/config.yaml")
     cfg = YParams(config_file_path, "model")
 
     ## DataLoader init
@@ -53,13 +56,7 @@ if __name__ == "__main__":
     test_dataloader, _ = datapipe.get_dataloader("test")
 
     ckpt = torch.load(f"{cfg.checkpoint_dir}/model_bak.pth", map_location="cuda:0")
-    model = FourCastNet(
-        img_size=(cfg_data.dataset.img_size[0] - 1, cfg_data.dataset.img_size[1]),
-        patch_size=tuple(cfg.patch_size),
-        in_chans=len(cfg_data.dataset.channels),
-        out_chans=len(cfg_data.dataset.channels),
-        num_blocks=cfg.num_blocks,
-    ).to('cuda:0')
+    model = FourCastNet().to('cuda:0')
     model.load_state_dict(ckpt["model_state_dict"])
 
     model.eval()

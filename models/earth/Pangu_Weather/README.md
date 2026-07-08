@@ -41,14 +41,12 @@ https://www.nature.com/articles/s41586-023-06185-3
 | 路径 | 功能 | 备注 |
 | :--- | :--- | :--- |
 | `README.md` | 工程使用说明文档 | 中文为主 |
-| `configuration.json` | ModelScope/OneCode 元信息 | 保持最小配置 |
-| `requirements.txt` | 依赖包 | 包含脚本运行所需的最小 Python 依赖 |
-| `config/config.yaml` | 训练、推理和数据配置 | 已适配本仓库相对路径 |
+| `conf/config.yaml` | 训练、推理和数据配置 | 已适配本仓库相对路径 |
 | `scripts/train.py` | 训练脚本 | 支持单卡和 torchrun 多卡 |
 | `scripts/inference.py` | 推理脚本 | 需存在训练权重 |
 | `scripts/result.py` | 评估与可视化脚本 | 读取 `result/output/*.npy` |
 | `scripts/fake_data.py` | 假数据生成脚本 | 用于快速连通性验证 |
-| `model/pangu_weather/` | 独立 Python 包 | 不依赖 OneScience 源码包 |
+| `model/pangu.py/` | 模型文件 | OneScience复现的经典TOP模型 |
 | `weight/` | 权重目录 | 可放置预训练或发布权重 |
 
 # 使用说明
@@ -67,37 +65,15 @@ https://www.nature.com/articles/s41586-023-06185-3
 - CPU 可以用于导入和小配置连通性验证，完整训练和推理速度较慢。
 - DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
 
-**软件要求**
-
-请参考 `requirements.txt`。训练脚本会优先使用 NVIDIA Apex/环境内置 `apex.optimizers.FusedAdam`，若当前环境没有 Apex，则自动回退到 PyTorch `AdamW`。
-
-**环境检测**
-
-NVIDIA GPU：
-
-```bash
-nvidia-smi
-```
-
-海光 DCU：
-
-```bash
-hy-smi
-```
 
 ## 3. 快速开始
-
-### 下载模型包
-
-```bash
-modelscope download --model OneScience/Pangu-Weather --local_dir ./pangu_weather
-cd pangu_weather
-```
 
 ### 安装运行环境
 
 ```bash
-pip install -r requirements_dcu.txt
+git clone https://gitee.com/onescience-ai/onescience.git
+cd onescience
+bash install.sh earth
 ```
 
 ### 生成假数据进行流程验证

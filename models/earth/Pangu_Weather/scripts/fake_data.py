@@ -1,13 +1,8 @@
 import os
-import sys
-
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(PROJECT_ROOT, "model"))
-
 import h5py
 import numpy as np
 import xarray as xr
-from pangu_weather.utils import YParams
+from onescience.utils.YParams import YParams
 
 
 # 各数据集固定的空间和时间维度
@@ -81,9 +76,7 @@ def get_static(data_dir, var, name):
 
 
 if __name__ == "__main__":
-    current_path = PROJECT_ROOT
-    os.chdir(current_path)
-    cfg_datapipe = YParams(os.path.join(current_path, "config/config.yaml"), "datapipe")
+    cfg_datapipe = YParams("conf/config.yaml", "datapipe")
 
     if cfg_datapipe.dataset.data_dir.startswith("/public/") or cfg_datapipe.dataset.data_dir.startswith("/work2/"):
         print("请检查 config，确保各 *_dir 指向本地测试路径而非生产路径。")

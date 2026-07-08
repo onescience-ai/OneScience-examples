@@ -1,4 +1,8 @@
 import os
+import sys
+from pathlib import Path
+root_path = Path(__file__).parent.parent
+sys.path.append(str(root_path))
 import h5py
 import numpy as np
 import xarray as xr

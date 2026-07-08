@@ -2,6 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import sys
+from pathlib import Path
+root_path = Path(__file__).parent.parent
+sys.path.append(str(root_path))
 import glob
 import h5py
 from datetime import datetime
@@ -44,7 +47,7 @@ def get_result(total_files, channel_indices, time_step, data_dir, clim_mean):
     channel_rmse = np.zeros(len(channel_indices))
     channel_acc = np.zeros(len(channel_indices))
     clim_mean = clim_mean[0, :, :, :]
-    if not os.path.exists('result/rmse.npy') or not os.path.exists('result/acc.npy'):
+    if not os.path.exists('./result/rmse.npy') or not os.path.exists('result/acc.npy'):
         numerator = np.zeros(len(channel_indices))
         pred_sq_sum = np.zeros(len(channel_indices))
         label_sq_sum = np.zeros(len(channel_indices))
@@ -68,11 +71,11 @@ def get_result(total_files, channel_indices, time_step, data_dir, clim_mean):
         channel_rmse /= len(total_files)
         channel_acc = numerator / (np.sqrt(pred_sq_sum * label_sq_sum) + 1e-8)
         np.save('./result/acc.npy', channel_acc)
-        np.save('result/rmse.npy', channel_rmse)
+        np.save('./result/rmse.npy', channel_rmse)
 
 
 def show_result():
-    channel_rmse = np.load('result/rmse.npy')
+    channel_rmse = np.load('./result/rmse.npy')
     channel_acc = np.load('./result/acc.npy')
 
     channels = [cfg_data.dataset.channels[i] for i in range(len(channel_indices))]
@@ -91,26 +94,32 @@ def show_result():
 
 
 def plot(label, pred, var, filename):
+    # 基础设置
     fig, axes = plt.subplots(1, 3, figsize=(15, 4))
 
+    # 坐标轴标签
     xtick_labels = ['180°W', '90°W', '0°', '90°E', '180°E']
     ytick_labels = ['90°S', '45°S', '0°', '45°N', '90°N']
     xticks = np.linspace(0, label.shape[-1] - 1, 5)
     yticks = np.linspace(0, label.shape[-2] - 1, 5)
 
+    # 计算统一色条范围
     vmin = min(label.min(), pred.min())
     vmax = max(label.max(), pred.max())
 
+    # 计算差异和 RMSE
     diff = label - pred
     rmse = np.sqrt(np.mean(diff ** 2))
     diff_abs_max = np.abs(diff).max()
 
+    # 绘图配置
     plot_configs = [
         {'data': label, 'title': 'Truth', 'cmap': 'viridis', 'vmin': vmin, 'vmax': vmax},
         {'data': pred,  'title': 'Prediction', 'cmap': 'viridis', 'vmin': vmin, 'vmax': vmax},
         {'data': diff,  'title': f'Difference (RMSE={rmse:.2f})', 'cmap': 'RdBu_r', 'vmin': -diff_abs_max, 'vmax': diff_abs_max},
     ]
 
+    # 统一绘制
     for ax, cfg in zip(axes, plot_configs):
         im = ax.imshow(cfg['data'], cmap=cfg['cmap'], vmin=cfg['vmin'], vmax=cfg['vmax'])
         ax.set_title(cfg['title'], fontsize=12, pad=4)
@@ -122,29 +131,40 @@ def plot(label, pred, var, filename):
         ax.set_yticklabels(ytick_labels)
         plt.colorbar(im, ax=ax, orientation='horizontal')
 
+    # 总标题
     fig.suptitle(var, fontsize=14, fontweight='bold', y=0.98)
+
     plt.savefig(filename, dpi=300, bbox_inches='tight')
     plt.close()
 
 
-def plot_loss(train_loss):
-    mask = ~(np.isnan(train_loss))
+def plot_loss(train_loss, valid_loss):
+
+    mask = ~(np.isnan(train_loss) | np.isnan(valid_loss))
     train_loss = train_loss[mask]
+    valid_loss = valid_loss[mask]
 
     fig, ax = plt.subplots(figsize=(5, 3.5))
+    # 配置
     colors = {'train': '#2563EB', 'valid': '#EA580C'}
     epochs = np.arange(1, len(train_loss) + 1)
 
+    # 绑定曲线
     ax.plot(epochs, train_loss, color=colors['train'], linewidth=1.5, label='Train')
-    min_idx = np.argmin(train_loss)
-    ax.scatter(epochs[min_idx], train_loss[min_idx],
+    ax.plot(epochs, valid_loss, color=colors['valid'], linewidth=1.5, label='Valid', linestyle='--')
+    # 标注最小值
+    min_idx = np.argmin(valid_loss)
+    ax.scatter(epochs[min_idx], valid_loss[min_idx],
                color=colors['valid'], s=40, zorder=5, edgecolors='white')
-    ax.annotate(f'Best: {train_loss[min_idx]:.3f}',
-                xy=(epochs[min_idx], train_loss[min_idx]),
+    ax.annotate(f'Best: {valid_loss[min_idx]:.3f}',
+                xy=(epochs[min_idx], valid_loss[min_idx]),
                 xytext=(10, 10), textcoords='offset points', fontsize=8, color=colors['valid'],
                 arrowprops=dict(arrowstyle='-', color=colors['valid'], lw=0.5))
 
+    # 坐标轴
     ax.set(xlabel='Epoch', ylabel='Loss', xlim=(0, len(train_loss) + 1))
+
+    # 样式
     ax.legend(frameon=False, loc='upper right')
     ax.grid(True, linestyle='--', alpha=0.3)
     ax.spines[['top', 'right']].set_visible(False)
@@ -162,7 +182,8 @@ if __name__ == "__main__":
     cfg_data = YParams(config_file_path, "datapipe")
 
     train_loss = np.load('./data/checkpoints/trloss.npy')
-    plot_loss(train_loss)
+    valid_loss = np.load('./data/checkpoints/valoss.npy')
+    plot_loss(train_loss, valid_loss)
 
     data_dir = cfg_data.dataset.data_dir
     total_files, channel_indices, time_step = get_metadata(data_dir, cfg_data.dataset.channels)

@@ -1,7 +1,7 @@
 # ERA5数据集配置示例
 model:
   start_epoch: 0
-  max_epoch: 1
+  max_epoch: 100
   lr: 1E-3
   num_blocks: 8
   patch_size: [8, 8]
@@ -18,9 +18,9 @@ datapipe:
     type: "hdf5"
     data_dir: './data/' # "$ONESCIENCE_DATASETS_DIR/ERA5/newh5/" 
     
-    train_time: [1951]
-    val_time: [1952]
-    test_time: [1953]
+    train_time: [1951, 1952]
+    val_time: [1953]
+    test_time: [1954]
     img_size: [721, 1440]
     verbose: true
     cache: false
@@ -101,10 +101,11 @@ datapipe:
   
   # 分布式配置
   distributed:
-    enabled: false
+    enabled: true
     sampler: "DistributedSampler"
     rank: 0
-    world_size: 1
+    world_size: 4
     shuffle: true
     seed: 42
     drop_last: true
+

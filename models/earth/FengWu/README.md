@@ -1,147 +1,174 @@
-# FengWu
-
 <p align="center">
   <strong>
-    <span style="font-size: 20px;">点击下方图片，体验一键式 FengWu 模型开发</span>
+    <span style="font-size: 30px;">FengWu</span>
   </strong>
 </p>
 
-<p align="center">
-  <a href="https://modelscope.cn/models/OneScience/FengWu/" target="_blank" rel="noopener noreferrer">
-    <img src="https://www.modelscope.cn/api/v1/models/VoyagerX/OneScience-badge/repo?Revision=master&FilePath=LOGOs.png" width="200" alt="Logo">
-  </a>
-</p>
+# 模型介绍
 
-## OneScience 官方信息
+FengWu（风乌）是上海人工智能实验室联合多所高校发布的全球中期天气预报大模型，基于多模态和多任务深度学习方法，首次实现在高分辨率上对核心大气变量超过 10 天的有效预报。
 
-| 平台 | 文档 | OneScience 主仓库 | Skills 仓库 |
-|---|---|---|---|
-| Gitee | https://gitee.com/onescience-ai/onescience-doc | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
-| GitHub | https://github.com/onescience-ai/OneScience-doc | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+论文：FengWu: Pushing the Skillful Global Medium-range Weather Forecast beyond 10 Days Lead
 
-## 项目说明
+https://arxiv.org/abs/2304.02948
 
-FengWu（风乌）是面向全球中期天气预报的深度学习模型运行包，属于 OneScience 的 earth 领域。该标准化仓库提供训练、推理、评测和可视化脚本，输入为 ERA5 年度 HDF5 格点场，输出为预测的多变量大气场、训练 checkpoint、RMSE/ACC 指标和可视化图片。
+# 仓库说明
 
-本仓库按 OneScience ModelScope 大模型运行标准整理，模型上传目标 ID 固定为 `OneScience/FengWu/`。当前包不内置预训练 checkpoint；推理、评测和可视化需要先通过训练生成 `data/checkpoints/model_bak.pth`，或由用户放入兼容 checkpoint。
+本仓库是 OneScience 整理的 FengWu 最小可运行独立模型仓库，面向 ModelScope 下载、OneCode 自动化运行和本地快速验证场景。
 
-## Resource Card
+当前支持能力：
 
-| 字段 | 内容 |
-|---|---|
-| 资源类型 | 模型 |
-| OneScience 领域 | earth |
-| 领域标签 | earth, atmosphere, weather |
-| 任务 | weather_forecast |
-| 任务标签 | weather_forecast, spatiotemporal_forecast |
-| 主平台资源 | https://modelscope.cn/models/OneScience/FengWu/ |
-| ModelScope 模型 ID | `OneScience/FengWu/` |
-| 标准运行包工作目录 | `.` |
-| OneScience examples 兼容路径 | 无，当前为标准运行包 |
-| 必需模型文件 | `conf/config.yaml`, `train.py`, `inference.py`, `result.py` |
-| 必需数据集 | `OneScience/ERA5` |
-| 支持能力 | 预检、训练、推理、评测、可视化 |
-| 最小验证 | `python scripts/preflight_fengwu.py --workdir .` |
+- 训练
+- 推理
+- 评估与可视化
+- 生成空壳 HDF5 假数据用于流程连通性验证
 
-## 文件说明
+当前不支持的能力：
 
-| 路径 | 类型 | 作用 | 是否必需 | 用于能力 | 下载后放置位置 | 备注 |
-|---|---|---|---|---|---|---|
-| `README.md` | 说明文件 | 人类和大模型的入口说明 | 是 | 全部能力 | 仓库根目录 | 正文中文 |
-| `onescience_run_manifest.yaml` | Manifest 文件 | 机器可读运行说明，声明资源身份、关系、命令和诊断 | 是 | 全部能力 | 仓库根目录 | 主要 Manifest |
-| `manifest.yaml` | Manifest 兼容入口 | 兼容标准默认 Manifest 文件名 | 是 | 全部能力 | 仓库根目录 | 内容与主 Manifest 一致 |
-| `conf/config.yaml` | 配置文件 | FengWu 模型、ERA5 数据路径、年份、通道和 dataloader 配置 | 是 | 预检、训练、推理、评测 | `conf/config.yaml` | 已适配当前 ERA5 数据年份 |
-| `scripts/preflight_fengwu.py` | 预检脚本 | 检查配置、数据路径、年度文件、变量、shape、dtype 和统计量 | 是 | 预检 | `scripts/preflight_fengwu.py` | 不启动训练 |
-| `train.py` | 运行脚本 | 训练 FengWu 并写出 checkpoint 和 loss | 是 | 训练 | `train.py` | checkpoint 输出到 `data/checkpoints/` |
-| `inference.py` | 运行脚本 | 读取 checkpoint 对测试年份执行推理 | 条件必需 | 推理 | `inference.py` | 需要 `data/checkpoints/model_bak.pth` |
-| `result.py` | 运行脚本 | 计算 RMSE/ACC 并绘制结果 | 条件必需 | 评测、可视化 | `result.py` | 需要推理输出 |
-| `fake_data.py` | 辅助脚本 | 生成极小 HDF5 测试数据 | 否 | 调试 | `fake_data.py` | 不替代真实 ERA5 |
-| `work_slurm.sh` | 集群脚本 | Slurm/DCU 训练提交示例 | 否 | 训练 | `work_slurm.sh` | 提交前检查分区和环境 |
+- 提供预训练权重
+- 内置真实 ERA5 数据下载与预处理
 
-## Manifest
+# 适用场景
 
-主 Manifest 文件是 `onescience_run_manifest.yaml`，兼容入口是 `manifest.yaml`。大模型应先读取本 README，再解析 Manifest；修改配置、命令或文件结构时必须同步更新这两个 Manifest 文件。
+| 场景 | 说明 |
+| :---: | :--- |
+| 天气预报训练 | 使用 ERA5 HDF5 数据训练 FengWu |
+| 单步推理 | 加载训练得到的 `data/checkpoints/model_bak.pth` 生成预测结果 |
+| 结果评估 | 对推理输出计算 RMSE/ACC 并绘制示例变量 |
+| 流程验证 | 使用 `fake_data.py` 生成小样本空壳数据检查脚本连通性 |
 
-## 模型 vs 数据集关系
+# 文件说明
 
-本模型必须配套数据集 `OneScience/ERA5`。模型 Manifest 的 `relations.required_datasets` 指向该数据集，数据集 Manifest 的 `relations.compatible_models` 反向指向 `OneScience/FengWu/`。默认配置要求数据集放在模型工作目录的 `data/ERA5/`，其内部应包含 `data/1979.h5` 到 `data/2025.h5`。
+| 路径 | 功能 | 备注 |
+| :--- | :--- | :--- |
+| `README.md` | 工程使用说明文档 | 中文为主 |
+| `conf/config.yaml` | 训练、推理和数据配置 | 已适配本仓库相对路径 |
+| `scripts/train.py` | 训练脚本 | 支持单卡和 torchrun 多卡 |
+| `scripts/inference.py` | 推理脚本 | 需存在训练权重 |
+| `scripts/result.py` | 评估与可视化脚本 | 读取 `result/output/*.npy` |
+| `scripts/fake_data.py` | 假数据生成脚本 | 用于快速连通性验证 |
+| `model/fengwu.py` | 独立 Python 包 | 不依赖 OneScience 源码包 |
+| `weight/` | 权重目录 | 可放置预训练或发布权重 |
 
-## 文件与下载
+# 使用说明
 
-下载模型运行包：
+## 1. OneCode 使用
 
-```bash
-modelscope download --model OneScience/FengWu/ --local_dir .
-```
+可通过 OneCode 在线环境体验智能化一键式 AI4S 编程：
 
-下载数据集到模型包期望位置：
+[点击体验智能化一键式 AI4S 编程](https://web-2069360198568017922-iaaj.ksai.scnet.cn:58043/home)
 
-```bash
-modelscope download --dataset OneScience/ERA5 --local_dir data/ERA5
-```
+## 2. 手动安装使用
 
-如果网页端或自动工具使用 `--cache_dir` 下载模型，运行前需要把 `cwd` 切换到实际下载后的模型包根目录，也就是包含 `conf/config.yaml` 和 `onescience_run_manifest.yaml` 的目录。
+**硬件要求**
 
-## 环境安装
+- 推荐使用 GPU 或 DCU 运行。
+- CPU 可以用于导入和小配置连通性验证，完整训练和推理速度较慢。
+- DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
 
-优先使用网站已有 OneScience 环境。环境缺失时，从 OneScience 主仓库安装 earth 领域依赖：
+
+
+## 3. 快速开始
+
+
+
+### 安装运行环境
 
 ```bash
+# 若使用conda，请先进入conda环境
+git clone https://gitee.com/onescience-ai/onescience.git
+cd onescience
 bash install.sh earth
 ```
 
-运行训练和推理需要 PyTorch、h5py、numpy、tqdm、matplotlib，以及 OneScience 的 `onescience.models.fengwu` 和 `onescience.datapipes.climate.ERA5Datapipe`。
+### 生成假数据进行流程验证
 
-## 运行流程
-
-1. 下载模型包并进入模型包根目录。
-2. 下载 `OneScience/ERA5` 到 `data/ERA5`。
-3. 执行预检：
+如需先用空壳数据检查路径和数据格式，可将 `conf/config.yaml` 中 `model.max_epoch` 设为 `1`，并确认 `datapipe.dataset.data_dir` 指向本地测试目录。
 
 ```bash
-python scripts/preflight_fengwu.py --workdir .
+python scripts/fake_data.py
 ```
 
-4. 训练：
+同时，OneScience 社区提供可供训练的 ERA5 数据（受数据文件大小限制，当前仓库内为完整数据切片），用户可通过下述命令下载，并确认 `conf/config.yaml` 中数据路径设置正确：
 
 ```bash
-python train.py
+modelscope download --dataset OneScience/ERA5 --local_dir ./data
 ```
 
-5. 训练生成 `data/checkpoints/model_bak.pth` 后推理：
+### 训练
+
+单卡：
 
 ```bash
-python scripts/preflight_fengwu.py --workdir . --require-checkpoint
-python inference.py
+python scripts/train.py
 ```
 
-6. 评测和可视化：
+多卡：
 
 ```bash
-python result.py
+torchrun --nproc_per_node=8 --nnodes=1 --rdzv_id=1000 --rdzv_backend=c10d --max_restarts=0 --master_addr="localhost" --master_port=29500 scripts/train.py
 ```
 
-## 预检与诊断
+训练会在 `data/checkpoints/` 下保存 `model_bak.pth`。
 
-预检脚本会检查 `conf/config.yaml` 是否可解析，`datapipe.dataset.data_dir` 是否存在，训练/验证/测试年份文件是否齐全，HDF5 中是否存在 `fields`、`global_means`、`global_stds`，shape、dtype、变量列表和统计量是否匹配。
+### 推理
 
-常见错误：
+```bash
+python scripts/inference.py
+```
 
-| 现象 | 可能原因 | 处理方式 |
-|---|---|---|
-| `missing ERA5 HDF5 directory` | 数据集未下载到 `data/ERA5` | 运行 `modelscope download --dataset OneScience/ERA5 --local_dir data/ERA5` |
-| `missing configured year files` | 年度 HDF5 文件不完整 | 对照数据集 checksum 重新整理或下载 |
-| `missing configured channels` | 数据 schema 与配置不匹配 | 使用 `OneScience/ERA5` 标准数据或同步修改配置和 Manifest |
-| `missing checkpoint for inference/evaluate` | 尚未训练或 checkpoint 未放置 | 先训练，或将兼容 checkpoint 放入 `data/checkpoints/model_bak.pth` |
+推理结果会保存至 `result/output/`。
 
-## 输出说明
+### 评估和可视化
 
-训练输出位于 `data/checkpoints/`，包括 `model_bak.pth`、`trloss.npy` 和 `valoss.npy`。推理输出位于 `result/output/`，评测指标为 `result/rmse.npy` 和 `result/acc.npy`，可视化图片输出到 `result/`。
+```bash
+python scripts/result.py
+```
 
-## 限制与适用范围
+`result.py` 末尾可指定日期和变量进行可视化。
 
-本整理包当前不包含预训练权重，默认训练配置面向 1979-2025 年 ERA5 HDF5 数据。全量训练计算量较大，自动化流程默认先运行预检；训练、推理和评测需要具备 OneScience earth 运行环境和可用加速硬件。
 
-## 引用与许可证
+# 数据格式
 
-FengWu 原始论文：`FengWu: Pushing the Skillful Global Medium-range Weather Forecast beyond 10 Days Lead`。原始模型代码 README 标注许可证为 Apache 2.0；数据许可证以 ERA5 数据来源和 `OneScience/ERA5` 数据集仓库说明为准。
+（真实数据存放在 `data/` 下，）默认结构如下：
+
+```text
+data/
+  data/
+    1979.h5
+    1980.h5
+    ...
+  static/
+    land_mask.npy
+    soil_type.npy
+    topography.npy
+```
+
+年度 HDF5 文件需包含：
+
+- `fields` 数据集，形状为 `[T, C, H, W]`
+- `fields.attrs["variables"]`，变量名列表
+- `fields.attrs["time_step"]`，时间间隔小时数
+- `global_means`，形状为 `[1, C, 1, 1]`
+- `global_stds`，形状为 `[1, C, 1, 1]`
+
+ `conf/config.yaml` 中的数据配置：
+
+```yaml
+data_dir: 存放ERA5年度数据、均值/标准差文件、静态文件
+train_time: [2000, 2001]   # 训练年份
+val_time: [2002]            # 验证年份
+test_time: [2003]           # 测试年份
+```
+
+# OneScience 官方信息
+
+| 平台 | OneScience 主仓库 | Skills 仓库 |
+| --- | --- | --- |
+| Gitee | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
+| GitHub | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+
+# 引用与许可证
+
+- FengWu 原始论文：FengWu: Pushing the Skillful Global Medium-range Weather Forecast beyond 10 Days Lead（https://arxiv.org/abs/2304.02948）。
+- 本仓库保留来源说明，并面向 OneScience ModelScope 自动运行场景进行整理。

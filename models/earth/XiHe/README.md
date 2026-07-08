@@ -1,6 +1,6 @@
 <p align="center">
   <strong>
-    <span style="font-size: 30px;">Xihe</span>
+    <span style="font-size: 30px;">XiHe</span>
   </strong>
 </p>
 
@@ -34,7 +34,7 @@ Xihe（羲和）是面向高分辨率全球海洋预报的 Transformer 模型，
 | :---: | :--- |
 | 全球海洋预报研究 | 基于年度 CMEMS HDF5 数据训练 Xihe 风格的海洋预报模型。 |
 | 本地快速验证 | 使用虚拟数据检查数据读取、训练入口、推理和结果脚本。 |
-| ModelScope/OneCode 运行 | 作为独立模型包下载后直接安装依赖并运行脚本。 |
+| OneCode 运行 | 作为独立模型包下载后直接安装依赖并运行脚本。 |
 | 多卡训练 | 通过 `torchrun`启动多进程训练。 |
 
 
@@ -43,17 +43,12 @@ Xihe（羲和）是面向高分辨率全球海洋预报的 Transformer 模型，
 | 路径 | 功能 | 备注 |
 | :--- | :--- | :--- |
 | `README.md` | 工程使用说明 | 中文为主 |
-| `configuration.json` | ModelScope/OneCode 元信息 | 标记 Pytorch 与通用任务 |
-| `requirements.txt` | Python 依赖列表 | 标准安装入口 |
-| `requirements_dcu.txt` | DCU 环境依赖列表 | 当前与 `requirements.txt` 保持一致，可按集群实际修改 |
-| `config/config.yaml` | 模型、数据和训练配置 | 路径已适配独立包 |
-| `scripts/_bootstrap.py` | 运行路径初始化 | 自动将 `model/` 加入 Python 路径并切换到包根目录 |
+| `conf/config.yaml` | 模型、数据和训练配置 | 路径已适配独立包 |
 | `scripts/fake_data.py` | 生成轻量测试数据 | 输出到 `config/config.yaml` 中配置的数据目录 |
 | `scripts/train.py` | 训练入口 | 输出 `data/checkpoints/model_bak.pth` |
 | `scripts/inference.py` | 推理入口 | 默认读取 `model_bak.pth` |
 | `scripts/result.py` | 评估和可视化入口 | 输出 RMSE/ACC 和图片到 `result/` |
-| `scripts/work_slurm.sh` | Slurm 示例脚本 | 提交前按集群修改资源参数 |
-| `model/xihe_src/` | 本地源码包 | 包含 Xihe、CMEMS 数据管道、SIE/Attention/MLP 模块和配置读取工具 |
+| `model/xihe.py` | 模型代码 | 基于OneScience复现的xihe代码 |
 | `weight/` | 权重占位目录 | 当前未内置权重 |
 
 # 使用说明
@@ -72,41 +67,14 @@ Xihe（羲和）是面向高分辨率全球海洋预报的 Transformer 模型，
 - CPU 可以用于导入和小配置连通性验证，完整训练和推理速度较慢。
 - DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
 
-**软件要求**
-
-请参考 `requirements_dcu.txt`。标准 Python 环境也可以使用：
-
-```bash
-pip install -r requirements_dcu.txt
-```
-
-**环境检测**
-
-NVIDIA GPU：
-
-```bash
-nvidia-smi
-```
-
-海光 DCU：
-
-```bash
-hy-smi
-```
-
 ## 3. 快速开始
-
-### 下载模型包
-
-```bash
-modelscope download --model OneScience/Xihe --local_dir ./Xihe
-cd Xihe
-```
 
 ### 安装运行环境
 
 ```bash
-pip install -r requirements_dcu.txt
+git clone https://gitee.com/onescience-ai/onescience.git
+cd onescience
+bash install.sh earth
 ```
 
 ### 生成假数据进行流程验证
@@ -115,6 +83,12 @@ pip install -r requirements_dcu.txt
 
 ```bash
 python scripts/fake_data.py
+```
+
+同时，OneScience 社区提供可供训练的 CMEMS 数据（受数据文件大小限制，当前仓库内为完整数据切片），用户可通过下述命令下载，并确认 `config/config.yaml` 中数据路径设置正确：
+
+```bash
+modelscope download --dataset OneScience/CMEMS --local_dir ./data
 ```
 
 ### 训练
@@ -177,9 +151,6 @@ data/
     2010.h5
     2013.h5
     2014.h5
-  stats/
-    global_means.npy
-    global_stds.npy
   land_mask.npy
   metadata.json
 ```

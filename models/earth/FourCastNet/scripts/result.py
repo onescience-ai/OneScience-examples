@@ -6,13 +6,8 @@ import glob
 import h5py
 from datetime import datetime
 from tqdm import tqdm
+from onescience.utils.fcn.YParams import YParams
 from matplotlib import rcParams
-
-from _bootstrap import prepare_runtime
-
-current_path = str(prepare_runtime())
-
-from fourcastnet_src.utils import YParams
 
 # rcParams['font.family'] = 'serif'
 # rcParams['font.serif'] = ['DejaVu Serif']
@@ -163,7 +158,9 @@ def plot_loss(train_loss, valid_loss):
 
 
 if __name__ == "__main__":
-    config_file_path = os.path.join(current_path, 'config/config.yaml')
+    current_path = os.getcwd()
+    sys.path.append(current_path)
+    config_file_path = os.path.join(current_path, 'conf/config.yaml')
     cfg = YParams(config_file_path, 'model')
     cfg_data = YParams(config_file_path, "datapipe")
 

@@ -1,24 +1,25 @@
+import sys
+from pathlib import Path
+
+# 获取项目根目录（train.py上级的上级）
+root_path = Path(__file__).parent.parent
+sys.path.append(str(root_path))
+
 import torch
 import os
-import sys
-
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(PROJECT_ROOT, "model"))
-
 import numpy as np
 import torch.distributed as dist
 import logging
 import time
 import torch.nn.functional as F
 from torch.nn.parallel import DistributedDataParallel
-from pangu_weather.models import Pangu
-from pangu_weather.data import ERA5Datapipe
-from pangu_weather.utils import YParams, replace_function
+from model.pangu import Pangu
+from onescience.datapipes.climate import ERA5Datapipe
+from onescience.utils.YParams import YParams
+from onescience.memory.checkpoint import replace_function
+from apex import optimizers
 
-try:
-    from apex import optimizers as apex_optimizers
-except ImportError:
-    apex_optimizers = None
+
 
 
 def loss_func(x, y, weights, level_weight=1.0):
@@ -30,7 +31,7 @@ def main():
     logger = logging.getLogger()
 
     ## Model config init
-    config_file_path = os.path.join(current_path, "config/config.yaml")
+    config_file_path = os.path.join(current_path, "conf/config.yaml")
     cfg = YParams(config_file_path, "model")
 
     ## Distributed config init
@@ -84,10 +85,7 @@ def main():
                   num_heads=cfg.num_heads,
                   window_size=cfg.window_size,
                   ).to(local_rank)
-    if apex_optimizers is not None:
-        optimizer = apex_optimizers.FusedAdam(model.parameters(), betas=(0.9, 0.999), lr=5e-4, weight_decay=3e-6)
-    else:
-        optimizer = torch.optim.AdamW(model.parameters(), betas=(0.9, 0.999), lr=5e-4, weight_decay=3e-6)
+    optimizer = optimizers.FusedAdam(model.parameters(), betas=(0.9, 0.999), lr=5e-4, weight_decay=3e-6)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=100)
     
     ## Train process init
@@ -245,6 +243,6 @@ def save_checkpoint(model, optimizer, scheduler, best_valid_loss, best_loss_epoc
 
 
 if __name__ == "__main__":
-    current_path = PROJECT_ROOT
-    os.chdir(current_path)
+    current_path = os.getcwd()
+    sys.path.append(current_path)
     main()

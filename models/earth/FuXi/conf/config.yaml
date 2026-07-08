@@ -13,7 +13,7 @@ model:
     medium_num_steps: 40
     long_num_steps: 60
     finetune_step: 1
-    step_change_freq: 1000
+    step_change_freq: 200
     input_steps: 2
     num_blocks: 8
     checkpoint_dir : "./data/checkpoints"
@@ -28,9 +28,9 @@ datapipe:
   dataset:
     type: "hdf5"
     data_dir: './data/' # "$ONESCIENCE_DATASETS_DIR/ERA5/newh5/" 
-    train_time: [1951]
-    val_time: [1952]
-    test_time: [1953]
+    train_time: [2000,2001]
+    val_time: [2022]
+    test_time: [2023] 
     img_size: [2, 721, 1440]
     verbose: true
     cache: false
@@ -99,7 +99,7 @@ datapipe:
   # DataLoader配置
   dataloader:
     mask_dtype: "float32"
-    batch_size: 4
+    batch_size: 1
     num_workers: 1
     pin_memory: true
     drop_last: true
@@ -109,10 +109,10 @@ datapipe:
   
   # 分布式配置
   distributed:
-    enabled: false
+    enabled: true
     sampler: "DistributedSampler"
     rank: 0
-    world_size: 1
+    world_size: 4
     shuffle: true
     seed: 42
     drop_last: true
