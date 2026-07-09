@@ -1,162 +1,205 @@
-# RFdiffusion
-
 <p align="center">
-    <a href="https://www.modelscope.cn/studios/OneScience/OneScience" target="_blank">
-        <img src="https://www.modelscope.cn/api/v1/models/VoyagerX/OneScience-badge/repo?Revision=master&FilePath=LOGOs.png" width="200" alt="Logo">
-    </a>
+  <strong>
+    <span style="font-size: 30px;">RFdiffusion</span>
+  </strong>
 </p>
 
-## OneScience 官方信息
+# 模型介绍
 
-| 平台 | 文档 | OneScience 主仓库 | Skills 仓库 |
-| --- | --- | --- | --- |
-| Gitee | https://gitee.com/onescience-ai/onescience-doc | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
-| GitHub | https://github.com/onescience-ai/OneScience-doc | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+RFdiffusion 是一种基于扩散模型的蛋白质骨架生成和设计方法，可用于无条件骨架生成、motif scaffolding、PPI/binder 设计和对称寡聚体采样。当前 ModelScope 包面向下载即用、本地快速验证和 OneCode 自动化运行场景，代码、配置、示例输入和权重均已放在当前目录内。
 
-## 项目说明
+# 仓库说明
 
-RFdiffusion 是面向蛋白质结构生成与蛋白设计的扩散模型。它可以在无条件生成、基序支架设计、对称寡聚体设计、蛋白-蛋白相互作用设计和部分扩散设计等场景中生成候选蛋白质骨架，并输出 PDB 结构、扩散轨迹和运行元数据。
+本仓库是 OneScience 整理的 RFdiffusion 全量可运行模型仓库。`examples/` 和 `weight/` 已随模型包完整提供，运行 `env_install.sh` 只安装依赖并执行预检，不再从社区下载权重或示例输入。
 
-本仓库是 OneScience 标准化后的 RFdiffusion 可运行模型包，ModelScope ID 为 `OneScience/RFdiffusion`。包内保留 OneScience 示例目录中的脚本、配置、示例输入 PDB、辅助脚本和图片，并内置 `models/` 权重目录；用户下载后可以直接在包根目录运行预检，也可以使用 `scripts/run_inference.py` 按 Hydra 参数执行推理。
+当前支持能力：
 
-## Resource Card
+- 无条件蛋白骨架设计。
+- motif scaffolding，使用本地或用户提供的 PDB。
+- PPI/binder 设计，按 RFdiffusion 原始配置参数指定 hotspot、contig 等输入。
+- 对称寡聚体采样，使用 `config/inference/symmetry.yaml`。
+- 包完整性预检 `scripts/preflight.py`，可检查示例输入、真实权重和本地 import。
 
-| 字段 | 内容 |
-| --- | --- |
-| 资源类型 | model |
-| OneScience 领域 | bio |
-| 领域标签 | protein design, protein structure, diffusion |
-| 任务 | protein_structure_design |
-| 任务标签 | unconditional generation, motif scaffolding, binder design |
-| ModelScope ID | `OneScience/RFdiffusion` |
-| 主平台资源 | https://modelscope.cn/models/OneScience/RFdiffusion |
-| 标准运行包工作目录 | `.` |
-| OneScience examples 兼容路径 | `examples/biosciences/RFdiffusion` |
-| 支持能力 | 预检、推理、示例输入验证 |
-| 必需模型文件 | `models/Base_ckpt.pt`；其他 checkpoint 按任务选用 |
-| 必需数据集 | 无强依赖训练数据；推理输入 PDB 可由用户提供或使用 `examples/input_pdbs/` |
-| 最小验证 | `python tools/preflight_check.py --repo-root .` |
+当前不支持能力：
 
-## 文件说明
+- 不提供独立训练、微调或评估脚本。
+- 不支持运行时自动访问远端补齐缺失文件；请保持模型包下载完整。
+- 不需要也不内置 Protenix/AlphaFold 类模型使用的 CCD 缓存或 MSA 数据库。
 
-| 路径 | 类型 | 作用 | 是否必需 | 用于能力 | 下载后放置位置 | 备注 |
-| --- | --- | --- | --- | --- | --- | --- |
-| `README.md` | 说明文件 | 人类和大模型读取入口 | 是 | 全部能力 | 仓库根目录 | 本文件 |
-| `manifest.yaml` | Manifest 文件 | 机器可读运行说明，声明资源身份、文件、关系、命令和诊断信息 | 是 | 全部能力 | 仓库根目录 | 修改运行包时必须同步更新 |
-| `onescience_relations.yaml` | 关系索引 | 声明模型与外部输入或数据集的关系 | 是 | 自动解析 | 仓库根目录 | 当前无必需数据集 |
-| `scripts/run_inference.py` | 推理脚本 | RFdiffusion Hydra 推理入口 | 是 | 推理 | 仓库根目录下相同路径 | 可用 Hydra 参数覆盖配置 |
-| `config/inference/base.yaml` | 配置文件 | 基础推理配置和默认权重目录约定 | 是 | 推理 | 仓库根目录下相同路径 | 标准命令覆盖 `inference.model_directory_path=$PWD/models` |
-| `config/inference/symmetry.yaml` | 配置文件 | 对称设计相关配置 | 否 | 对称推理 | 仓库根目录下相同路径 | 对称设计示例使用 |
-| `models/` | 模型权重目录 | RFdiffusion checkpoint 和结构预测权重 | 是 | 推理、任务切换 | 仓库根目录下相同路径 | 总大小约 3.9G |
-| `examples/` | 示例脚本和输入 | 官方示例命令、PDB 输入、支架文件和目标折叠条件文件 | 是 | 推理、最小样例 | 仓库根目录下相同路径 | 用户也可替换为自己的 PDB |
-| `helper_scripts/` | 辅助脚本 | 二级结构和邻接矩阵等辅助处理 | 否 | 高级示例 | 仓库根目录下相同路径 | 部分支架设计流程使用 |
-| `img/` | 图片资源 | 原始说明文档配图 | 否 | 文档 | 仓库根目录下相同路径 | 便于阅读 |
-| `RFdiffusion_README.md` | 原始说明 | OneScience 示例目录原说明文档 | 否 | 文档 | 仓库根目录 | 保留原有示例说明 |
-| `tools/preflight_check.py` | 预检脚本 | 检查 Manifest、README 编码、关键文件、权重和 repo_id 一致性 | 是 | 预检 | 仓库根目录下相同路径 | 上传前后均使用 |
-| `checksums.sha256` | 校验清单 | 标准包文件 SHA256 | 是 | 校验 | 仓库根目录 | 上传前生成 |
+# 适用场景
 
-## Manifest
+| 场景 | 说明 |
+| :---: | :--- |
+| 无条件骨架生成 | 输入 contig 约束，输出设计骨架 PDB。 |
+| Motif scaffolding | 输入包含 motif 的 PDB 和 contig 约束，输出 scaffold 设计结果。 |
+| PPI/binder 设计 | 输入目标结构、hotspot 和 contig 参数，输出 binder 设计候选。 |
+| 对称寡聚体采样 | 使用 symmetry 配置生成对称结构设计。 |
+| ModelScope 全量包验证 | 使用包内 `config/ modules/ scripts/ examples/ weight/` 布局直接预检和推理。 |
 
-Manifest 文件位于仓库根目录 `manifest.yaml`。修改仓库 ID、下载命令、运行命令、文件路径、权重目录或输入关系后，必须同步更新 Manifest，并执行 `python tools/preflight_check.py --repo-root .` 验证 YAML 可解析、关键字段存在、repo_id 一致、README 无乱码。
+# 文件说明
 
-## 模型 vs 数据集关系
+| 路径 | 功能 | 备注 |
+| :--- | :--- | :--- |
+| `README.md` | 工程使用说明文档 | 中文为主 |
+| `configuration.json` | ModelScope 元信息 | RFdiffusion 推理/采样包 |
+| `config/inference/` | Hydra 推理配置 | 包含 `base.yaml` 和 `symmetry.yaml` |
+| `modules/` | RFdiffusion 和 SE3 transformer 源码依赖 | 已改为本地 `modules.*` 导入 |
+| `scripts/run_inference.py` | 推荐推理入口 | 支持 Hydra 参数覆盖 |
+| `scripts/run_inference.sh` | Shell 推理入口 | 默认调用 `scripts/run_inference.py` |
+| `scripts/preflight.py` | 包完整性预检 | `--strict-weights` 可检查真实权重 |
+| `examples/input_pdbs/` | 最小示例 PDB | 默认使用 `1qys.pdb`，motif 示例使用 `1YCR.pdb` |
+| `weight/` | RFdiffusion checkpoint 目录 | 默认采样使用 `Base_ckpt.pt` |
+| `MODEL_FILE_MANIFEST.tsv` | 模型文件清单 | 记录权重和示例输入文件信息 |
 
-RFdiffusion 推理没有强制依赖固定训练数据集，因此 `relations.required_datasets` 为空。推理输入可以由用户提供 PDB 文件，也可以使用仓库内置的 `examples/input_pdbs/` 示例 PDB；Manifest 中通过 `relations.optional_inputs` 声明这类输入文件。训练数据不随本模型包发布。
+# 权重和示例输入
 
-## 文件与下载
+当前 ModelScope 包内已包含默认示例 PDB 和 RFdiffusion 权重，下载完整模型包后可以直接使用。
 
-使用 ModelScope CLI 下载模型包：
+当前 `weight/` 中应包含以下真实权重，文件名需保持不变：
+
+```text
+weight/ActiveSite_ckpt.pt
+weight/Base_ckpt.pt
+weight/Base_epoch8_ckpt.pt
+weight/Complex_Fold_base_ckpt.pt
+weight/Complex_base_ckpt.pt
+weight/Complex_beta_ckpt.pt
+weight/InpaintSeq_Fold_ckpt.pt
+weight/InpaintSeq_ckpt.pt
+weight/RF_structure_prediction_weights.pt
+```
+
+默认示例输入包括：
+
+```text
+examples/input_pdbs/1qys.pdb
+examples/input_pdbs/1YCR.pdb
+```
+
+RFdiffusion 首次推理可能会在 `.cache/schedules/` 生成 IGSO3 schedule 派生缓存，这是本地计算缓存，不是外部数据库。
+
+# 使用说明
+
+## 1. OneCode 使用
+
+可通过 OneCode 在线环境体验智能化一键式 AI4S 编程：
+
+[点击体验智能化一键式 AI4S 编程](https://web-2069360198568017922-iaaj.ksai.scnet.cn:58043/home)
+
+## 2. 手动安装使用
+
+**硬件要求**
+
+- 推荐使用GPU或DCU运行。
+- CPU可以用于连通性验证，但速度较慢。
+- DCU用户需要预先安装DTK，建议使用DTK 25.04.2以上版本或与当前集群匹配的OneScience推荐版本。
+
+**软件要求**
+
+想了解更多适配内容请联系 liubiao@sugon.com
+
+**环境检测**
+
+- NVIDIA GPU：
+
+```bash
+nvidia-smi
+```
+
+- 海光DCU：
+
+```bash
+hy-smi
+```
+
+## 快速开始
+
+### 1. 安装onescience库
+
+```bash
+git clone https://gitee.com/onescience-ai/onescience
+cd onescience
+bash install.sh bio
+```
+
+### 2. 下载模型包并下载权重&案例文件
 
 ```bash
 modelscope download --model OneScience/RFdiffusion --local_dir ./RFdiffusion
-```
-
-如网页端使用 `--cache_dir` 下载，运行前应切换到实际下载后的模型包根目录。所有 README、Manifest、下载命令和关系索引中的 repo_id 均为 `OneScience/RFdiffusion`。
-
-## 环境安装
-
-推荐在已部署的 OneScience 生物信息环境中运行。最小预检只需要 Python 和 PyYAML；实际推理需要 OneScience、PyTorch、Hydra/OmegaConf 以及 RFdiffusion 相关依赖。
-
-```bash
 cd ./RFdiffusion
-python tools/preflight_check.py --repo-root .
+bash download_assets.sh
 ```
 
-## 运行流程
+### 3. 运行预检
 
-### 1. 环境预检
+检查文件和真实权重：
 
 ```bash
-cd ./RFdiffusion
-python tools/preflight_check.py --repo-root .
+python scripts/preflight.py --strict-weights
 ```
 
-### 2. 下载
+安装依赖后检查本地 import：
 
 ```bash
-modelscope download --model OneScience/RFdiffusion --local_dir ./RFdiffusion
+python scripts/preflight.py --strict-weights --strict-imports
 ```
 
-### 3. 应用运行包和准备文件
-
-下载目录本身就是标准运行包。用户可使用 `examples/input_pdbs/` 中的内置 PDB，也可以把自己的 PDB 放到任意可读路径，并通过 Hydra 参数传给 `scripts/run_inference.py`。
-
-### 4. 运行前预检
+只验证入口和 Hydra 配置，不执行采样：
 
 ```bash
-cd ./RFdiffusion
-python tools/preflight_check.py --repo-root .
+RF_DIFFUSION_SMOKE_TEST=1 python scripts/run_inference.py
 ```
 
-### 5. 运行
+### 4. 运行推理
 
-最小无条件生成示例：
+无条件骨架采样示例：
 
 ```bash
-cd ./RFdiffusion
 python scripts/run_inference.py \
-  inference.model_directory_path=$PWD/models \
-  inference.output_prefix=example_outputs/design_unconditional \
-  'contigmap.contigs=[100-120]' \
-  inference.num_designs=1
-```
-
-基序支架示例：
-
-```bash
-cd ./RFdiffusion
-python scripts/run_inference.py \
-  inference.model_directory_path=$PWD/models \
-  inference.output_prefix=example_outputs/design_motifscaffolding \
-  inference.input_pdb=examples/input_pdbs/1YCR.pdb \
-  'contigmap.contigs=[A25-109/0 0-70/B17-29/0-70]' \
-  contigmap.length=70-120 \
+  'contigmap.contigs=[80-80]' \
+  diffuser.T=15 \
+  inference.final_step=15 \
   inference.num_designs=1 \
-  inference.ckpt_override_path=$PWD/models/Complex_base_ckpt.pt
+  inference.write_trajectory=False \
+  inference.output_prefix=outputs/smoke/design
 ```
 
-### 6. 验证输出
+Motif scaffolding 示例：
 
-推理成功后，`example_outputs/` 下会生成 `.pdb` 结构文件、`.trb` 元数据文件，并在 `example_outputs/traj/` 下生成扩散轨迹 PDB 文件。
+```bash
+python scripts/run_inference.py \
+  inference.input_pdb=examples/input_pdbs/1YCR.pdb \
+  'contigmap.contigs=[10-40/A163-181/10-40]' \
+  inference.output_prefix=outputs/motif/design
+```
 
-## 输出说明
+对称采样示例：
 
-主要输出包括最终设计结构 PDB、包含配置和采样元数据的 TRB 文件，以及可选轨迹 PDB。无条件生成不需要输入 PDB；基序支架、PPI、酶设计和部分扩散等任务需要用户提供或选择合适的 PDB 输入与对应 checkpoint。
+```bash
+python scripts/run_inference.py --config-name symmetry \
+  diffuser.T=15 \
+  inference.final_step=15 \
+  inference.output_prefix=outputs/symmetry/c2
+```
 
-## 预检与诊断
+### 5. 常用环境变量
 
-| 问题 | 诊断方式 | 处理建议 |
+```bash
+export RF_DIFFUSION_MODEL_DIR=weight
+export RF_DIFFUSION_INPUT_PDB=examples/input_pdbs/1qys.pdb
+export RF_DIFFUSION_OUTPUT_PREFIX=outputs/design
+export RF_DIFFUSION_SCHEDULE_DIR=.cache/schedules
+```
+
+# OneScience 官方信息
+
+| 平台 | OneScience 主仓库 | Skills 仓库 |
 | --- | --- | --- |
-| 找不到权重 | 执行 `python tools/preflight_check.py --repo-root .` | 确认 `models/Base_ckpt.pt` 和任务需要的 checkpoint 存在，必要时重新下载模型包 |
-| Manifest 解析失败 | 预检脚本会报告 YAML 错误 | 修复 `manifest.yaml` 缩进和字段 |
-| repo_id 不一致 | 预检脚本会检查 `OneScience/RFdiffusion` | 统一 README、Manifest、下载命令和 relations 中的 repo_id |
-| 推理依赖缺失 | 运行 `scripts/run_inference.py` 时出现 import error | 进入 OneScience 生物信息环境，安装 PyTorch、Hydra、OmegaConf 等依赖 |
-| 输入 PDB 不存在 | 推理脚本报告输入路径错误 | 使用 `examples/input_pdbs/` 的内置 PDB，或提供自己的 PDB 文件绝对路径 |
+| Gitee | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
+| GitHub | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
 
-## 限制与适用范围
+# 引用与许可证
 
-本仓库提供 RFdiffusion 推理运行包和 checkpoint，不提供全量训练数据。复杂设计任务需要用户根据目标蛋白、contig、hotspot、对称性和 checkpoint 选择合适参数；生成结果应结合结构评估、实验约束和下游筛选继续验证。
+RFdiffusion 原始代码和权重请遵守其上游项目许可证、模型权重使用条款以及相关数据源要求。本仓库保留来源说明，并面向 OneScience ModelScope 自动运行场景进行整理。
 
-## 引用与许可证
-
-RFdiffusion 原始方法请引用对应论文和上游项目。本资源遵循 OneScience AI4S ModelScope 大模型运行标准。权重、代码和示例使用时请遵守原始资源许可证、OneScience 项目规则和 ModelScope 平台规则。
+如果在科研工作中使用 RFdiffusion 结果，建议引用 RFdiffusion 原始论文和 OneScience 相关项目信息，并根据实际任务补充下游结构设计、评估或可视化工具引用。

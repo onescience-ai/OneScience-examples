@@ -1,163 +1,210 @@
-# SimpleFold
 
 <p align="center">
   <strong>
-    <span style="font-size: 20px;">点击下方图片，体验一键式 SimpleFold 模型开发</span>
+    <span style="font-size: 30px;">SimpleFold</span>
   </strong>
 </p>
 
-<p align="center">
-  <a href="https://modelscope.cn/models/OneScience/simplefold/" target="_blank" rel="noopener noreferrer">
-    <img src="https://www.modelscope.cn/api/v1/models/VoyagerX/OneScience-badge/repo?Revision=master&FilePath=LOGOs.png" width="200" alt="Logo">
-  </a>
-</p>
+# 模型介绍
 
-SimpleFold 是面向蛋白质结构预测的生成式折叠模型运行包，输入为蛋白质 FASTA 序列，输出为 mmCIF 或 PDB 结构文件。本仓库整理为 OneScience 标准运行包，包含推理脚本、训练入口、Hydra 配置、示例 FASTA、预检脚本、权重链接和机器可读 Manifest。
+SimpleFold 是 Apple 发布的生成式蛋白质折叠模型，用通用 Transformer 层和 flow matching 目标从蛋白质 FASTA 序列预测三维结构。当前整理包面向 ModelScope 下载、本地快速验证和 OneCode 自动化运行场景，输出结构文件支持 mmCIF/PDB。
 
-## OneScience 官方信息
+# 仓库说明
 
-| 平台 | 文档 | OneScience 主仓库 | Skills 仓库 |
-|---|---|---|---|
-| Gitee | https://gitee.com/onescience-ai/onescience-doc | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
-| GitHub | https://github.com/onescience-ai/OneScience-doc | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+本仓库是 OneScience 整理的 SimpleFold 最小可运行模型仓库。运行脚本默认只读取本地 `config/`、`modules/` 和 `weight/`.
+当前支持能力：
 
-## 项目说明
+- FASTA 单蛋白序列结构推理。
+- 可选 pLDDT 置信度输出。
+- PyTorch 后端推理；保留 MLX 后端代码，需用户自行安装 MLX 环境。
+- 本地训练入口 `scripts/train.py`。
+- FSDP 训练入口 `scripts/train_fsdp.py`。
+- 训练数据准备入口 `scripts/process_data.py`、`scripts/tokenize_data.py`。
+- 评估/预测入口 `scripts/evaluate.py`。
 
-SimpleFold 用通用 Transformer 层和流匹配目标进行蛋白质折叠建模，适合从氨基酸序列预测三维结构，也可作为训练和评测蛋白质折叠模型的 OneScience 示例入口。该标准包保留了原始 OneScience examples 中的 `inference.py`、`train.py`、`train_fsdp.py`、`configs/` 和 `assets/`，并新增 `run_inference.py` 与 `scripts/preflight.py`，方便网页端大模型读取 README 和 Manifest 后执行下载、预检和最小推理。
+当前不支持能力：
 
-本次任务的原始数据路径为“无”，因此推理场景不需要下载数据集；训练和评测的数据接口仍保留在配置中，用户如需训练，应按 `configs/data/pdb_sp.yaml` 准备 `./datasets`、`./datasets/tokenized` 和 `./datasets/manifest.json`。
+- 不支持运行时自动访问远端补齐缺失文件；请保持模型包下载完整。
+- 不支持蛋白-核酸/蛋白-配体复合物预测。
+- 不内置真实训练数据。
+- 没有独立微调脚本；微调通过 `scripts/train.py load_ckpt_path=...` 和 Hydra 配置覆盖完成。
 
-## Resource Card
+# 适用场景
 
-| 字段 | 内容 |
-|---|---|
-| 资源类型 | 模型 |
-| ModelScope 模型 ID | `OneScience/simplefold/` |
-| OneScience 领域 | `bio` |
-| 领域标签 | `bio`, `biosciences`, `protein_folding` |
-| 任务 | 蛋白质结构预测 |
-| 任务标签 | `protein_folding`, `structure_prediction`, `flow_matching` |
-| 主平台资源 | `https://modelscope.cn/models/OneScience/simplefold/` |
-| 标准运行包工作目录 | `.` |
-| OneScience examples 兼容路径 | `examples/biosciences/simplefold` |
-| 必需模型文件 | `checkpoints/` 下 SimpleFold 多尺度权重、pLDDT 权重、`ccd.pkl` |
-| 必需数据集 | `OneScience/simplefold_dataset`，仅用于训练/评测接口占位 |
-| 支持能力 | 预检、推理、训练接口 |
-| 最小验证 | `python scripts/preflight.py` |
+| 场景 | 说明 |
+| :---: | :--- |
+| 蛋白质结构预测 | 输入 FASTA，输出 mmCIF/PDB 结构。 |
+| 本地离线推理整理 | 示例输入和权重已放入 `examples/`、`weight/`，脚本只使用本仓库文件。 |
+| 训练/微调接口验证 | 用户按 `config/data/*.yaml` 准备 tokenized 数据后训练。 |
+| ModelScope 标准包 | 使用 `config/ models/ scripts/ weight/` 布局。 |
 
-## 文件说明
+# 文件说明
 
-| 路径 | 类型 | 作用 | 是否必需 | 用于能力 | 下载后放置位置 | 备注 |
-|---|---|---|---|---|---|---|
-| `README.md` | 说明文件 | 人类和大模型的第一入口 | 是 | 全部 | 仓库根目录 | 正文中文 |
-| `onescience_run_manifest.yaml` | Manifest 文件 | 机器可读运行说明，声明资源、文件、关系、命令和诊断 | 是 | 全部 | 仓库根目录 | 网页端优先读取 |
-| `manifest.yaml` | Manifest 文件 | 与 `onescience_run_manifest.yaml` 内容一致，兼容默认文件名 | 是 | 全部 | 仓库根目录 | 自动化工具可解析 |
-| `run_inference.py` | 推理入口 | 直接调用本仓库 `inference.py` 执行 FASTA 推理 | 是 | 推理 | 仓库根目录 | 避免依赖 `simplefold` 包名入口 |
-| `inference.py` | 原始推理脚本 | 初始化模型、ESM、采样器并保存结构 | 是 | 推理 | 仓库根目录 | 依赖 OneScience bio 环境 |
-| `train.py` / `train_fsdp.py` | 训练入口 | 单机或 FSDP 训练入口 | 训练必需 | 训练 | 仓库根目录 | 需要用户准备数据 |
-| `configs/` | 配置目录 | Hydra 模型、数据、训练、日志配置 | 是 | 推理、训练、预检 | `configs/` | 未改写原始数据接口 |
-| `checkpoints/` | 权重目录 | SimpleFold 多尺度权重、pLDDT 权重、CCD 辅助文件 | 是 | 推理、训练、评测 | `checkpoints/` | 本地整理包中为符号链接；上传时需确保真实文件进入仓库 |
-| `MODEL_FILE_MANIFEST.tsv` | 校验清单 | 权重文件名、大小和 SHA256 | 是 | 预检、上传核对 | 仓库根目录 | 来自原始权重目录 |
-| `assets/` | 示例结构 | 原始 examples 附带的参考 CIF 和图片 | 否 | 示例、诊断 | `assets/` | 不作为训练数据 |
-| `examples/minimal.fasta` | 示例输入 | 最小 FASTA 推理输入 | 是 | 推理 | `examples/minimal.fasta` | 可替换为用户 FASTA |
-| `scripts/preflight.py` | 预检脚本 | 检查 Manifest、配置、权重、样例和训练数据接口 | 是 | 预检 | `scripts/preflight.py` | 不执行重推理 |
+| 路径 | 功能 | 备注 |
+| :--- | :--- | :--- |
+| `README.md` | 工程使用说明文档 | 中文为主 |
+| `configuration.json` | ModelScope 元信息 | PyTorch / 蛋白结构预测 |
+| `config/` | Hydra 配置 | 由原 SimpleFold `configs/` 整理而来 |
+| `models/` | SimpleFold 所需源码依赖 | 包含 simplefold、ESM、OpenFold 工具子集 |
+| `scripts/run_inference.py` | 推荐推理入口 | 默认读取 `weight/` 和 `examples/minimal.fasta` |
+| `scripts/inference.py` | 推理核心脚本 | 已改成本地权重模式 |
+| `scripts/train.py` | 训练/微调入口 | 通过 Hydra 参数覆盖控制 |
+| `scripts/train_fsdp.py` | FSDP 训练入口 | 多卡训练使用 |
+| `scripts/evaluate.py` | 预测/评估入口 | 加载 checkpoint 后执行 predict |
+| `scripts/process_data.py` | mmCIF 数据处理 | 训练前数据准备 |
+| `scripts/tokenize_data.py` | tokenized 数据生成 | 训练前数据准备 |
+| `scripts/preflight.py` | 包完整性预检 | `--strict-weights` 可强校验真实权重 |
+| `weight/` | 权重和辅助文件目录 | 包含 SimpleFold、pLDDT、CCD、Boltz 辅助权重 |
+| `weight/esm_models/` | ESM-2 权重目录 | 包含 ESM2 3B `.pt` 和 contact regression 权重 |
+| `examples/minimal.fasta` | 最小 FASTA 示例 | 可直接替换为用户输入 |
 
-## Manifest
+# 权重放置
 
-机器可读 Manifest 位于仓库根目录：
+当前 ModelScope 包内已包含默认 FASTA 示例、SimpleFold 权重、pLDDT 权重、CCD 辅助文件、Boltz 辅助权重和 ESM-2 3B 本地权重，下载完整模型包后可以直接使用。
 
-- `onescience_run_manifest.yaml`
-- `manifest.yaml`
+当前 `weight/` 中应包含以下真实权重和辅助文件，文件名需保持不变：
 
-两个文件内容一致。大模型应先读取 README 的“文件说明”和本章节，再解析 Manifest。修改模型文件、命令、关系或配置后，必须同步更新这两个 Manifest 和 `onescience_relations.yaml`。
-
-## 模型 vs 数据集关系
-
-本模型仓库的 ModelScope ID 必须保持为 `OneScience/simplefold/`。关联数据集 ID 必须保持为 `OneScience/simplefold_dataset`。
-
-推理场景不需要数据集，只需要模型权重、FASTA 输入、CCD 文件和 OneScience bio 环境。训练/评测场景通过 `relations.required_datasets` 显式声明 `OneScience/simplefold_dataset`，但本次原始数据路径为“无”，数据集仓库仅提供 schema 和空数据接口；用户训练时应自行补齐兼容数据。
-
-## 文件与下载
-
-下载模型：
-
-```bash
-modelscope download --model OneScience/simplefold/
+```text
+weight/simplefold_100M.ckpt
+weight/simplefold_360M.ckpt
+weight/simplefold_700M.ckpt
+weight/simplefold_1.1B.ckpt
+weight/simplefold_1.6B.ckpt
+weight/simplefold_3B.ckpt
+weight/plddt.ckpt
+weight/plddt_module_1.6B.ckpt
+weight/ccd.pkl
+weight/boltz1_conf.ckpt
 ```
 
-下载关联数据集元信息：
+推理还需要 ESM-2 3B 本地权重：
 
-```bash
-modelscope download --dataset OneScience/simplefold_dataset
+```text
+weight/esm_models/esm2_t36_3B_UR50D.pt
+weight/esm_models/esm2_t36_3B_UR50D-contact-regression.pt
 ```
 
-如果网页端或脚本使用 `--cache_dir`，下载完成后运行 `python scripts/preflight.py` 前，必须把 `cwd` 切换到实际下载后的模型包根目录，也就是包含 `README.md`、`onescience_run_manifest.yaml` 和 `scripts/preflight.py` 的目录。
-
-## 环境安装
-
-网站环境已部署 OneScience 时，优先直接运行预检。若缺少 bio 领域依赖，在 OneScience 根目录执行：
+也可以通过环境变量指定 ESM 主权重：
 
 ```bash
+export SIMPLEFOLD_ESM2_MODEL_PATH=/path/to/esm2_t36_3B_UR50D.pt
+```
+
+# 使用说明
+
+## 1. OneCode 使用
+
+可通过 OneCode 在线环境体验智能化一键式 AI4S 编程：
+
+[点击体验智能化一键式 AI4S 编程](https://web-2069360198568017922-iaaj.ksai.scnet.cn:58043/home)
+
+## 2. 手动安装使用
+
+**硬件要求**
+
+- 推荐使用GPU或DCU运行。
+- CPU可以用于连通性验证，但速度较慢。
+- DCU用户需要预先安装DTK，建议使用DTK 25.04.2以上版本或与当前集群匹配的OneScience推荐版本。
+
+**软件要求**
+
+想了解更多适配内容请联系 liubiao@sugon.com
+
+**环境检测**
+
+- NVIDIA GPU：
+
+```bash
+nvidia-smi
+```
+
+- 海光DCU：
+
+```bash
+hy-smi
+```
+
+## 快速开始
+
+### 1. 安装onescience库
+
+```bash
+git clone https://gitee.com/onescience-ai/onescience
+cd onescience
 bash install.sh bio
 ```
 
-推理需要 PyTorch 或 MLX 后端。ESM-2 3B 权重建议放在：
+### 2. 下载模型包及权重&示例
 
 ```bash
-$ONESCIENCE_MODELS_DIR/esm_models/esm2_t36_3B_UR50D.pt
+modelscope download --model OneScience/SimpleFold --local_dir ./SimpleFold
+cd SimpleFold
+bash download_assets.sh
 ```
 
-也可以通过 `SIMPLEFOLD_ESM2_MODEL_PATH` 指定本地权重。
-
-## 运行流程
-
-预检：
+### 3. 运行推理
 
 ```bash
-python scripts/preflight.py
+python scripts/run_inference.py \
+  --simplefold_model simplefold_100M \
+  --fasta_path examples/minimal.fasta \
+  --output_dir outputs/minimal_inference \
+  --num_steps 10 \
+  --tau 0.01 \
+  --nsample_per_protein 1 \
+  --backend torch
 ```
 
-最小推理：
-
-```bash
-python run_inference.py --simplefold_model simplefold_100M --ckpt_dir checkpoints --fasta_path examples/minimal.fasta --output_dir outputs/minimal_inference --num_steps 10 --tau 0.01 --nsample_per_protein 1 --backend torch
-```
-
-训练接口：
-
-```bash
-python train.py
-```
-
-训练前必须准备：
-
-- `./datasets`
-- `./datasets/tokenized`
-- `./datasets/manifest.json`
-
-## 预检与诊断
-
-| 现象 | 常见原因 | 处理方式 |
-|---|---|---|
-| `ModuleNotFoundError` | OneScience bio 环境或依赖未安装 | 执行 `bash install.sh bio`，或切换到可 import `onescience` 的环境 |
-| `No such file or directory` | 权重、FASTA、CCD 或训练数据缺失 | 运行 `python scripts/preflight.py`，按 Manifest 的 `files` 补齐 |
-| `Local ESM-2 3B weights not found` | ESM-2 权重不在默认路径 | 设置 `SIMPLEFOLD_ESM2_MODEL_PATH` 或放入 `$ONESCIENCE_MODELS_DIR/esm_models/` |
-| `CUDA out of memory` | 模型规模或序列过大 | 先用 `simplefold_100M`，减少 `num_steps` 或换更大显存设备 |
-
-## 输出说明
-
-最小推理输出目录为：
+输出目录：
 
 ```text
 outputs/minimal_inference/predictions_simplefold_100M/
 ```
 
-训练输出通常位于 Lightning/Hydra 日志目录，例如 `logs/train/` 或运行时生成的 `outputs/` 子目录。
+### 4. 训练
 
-## 限制与适用范围
+训练前准备：
 
-本仓库适用于 OneScience bio 环境中的 SimpleFold 推理和训练接口验证。本次不包含真实训练数据；`checkpoints/` 在当前整理目录中使用符号链接指向共享权重，正式上传 ModelScope 前应确认上传工具会包含真实权重文件，或使用跟随符号链接的上传方式。
+```text
+datasets/
+datasets/tokenized/
+datasets/manifest.json
+```
 
-## 引用与许可证
+数据处理：
 
-SimpleFold 原始实现声明为 MIT License。引用论文和上游实现时，请参考原始 SimpleFold 项目说明。
+```bash
+python scripts/process_data.py --data_dir /path/to/mmcif --out_dir datasets --num-processes 8
+python scripts/tokenize_data.py --target_dir datasets --token_dir datasets/tokenized
+```
+
+`process_data.py` 默认使用包内 `weight/ccd.pkl`，无需额外下载 CCD 或启动 Redis；如需兼容旧 Redis CCD 流程，可显式传入 `--use-redis`。
+
+训练：
+
+```bash
+python scripts/train.py
+```
+
+FSDP 训练：
+
+```bash
+python scripts/train_fsdp.py experiment=train_fsdp
+```
+
+微调/续训示例：
+
+```bash
+python scripts/train.py load_ckpt_path=weight/simplefold_100M.ckpt
+```
+
+# OneScience 官方信息
+
+| 平台 | OneScience 主仓库 | Skills 仓库 |
+| --- | --- | --- |
+| Gitee | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
+| GitHub | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+
+# 引用与许可证
+
+SimpleFold 原始实现声明为 MIT License。本仓库保留来源说明，并面向 OneScience ModelScope 自动运行场景进行整理。科研使用请引用 SimpleFold 原始论文和 OneScience 相关项目信息。

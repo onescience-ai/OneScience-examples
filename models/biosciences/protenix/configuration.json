@@ -1,0 +1,17 @@
+{
+  "framework": "pytorch",
+  "task": "protein-complex-structure-prediction",
+  "model": {
+    "type": "protenix",
+    "version": "v0.5.0",
+    "checkpoint": "weight/model_v0.5.0.pt"
+  },
+  "entry_file": "scripts/run_inference.py",
+  "preflight_file": "scripts/preflight.py",
+  "training_entry_file": "scripts/train.py",
+  "finetune_entry_file": "scripts/finetune.py",
+  "allow_remote_download": false,
+  "default_input": "examples/7r6r.json",
+  "default_output_dir": "output_unified",
+  "data_root_default": "../bio_protenix_dataset"
+}

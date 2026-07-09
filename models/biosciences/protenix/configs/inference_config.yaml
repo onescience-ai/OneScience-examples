@@ -13,8 +13,8 @@ inference:
   dump_dir: "./output_unified"
   need_atom_confidence: false
   sorted_by_ranking_score: true
-  input_json_path: "./infer_datasets/7r6r.json"
-  load_checkpoint_path: "./checkpoints/model_v0.5.0.pt"
+  input_json_path: "./examples/7r6r.json"
+  load_checkpoint_path: "./weight/model_v0.5.0.pt"
   num_workers: 16
   use_msa: true
 
@@ -454,7 +454,7 @@ inference:
       use_msa: true
       use_structure: true
       msa_dirs:
-        - path: ${oc.env:PWD}/infer_datasets/7r6r/msa/1
+        - path: ${oc.env:PWD}/examples/7r6r/msa/1
           format_hint: a3m
       model_name: protenix_infer_adapter
       use_adapter: true

@@ -1,1 +1,26 @@
-{"framework": "pytorch", "task": "text-generation", "allow_remote": true}
+{
+  "framework": "pytorch",
+  "task": "protein-design",
+  "model": {
+    "type": "RFdiffusion",
+    "weight_dir": "weight"
+  },
+  "pipeline": {
+    "type": "rfdiffusion-inference",
+    "entry_file": "scripts/run_inference.py"
+  },
+  "preflight_file": "scripts/preflight.py",
+  "allow_remote_download": false,
+  "supported_functions": [
+    "inference",
+    "unconditional_backbone_design",
+    "motif_scaffolding",
+    "binder_design",
+    "symmetric_oligomer_sampling"
+  ],
+  "unsupported_functions": [
+    "standalone_training",
+    "standalone_finetuning",
+    "automatic_remote_checkpoint_download"
+  ]
+}

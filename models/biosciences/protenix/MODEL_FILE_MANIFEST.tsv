@@ -1,0 +1,6 @@
+file	size_bytes	sha256	package_path
+model_v0.5.0.pt	1474265486	9ea20b0aba42f2256711da1d0cd081510a4b291e64375bff6b70ced70b87a5f1	weight/model_v0.5.0.pt
+inference_config.yaml	12434	4073f56c23266bdfc29c1f25844acb63ee719a667a6eaae1e45056e30a5fec9f	configs/inference_config.yaml
+7r6r.json	823	f9c8ce3bea74ba8529916651c929b7ea0844d4c4de2aafe3d69fc6df4fdbe563	examples/7r6r.json
+pairing.a3m	110839	105e7c949a533f488248476e0b13307a2c94fbf138b3859ea8b1ccbdb8e27223	examples/7r6r/msa/1/pairing.a3m
+non_pairing.a3m	100203	15388d7ed4fa8dac77770d2887d7234847b5aee1252651917efc5c1dba149066	examples/7r6r/msa/1/non_pairing.a3m

@@ -1,5 +1,5 @@
 # pylint: disable=C0114,C0301
-from onescience.models.protenix.config.extend_types import (
+from models.protenix.config.extend_types import (
     GlobalConfigValue,
     ListValue,
     RequiredValue,

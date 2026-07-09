@@ -1,22 +1,25 @@
 #!/usr/bin/env python
-"""
-Inference script.
-
-To run with base.yaml as the config,
-
-> python run_inference.py
-
-To specify a different config,
-
-> python run_inference.py --config-name symmetry
-
-where symmetry can be the filename of any other config (without .yaml extension)
-See https://hydra.cc/docs/advanced/hydra-command-line-flags/ for more options.
-
-"""
+"""Standalone RFdiffusion inference entry point."""
 
 import re
-import os, time, pickle
+import os
+import pickle
+import sys
+import time
+from pathlib import Path
+
+PACKAGE_ROOT = Path(__file__).resolve().parents[1]
+if str(PACKAGE_ROOT) not in sys.path:
+    sys.path.insert(0, str(PACKAGE_ROOT))
+
+os.environ.setdefault("RF_DIFFUSION_MODEL_DIR", str(PACKAGE_ROOT / "weight"))
+os.environ.setdefault("DGLBACKEND", "pytorch")
+os.environ.setdefault(
+    "RF_DIFFUSION_INPUT_PDB", str(PACKAGE_ROOT / "examples" / "input_pdbs" / "1qys.pdb")
+)
+os.environ.setdefault("RF_DIFFUSION_OUTPUT_PREFIX", str(PACKAGE_ROOT / "outputs" / "design"))
+os.environ.setdefault("RF_DIFFUSION_SCHEDULE_DIR", str(PACKAGE_ROOT / ".cache" / "schedules"))
+
 import torch
 from omegaconf import OmegaConf
 import hydra
@@ -40,6 +43,11 @@ def main(conf: HydraConfig) -> None:
     log = logging.getLogger(__name__)
     if conf.inference.deterministic:
         make_deterministic()
+
+    if os.environ.get("RF_DIFFUSION_SMOKE_TEST") == "1":
+        log.info("RF_DIFFUSION_SMOKE_TEST=1; configuration loaded, skipping sampling.")
+        print("RFdiffusion smoke test passed: imports and Hydra config are available.")
+        return
 
     # Check for available GPU and print result of check
     if torch.cuda.is_available():

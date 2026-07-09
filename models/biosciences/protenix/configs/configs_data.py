@@ -2,7 +2,7 @@
 import os
 from copy import deepcopy
 
-from onescience.models.protenix.config.extend_types import GlobalConfigValue, ListValue
+from models.protenix.config.extend_types import GlobalConfigValue, ListValue
 
 default_test_configs = {
     "sampler_configs": {

@@ -1,0 +1,4 @@
+# https://hydra.cc/docs/configure_hydra/intro/
+
+# Use Hydra's built-in logging so the packaged runtime does not require
+# the optional hydra-colorlog plugin.

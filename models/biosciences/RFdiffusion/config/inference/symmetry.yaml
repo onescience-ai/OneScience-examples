@@ -18,7 +18,7 @@ inference:
   model_only_neighbors: False
 
   # Output directory of samples.
-  output_prefix: samples/c2
+  output_prefix: outputs/symmetry/c2
 
 contigmap:
   # Specify a single integer value to sample unconditionally.

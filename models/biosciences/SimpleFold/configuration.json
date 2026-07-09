@@ -1,0 +1,9 @@
+{
+  "framework": "Pytorch",
+  "task": "protein-structure-prediction",
+  "model": {
+    "type": "SimpleFold"
+  },
+  "allow_remote_download": false,
+  "entry_file": "scripts/run_inference.py"
+}

@@ -1,0 +1,3 @@
+_target_: onescience.datapipes.simplefold.test_datamodule.SimpleFoldInferenceDataModule
+target_dir: data/cameo22/
+num_workers: 1

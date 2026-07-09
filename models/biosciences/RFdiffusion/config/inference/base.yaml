@@ -1,16 +1,16 @@
 # Base inference Configuration.
 
 inference:
-  input_pdb: ./examples/input_pdbs/1qys.pdb
-  num_designs: 10
+  input_pdb: "${oc.env:RF_DIFFUSION_INPUT_PDB,examples/input_pdbs/1qys.pdb}"
+  num_designs: 1
   design_startnum: 0
   ckpt_override_path: null
   symmetry: null
   recenter: True
   radius: 10.0
   model_only_neighbors: False
-  output_prefix: samples/design
-  write_trajectory: True
+  output_prefix: "${oc.env:RF_DIFFUSION_OUTPUT_PREFIX,outputs/design}"
+  write_trajectory: False
   scaffold_guided: False
   model_runner: SelfConditioning
   cautious: True
@@ -19,11 +19,11 @@ inference:
   final_step: 1
   deterministic: False
   trb_save_ckpt_path: null
-  schedule_directory_path: null
-  model_directory_path: "${oc.env:ONESCIENCE_MODELS_DIR}/RFdiffusion/models"
+  schedule_directory_path: "${oc.env:RF_DIFFUSION_SCHEDULE_DIR,.cache/schedules}"
+  model_directory_path: "${oc.env:RF_DIFFUSION_MODEL_DIR,weight}"
 
 contigmap:
-  contigs: null
+  contigs: ["100-100"]
   inpaint_seq: null
   inpaint_str: null
   inpaint_str_helix: null

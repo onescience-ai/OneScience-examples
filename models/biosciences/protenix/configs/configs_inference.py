@@ -1,5 +1,5 @@
 # pylint: disable=C0114
-from onescience.models.protenix.config.extend_types import ListValue, RequiredValue
+from models.protenix.config.extend_types import ListValue, RequiredValue
 
 # The model will be download to the following dir if not exists:
 # "./release_data/checkpoint/model_v0.5.0.pt"
