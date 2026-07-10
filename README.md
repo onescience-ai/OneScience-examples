@@ -20,23 +20,22 @@ OneScience Examples 是 OneScience 官方维护的模型示例仓库，旨在为
 | [AlphaGenome](./models/alphagenome/README.md) | DNA 序列分析与变异评分模型 |
 | [ESM](./models/ESM/README.md) | ESMFold 蛋白质结构预测 |
 | [Evo2](./models/evo2/README.md) | 大规模基因组基础模型 |
-| [MatRIS](./models/MatRIS/README.md) | 材料发现与结构预测 |
 | [OpenFold](./models/OpenFold/README.md) | 开源蛋白质结构预测 |
 | [PINNsformer](./models/PINNsformer/README.md) | 物理-informed 神经网络 |
 | [Protenix](./models/protenix/README.md) | 蛋白质结构预测模型 |
 | [ProteinMPNN](./models/ProteinMPNN/README.md) | 蛋白质序列设计 |
 | [RFdiffusion](./models/RFdiffusion/README.md) | 蛋白质反向折叠扩散模型 |
 | [SimpleFold](./models/SimpleFold/README.md) | 轻量级蛋白质结构预测 |
-| [UMA](./models/UMA/README.md) | 统一分子架构 |
 
-### 🧪 分子动力学
+### 🧪 材料化学
 
 | 模型 | 描述 |
 |------|------|
-| [BENO](./models/BENO/README.md) | 分子动力学模型 |
-| [DeepMD](./models/DeepMD/README.md) | 深度势能分子动力学 |
-| [MACE](./models/MACE/README.md) | 原子间势能模型 |
-| [NEP](./models/NEP/README.md) | 神经网络原子势能 |
+| [DeepMD](./models/matchem/DeepMD/README.md) | 深度势能分子动力学 |
+| [MACE](./models/matchem/MACE/README.md) | 原子间势能模型 |
+| [MatRIS](./models/matchem/MatRIS/README.md) | 材料发现与结构预测 |
+| [NEP](./models/matchem/NEP/README.md) | 神经网络原子势能 |
+| [UMA](./models/matchem/UMA/README.md) | 统一分子架构 |
 
 ### 🌤️ 天气预报与气候
 

@@ -1,0 +1,49 @@
+model:
+  name: "Transolver_plus"
+  specific_params:
+    Transolver: &params
+      n_hidden: 16
+      n_layers: 1
+      space_dim: 7
+      fun_dim: 0
+      n_head: 2
+      mlp_ratio: 2
+      out_dim: 4
+      slice_num: 4
+      unified_pos: 0
+      cfd_mesh: true
+      r: 0.2
+    Transolver_plus: *params
+
+datapipe:
+  name: "ShapeNetCar"
+  task: "Transolver-Car-Design"
+  verbose: true
+  source:
+    data_dir: "./data/mlcfd_data/training_data"
+    preprocessed_save_dir: "./data/mlcfd_data/preprocessed_data"
+    stats_dir: "./data/mlcfd_data/stats"
+    preprocessed: 1
+  data:
+    splits:
+      fold_id: 0
+  dataloader:
+    batch_size: 1
+    num_workers: 0
+    pin_memory: false
+
+training:
+  gpuid: -1
+  max_epoch: 1
+  patience: 50
+  lr: 0.001
+  loss_criterion: "MSE"
+  loss_weight: 0.5
+  checkpoint_dir: "./weight"
+  val_iter: 1
+
+inference:
+  gpuid: -1
+  result_dir: "./results/ShapeNetCar"
+  save_vtk: false
+  visualize: false

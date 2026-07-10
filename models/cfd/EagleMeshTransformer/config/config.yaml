@@ -1,0 +1,41 @@
+model:
+  name: "EagleMeshTransformer"
+  architecture: "GraphViT"
+  state_size: 4
+  w_size: 32
+
+datapipe:
+  source:
+    data_dir: "./data/fake/Eagle_dataset"
+    cluster_dir: "./data/fake/Eagle_dataset"
+    splits_dir: "./data/fake/splits"
+
+  verbose: false
+
+  data:
+    window_length_train: 3
+    window_length_val: 3
+    window_length_test: 3
+    n_cluster: 1
+    normalized: true
+    type_as_onehot: true
+    with_cells: true
+
+  dataloader:
+    batch_size: 1
+    num_workers: 0
+
+training:
+  max_epoch: 1
+  lr: 1.0e-4
+  loss_alpha: 0.1
+  patience: 10
+  checkpoint_dir: "./weight"
+  seed: 0
+  device: "cpu"
+
+inference:
+  checkpoint_path: "./weight/best_model.pth"
+  output_dir: "./result/output"
+  batch_size: 1
+  device: "cpu"

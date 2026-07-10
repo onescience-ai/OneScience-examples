@@ -1,3 +1,4 @@
+
 <p align="center">
   <strong>
     <span style="font-size: 30px;">XiHe</span>
@@ -11,6 +12,7 @@ Xihe（羲和）是面向高分辨率全球海洋预报的 Transformer 模型，
 
 论文：XiHe: A Data-Driven Model for Global Ocean Eddy-Resolving Forecasting
 
+[https://arxiv.org/abs/2402.02995]
 
 # 仓库说明
 
@@ -34,7 +36,7 @@ Xihe（羲和）是面向高分辨率全球海洋预报的 Transformer 模型，
 | :---: | :--- |
 | 全球海洋预报研究 | 基于年度 CMEMS HDF5 数据训练 Xihe 风格的海洋预报模型。 |
 | 本地快速验证 | 使用虚拟数据检查数据读取、训练入口、推理和结果脚本。 |
-| OneCode 运行 | 作为独立模型包下载后直接安装依赖并运行脚本。 |
+| ModelScope/OneCode 运行 | 作为独立模型包下载后直接安装依赖并运行脚本。 |
 | 多卡训练 | 通过 `torchrun`启动多进程训练。 |
 
 
@@ -68,6 +70,7 @@ Xihe（羲和）是面向高分辨率全球海洋预报的 Transformer 模型，
 - DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
 
 ## 3. 快速开始
+
 
 ### 安装运行环境
 

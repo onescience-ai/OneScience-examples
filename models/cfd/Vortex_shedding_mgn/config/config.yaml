@@ -1,0 +1,63 @@
+paths:
+  data_dir: data/cylinder_flow
+  fake_data_path: data/cylinder_flow/fake_cylinder_flow.pt
+  checkpoint_dir: weight/checkpoints
+  result_dir: results
+
+datapipe:
+  source:
+    data_dir: data/cylinder_flow
+    stats_dir: data/cylinder_flow/stats
+    fake_data: true
+    fake_data_path: data/cylinder_flow/fake_cylinder_flow.pt
+  verbose: true
+  data:
+    train_samples: 4
+    train_steps: 5
+    val_samples: 2
+    val_steps: 5
+    test_samples: 2
+    test_steps: 5
+    noise_std: 0.0
+  dataloader:
+    batch_size: 1
+    num_workers: 0
+
+model:
+  name: MeshGraphNet
+  specific_params:
+    MeshGraphNet:
+      num_input_features: 6
+      num_edge_features: 3
+      num_output_features: 3
+      processor_size: 2
+      hidden_dim_processor: 32
+      num_layers_node_processor: 2
+      num_layers_edge_processor: 2
+      hidden_dim_node_encoder: 32
+      hidden_dim_edge_encoder: 32
+      hidden_dim_node_decoder: 32
+      do_concat_trick: false
+      num_processor_checkpoint_segments: 0
+      recompute_activation: false
+
+training:
+  device: cpu
+  max_epoch: 1
+  lr: 0.0001
+  lr_decay_rate: 0.999
+  amp: false
+  jit: false
+  checkpoint_dir: weight/checkpoints
+  loss_criterion: MSE
+  patience: 10
+  log_interval: 1
+  gpuid: 0
+
+inference:
+  device: cpu
+  checkpoint_dir: weight/checkpoints
+  output_path: results/inference_results.npz
+  viz_vars: ["u", "v", "p"]
+  frame_skip: 1
+  frame_interval: 1

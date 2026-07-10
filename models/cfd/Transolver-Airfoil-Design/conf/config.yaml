@@ -1,0 +1,64 @@
+model:
+  name: "Transolver"
+  specific_params:
+    Transolver: &transolver_params
+      n_hidden: 32
+      n_layers: 2
+      space_dim: 7
+      fun_dim: 0
+      n_head: 4
+      mlp_ratio: 2
+      out_dim: 4
+      slice_num: 8
+      unified_pos: 0
+      build_graph: false
+      r: 0.05
+      max_neighbors: 32
+    Transolver_plus: *transolver_params
+
+datapipe:
+  name: "AirfRANS"
+  backend: "fake_airfrans"
+  verbose: false
+  source:
+    data_dir: "./data/fake_airfrans"
+    stats_dir: "./data/stats"
+  data:
+    splits:
+      task: "fake"
+      train_name: "train"
+      val_name: "val"
+      test_name: "test"
+      val_split_ratio: 0.25
+    sampling:
+      sample_strategy: null
+      n_boot: 128
+      surf_ratio: 0.25
+    crop: null
+    subsampling: 64
+  dataloader:
+    batch_size: 1
+    num_workers: 0
+
+training:
+  device: "cpu"
+  max_epoch: 1
+  lr: 0.001
+  gpuid: 0
+  patience: 20
+  progress_log_interval: 5
+  loss_criterion: "MSE_weighted"
+  loss_weight: 1.0
+  checkpoint_dir: "./weight"
+  result_dir: "./result"
+  n_test: 2
+  seed: 42
+
+fake_data:
+  num_train: 4
+  num_val: 2
+  num_test: 2
+  num_nodes: 64
+  input_dim: 7
+  output_dim: 4
+  surface_ratio: 0.25

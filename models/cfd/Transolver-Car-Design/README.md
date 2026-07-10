@@ -1,175 +1,128 @@
-# Transolver-Car-Design
-
 <p align="center">
   <strong>
-    <span style="font-size: 20px;">点击下方图片，体验一键式 Transolver-Car-Design 模型开发</span>
+    <span style="font-size: 30px;">Transolver-Car-Design</span>
   </strong>
 </p>
 
-<p align="center">
-  <a href="https://modelscope.cn/models/OneScience/Transolver-Car-Design/mlcfd_data" target="_blank" rel="noopener noreferrer">
-    <img src="https://www.modelscope.cn/api/v1/models/VoyagerX/OneScience-badge/repo?Revision=master&FilePath=LOGOs.png" width="200" alt="Logo">
-  </a>
-</p>
+# 模型介绍
 
-## OneScience 官方信息
+Transolver-Car-Design 是基于清华大学 THUML 团队提出的 Transolver / Transolver++ 构建的三维汽车外流场预测模型，适配 ShapeNetCar 非结构网格数据。模型将车辆几何相关的节点特征输入 Transolver 的 Physics-Attention 结构，通过物理切片建模全局流场关联，并在原始网格节点上预测三维速度和压力。
 
-| 平台 | 文档 | OneScience 主仓库 | Skills 仓库 |
-|---|---|---|---|
-| Gitee | https://gitee.com/onescience-ai/onescience-doc | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
-| GitHub | https://github.com/onescience-ai/OneScience-doc | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+本工程中，输入特征为 7 维，包括三维坐标、SDF 和法向量；输出为 4 维，包括三维速度和压力。该模型可用于汽车外形方案快速评估、外流场代理建模、阻力系数相关分析和 CFD 仿真加速。
 
-## 项目说明
+# 仓库说明
 
-Transolver-Car-Design 是面向汽车外流场预测的 OneScience CFD 标准运行包。它基于 Transolver/Transolver++ 结构，将车辆几何的非结构化图数据作为输入，预测三维速度分量和表面压力，并进一步评估阻力系数相关误差。
+本仓库是 OneScience 整理的 Transolver-Car-Design 标准运行包，面向 OneCode 自动化运行和本地快速验证场景。
 
-本仓库上传的是可执行模型代码、适配后的配置和预检脚本，不内置预训练 checkpoint。默认模型为 `Transolver_plus`；训练数据、预处理图样本和归一化统计量来自关联数据集 `OneScience/ShapeNetCar`。网页端大模型读取本 README 和 `manifest.yaml` 后，应先下载模型包和数据集包，再执行预检、训练或使用训练产物进行推理评测。
+当前支持能力：
+* 生成轻量假数据用于流程连通性验证
+* 训练 Transolver 或 Transolver_plus
+* 推理并保存预测结果
+* 查看推理结果摘要
 
-## Resource Card
+当前不支持能力：
+* 不内置完整 ShapeNetCar 数据集
+* 不内置预训练权重
+* 不负责自动下载、清洗或重新适配外部数据集
 
-| 字段 | 内容 |
-|---|---|
-| 资源类型 | 模型 |
-| OneScience 领域 | cfd |
-| 领域标签 | cfd, external_aerodynamics, car_design |
-| 任务 | flow_field_prediction |
-| 任务标签 | car_design, pressure_prediction, velocity_prediction, drag_coefficient_evaluation |
-| 主平台资源 | https://modelscope.cn/models/OneScience/Transolver-Car-Design/mlcfd_data |
-| 标准运行包工作目录 | `.` |
-| OneScience examples 兼容路径 | `examples/cfd/Transolver-Car-Design` |
-| 必需模型文件 | `train.py`, `inference.py`, `conf/transolver_car.yaml`, `scripts/preflight_transolver_car.py` |
-| 必需数据集 | `OneScience/ShapeNetCar` |
-| 支持能力 | 预检、训练、推理、评测、可视化 |
-| 最小验证 | `python scripts/preflight_transolver_car.py --config conf/transolver_car.yaml` |
+## 适用场景
 
-| 能力 | 必须提供 |
-|---|---|
-| `inference` | `python inference.py`，需要 `checkpoints/ShapeNetCar/Transolver_plus.pth` 和 `data/mlcfd_data` |
-| `train` | `python train.py`，需要 ShapeNetCar 数据和配置文件 |
-| `finetune` | 当前未声明 |
-| `evaluate` | `python inference.py`，输出误差指标和结果文件 |
-| `visualize` | `python inference.py`，当配置中 `save_vtk: True` 且 `visualize: True` 时生成 VTK 和图片 |
-| `deploy` | 当前未声明 |
+| 场景 | 说明 |
+| :--- | :--- |
+| 汽车气动设计 | 快速预测车辆外流场速度和表面压力 |
+| CFD 代理建模 | 用神经网络近似复杂非结构网格上的流体求解过程 |
+| 仿真加速 | 为大规模候选设计筛选提供轻量评估链路 |
 
-## 文件说明
+# 文件说明
 
-| 路径 | 类型 | 作用 | 是否必需 | 用于能力 | 下载后放置位置 | 备注 |
-|---|---|---|---|---|---|---|
-| `manifest.yaml` | Manifest 文件 | 机器可读运行说明，声明资源身份、文件、关系、命令和输出 | 是 | 全部能力 | `session_workdir/manifest.yaml` | 修改运行包时必须同步更新 |
-| `conf/transolver_car.yaml` | 配置文件 | 模型、数据管道、训练和推理配置 | 是 | 预检、训练、推理、评测、可视化 | `session_workdir/conf/transolver_car.yaml` | 已将数据路径改为 `./data/mlcfd_data/...` |
-| `train.py` | 运行脚本 | 从 ShapeNetCar 数据训练 Transolver++ | 是 | 训练 | `session_workdir/train.py` | 输出 checkpoint |
-| `inference.py` | 运行脚本 | 加载 checkpoint 推理、评测并可视化 | 是 | 推理、评测、可视化 | `session_workdir/inference.py` | 需要先有 checkpoint |
-| `scripts/preflight_transolver_car.py` | 预检脚本 | 检查配置、数据路径、预处理样本 schema 和统计文件 | 是 | 预检 | `session_workdir/scripts/preflight_transolver_car.py` | CPU 即可运行 |
-| `data/mlcfd_data/` | 数据目录 | ShapeNetCar 数据集在模型包中的期望位置 | 是 | 预检、训练、推理、评测、可视化 | `session_workdir/data/mlcfd_data/` | 来自 `OneScience/ShapeNetCar` |
-| `checkpoints/ShapeNetCar/Transolver_plus.pth` | checkpoint | 训练后生成的权重 | 推理/评测必需 | 推理、评测、可视化 | `session_workdir/checkpoints/ShapeNetCar/Transolver_plus.pth` | 本模型包当前不内置预训练权重 |
+| 路径 | 功能 | 备注 |
+| :--- | :--- | :--- |
+| `README.md` | 工程使用说明文档 | 中文为主 |
+| `configuration.json` | OneCode 元信息 | 保持最小配置 |
+| `conf/config.yaml` | 模型、数据、训练和推理配置 | 默认是 CPU 轻量 smoke test 配置 |
+| `model/Transolver3D.py` | Transolver 3D 模型定义 | OneScience复现的经典TOP模型 |
+| `model/Transolver3D_plus.py` | Transolver++ 3D 模型定义 | OneScience复现的经典TOP模型 |
+| `scripts/fake_data.py` | 假数据生成脚本 | 生成 ShapeNetCar 风格预处理 `.npy` 样本和统计量 |
+| `scripts/train.py` | 训练脚本 | 读取 `conf/config.yaml` 并保存 checkpoint |
+| `scripts/inference.py` | 推理脚本 | 读取 checkpoint，保存预测和真值 `.npy` |
+| `scripts/result.py` | 结果查看脚本 | 打印预测文件数量和首个结果路径 |
+| `weight/` | 权重目录 | 默认保存 `Transolver_plus.pth` |
 
-## Manifest
+# 使用说明
 
-完整机器可读运行说明位于仓库根目录 `manifest.yaml`。修改文件路径、下载命令、运行命令、数据集关系或配置适配内容后，必须同步更新该文件，并建议执行 `python ../validate_standardized_repos.py --skip-data-hash` 做结构校验。
+## 1. OneCode 使用
 
-## 模型 vs 数据集关系
+可通过 OneCode 在线环境体验智能化一键式 AI4S 编程：
 
-本模型必须搭配数据集 `OneScience/ShapeNetCar` 使用。模型 Manifest 在 `relations.required_datasets` 中声明了该数据集，并提供完整 `resource_ref`；数据集 Manifest 在 `relations.compatible_models` 中反向声明了本模型。运行场景以 `run_matrix` 为准：最小验证需要 `data/mlcfd_data/training_data`、`data/mlcfd_data/preprocessed_data` 和 `data/mlcfd_data/stats`；训练需要完整 ShapeNetCar 数据；推理和评测还需要训练生成的 checkpoint。
+[点击体验智能化一键式 AI4S 编程](https://web-2069360198568017922-iaaj.ksai.scnet.cn:58043/home)
 
-## 文件与下载
+## 2. 手动安装使用
 
-下载模型包：
+**硬件要求**
+
+- 推荐使用 GPU 或 DCU 运行。
+- CPU 可以用于导入和小配置连通性验证，完整训练和推理速度较慢。
+- DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
+
+**运行环境**
 
 ```bash
-modelscope download --model OneScience/Transolver-Car-Design/ --local_dir .
-```
-
-下载数据集包：
-
-```bash
-modelscope download --dataset OneScience/ShapeNetCar --local_dir data
-```
-
-如果网页端或脚本使用 `--cache_dir` 下载模型，下载结果可能位于缓存目录下的真实模型包根目录。运行 `python train.py`、`python inference.py` 或预检脚本前，`cwd` 必须切换到包含 `manifest.yaml`、`conf/` 和 `scripts/` 的模型包根目录。
-
-数据集下载后需要保证模型包内存在：
-
-```text
-data/mlcfd_data/training_data
-data/mlcfd_data/preprocessed_data
-data/mlcfd_data/stats
-```
-
-## 环境安装
-
-网站环境已部署 OneScience 时不需要重复安装。环境缺失时使用 CFD 领域安装入口：
-
-```bash
+git clone https://gitee.com/onescience-ai/onescience.git
+cd onescience
 bash install.sh cfd
 ```
 
-## 运行流程
+## 3. 快速开始
 
-### 1. 下载模型和数据
+### 生成假数据进行流程验证
 
-```bash
-modelscope download --model OneScience/Transolver-Car-Design/mlcfd_data --local_dir .
-modelscope download --dataset OneScience/ShapeNetCar --local_dir data
-```
-
-### 2. 运行前预检
+默认配置面向最小 smoke test。先生成 ShapeNetCar 风格的小型预处理数据：
 
 ```bash
-python scripts/preflight_transolver_car.py --config conf/transolver_car.yaml
+python scripts/fake_data.py
 ```
 
-成功时会输出：
+### 训练
+
+```bash
+python scripts/train.py
+```
+
+训练参数来自 `conf/config.yaml` 的 `model`、`datapipe` 和 `training` 字段。默认配置使用轻量 `Transolver_plus` 参数，用于快速验证工程链路；真实训练时可将 `n_hidden`、`n_layers`、`n_head`、`slice_num` 等参数调回目标规模，并将数据路径指向真实 ShapeNetCar 数据。
+
+默认训练会保存 checkpoint：
 
 ```text
-[OK] Transolver-Car-Design preflight passed
+./weight/Transolver_plus.pth
 ```
 
-### 3. 训练
+### 推理
 
 ```bash
-python train.py
+python scripts/inference.py
 ```
 
-训练输出默认写入：
+推理会读取 `training.checkpoint_dir` 下的模型权重，默认是：
 
 ```text
-checkpoints/ShapeNetCar/Transolver_plus.pth
+./weight/Transolver_plus.pth
 ```
 
-### 4. 推理、评测和可视化
+### 查看结果
 
 ```bash
-python inference.py
+python scripts/result.py
 ```
 
-该命令会读取验证集样本，计算压力、速度和阻力系数相关指标，并在配置允许时生成 VTK 和图片。
+# OneScience 官方信息
 
-### 5. 验证输出
+| 平台 | OneScience 主仓库 | Skills 仓库 |
+| --- | --- | --- |
+| Gitee | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
+| GitHub | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
 
-```text
-results/ShapeNetCar/Transolver_plus/npy
-results/ShapeNetCar/Transolver_plus/vtk
-results/ShapeNetCar/Transolver_plus/vis
-```
+# 引用与许可证
 
-## 预检与诊断
-
-| 错误现象 | 常见原因 | 处理方式 |
-|---|---|---|
-| `Config file not found` | 当前目录不是模型包根目录 | 切换到包含 `conf/transolver_car.yaml` 的目录 |
-| `data root not found` 或 `missing directory` | 没有下载 `OneScience/ShapeNetCar`，或未放到 `data/mlcfd_data` | 执行数据集下载命令并检查目录 |
-| `Checkpoint not found` | 尚未训练生成 checkpoint | 先运行 `python train.py`，或提供兼容 checkpoint 到同一路径 |
-| `ModuleNotFoundError` | OneScience CFD 依赖未安装或环境未激活 | 执行 `bash install.sh cfd` 或切换到 OneScience 环境 |
-| `CUDA out of memory` | 显存不足 | 降低 `datapipe.dataloader.batch_size` 或换更大显存设备 |
-
-## 输出说明
-
-训练输出为 `checkpoints/ShapeNetCar/Transolver_plus.pth`。推理评测输出包括反归一化预测/真值 `.npy` 文件、可视化 VTK 文件和静态图片；日志中会打印压力相对 L2、速度相对 L2、压力 RMSE、速度 RMSE、阻力系数相对误差和 Spearman 相关性。
-
-## 限制与适用范围
-
-本包针对 ShapeNetCar 汽车外流场数据整理，默认模型参数与 `x.npy` 的 7 维输入特征和 `y.npy` 的 4 维输出物理量匹配。当前模型仓库不内置预训练权重，因此推理评测需要先训练或由用户提供兼容 checkpoint。数据集约 18G，默认预检需要完整目录结构。
-
-## 引用与许可证
-
-模型实现参考 Transolver 和 Transolver++ 相关工作以及 OneScience 当前示例工程。数据来源和许可证信息应以 `OneScience/ShapeNetCar` 数据集仓库及原始数据发布方说明为准。
+- Transolver 原始论文：[Transolver: A Fast Transformer Solver for PDEs on General Geometries](https://arxiv.org/pdf/2402.02366)。
+- Transolver++ 相关工作请参考 THUML Transolver 项目和论文说明。
+- 本仓库保留来源说明，并面向 OneScience 自动运行场景进行整理。

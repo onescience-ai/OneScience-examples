@@ -1,3 +1,4 @@
+
 <p align="center">
   <strong>
     <span style="font-size: 30px;">FuXi</span>
@@ -50,6 +51,7 @@ https://arxiv.org/abs/2306.12873
 | `scripts/result.py` | 评估与可视化脚本 | 按阶段执行，如 `python scripts/result.py short` |
 | `scripts/fake_data.py` | 假数据生成脚本 | 生成各阶段所需空壳数据用于快速连通性验证 |
 | `scripts/data_loader.py` | 本地数据加载器 | medium/long 阶段训练使用 |
+| `model/fuxi.py`	| 模型文件	| OneScience整合梳理复现的代码库 |
 | `weight/` | 权重目录 | 可放置预训练或发布权重 |
 
 # 使用说明
@@ -70,6 +72,7 @@ https://arxiv.org/abs/2306.12873
 
 
 ## 3. 快速开始
+
 
 ### 安装运行环境
 

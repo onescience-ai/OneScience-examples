@@ -1,142 +1,247 @@
-# MatRIS
+---
+license: bsd-3-clause
+language:
+- en
+- zh
+tags:
+- OneScience
+- 材料科学
+- 材料表征
+- 晶体结构
+- 能量预测
+- 力预测
+- 应力预测
+- 磁矩预测
+- 结构弛豫
+frameworks: PyTorch
+---
 
 <p align="center">
   <strong>
-    <span style="font-size: 20px;">点击下方图片，体验一键式 MatRIS 模型开发</span>
+    <span style="font-size: 30px;">MatRIS</span>
   </strong>
 </p>
 
-<p align="center">
-  <a href="https://modelscope.cn/models/OneScience/matris" target="_blank" rel="noopener noreferrer">
-    <img src="https://www.modelscope.cn/api/v1/models/VoyagerX/OneScience-badge/repo?Revision=master&FilePath=LOGOs.png" width="200" alt="Logo">
-  </a>
-</p>
 
-## OneScience 官方信息
+# 模型介绍
 
-| 平台 | 文档 | OneScience 主仓库 | Skills 仓库 |
-|---|---|---|---|
-| Gitee | https://gitee.com/onescience-ai/onescience-doc | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
-| GitHub | https://github.com/onescience-ai/OneScience-doc | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+MatRIS 是面向材料表征与相互作用模拟的基础模型，全称为 Materials Representation and Interaction Simulation，可用于晶体结构的能量、力、应力和磁矩预测，并支持基于 ASE 和 pymatgen 结构对象的结构弛豫。它适合材料结构性质快速评估、候选晶体结构初筛、结构优化前处理、势能面近似验证和材料模拟流程连通性检查等场景。
 
-## 项目说明
 
-MatRIS 是材料表征与相互作用模拟模型，可面向晶体结构进行能量、力、应力和磁矩相关预测，并可通过 `StructOptimizer` 执行结构弛豫示例。本标准模型包整理了 OneScience 中的 MatRIS 示例脚本、demo CIF、上游说明，以及用于最小验证的 phonon reference CSV 数据。
+# 仓库说明
 
-本包没有新增训练配置，因为当前 MatRIS 示例目录没有 YAML 训练入口。标准运行能力以预检、CPU 前向验证和结构弛豫示例为主；如果运行结构弛豫，环境需能解析或下载 MatRIS 预训练模型 key，例如 `matris_10m_oam`。
+本仓库是 OneScience 整理的 MatRIS 最小可运行模型仓库，面向 OneCode 自动化运行和本地快速验证场景。
 
-## Resource Card
+当前支持能力：
 
-| 字段 | 内容 |
-|---|---|
-| 资源类型 | 模型 |
-| OneScience 领域 | matchem |
-| 领域标签 | matchem, materials, foundation_model |
-| 任务 | materials_representation_interaction_simulation |
-| 任务标签 | energy_prediction, force_prediction, stress_prediction, magmom_prediction, relaxation |
-| 主平台资源 | https://modelscope.cn/models/OneScience/matris |
-| 标准运行包工作目录 | `.` |
-| OneScience examples 兼容路径 | `examples/matchem/matris` |
-| 支持能力 | 推理 / 评测 / 预检 |
-| 必需模型文件 | `scripts/preflight_matris.py`, `test_modularization.py`, `test_relaxation.py`, `cif_file/demo.cif` |
-| 必需数据集 | `OneScience/pbe` |
-| 最小验证 | `python scripts/preflight_matris.py --data-dir data --skip-model-forward` |
+- CPU 前向验证：使用极简晶体结构检查 MatRIS 模型能否完成能量、力、应力和磁矩前向传播。
+- 结构弛豫示例：读取 `cif_file/demo.cif`，并通过 `StructOptimizer` 执行结构优化流程。
+- GPU/DCU 优先运行：支持在已配置 OneScience matchem 环境的计算卡节点上运行。
 
-## 文件说明
+当前不支持能力：
 
-| 路径 | 类型 | 作用 | 是否必需 | 用于能力 | 下载后放置位置 | 备注 |
-|---|---|---|---|---|---|---|
-| `README.md` | 说明文档 | 模型用途、文件、下载、运行和诊断说明 | 是 | 全部能力 | `session_workdir/README.md` | 本文件 |
-| `manifest.yaml` | Manifest 文件 | 标准默认机器可读运行说明 | 是 | 全部能力 | `session_workdir/manifest.yaml` | 与 `onescience_run_manifest.yaml` 内容一致 |
-| `onescience_run_manifest.yaml` | Manifest 文件 | 本次任务要求的大模型运行 Manifest 文件名 | 是 | 全部能力 | `session_workdir/onescience_run_manifest.yaml` | 修改后需与 `manifest.yaml` 保持一致 |
-| `scripts/preflight_matris.py` | 预检脚本 | 检查 CSV 数据、MatRIS 模块导入和 CPU 前向传播 | 是 | 预检、评测 | `session_workdir/scripts/preflight_matris.py` | 最小验证入口 |
-| `test_modularization.py` | 测试脚本 | 原始 MatRIS 模块化验证脚本 | 否 | 预检 | `session_workdir/test_modularization.py` | 可人工运行 |
-| `test_relaxation.py` | 示例脚本 | 使用 `StructOptimizer` 对 `demo.cif` 做结构弛豫 | 否 | 推理 | `session_workdir/test_relaxation.py` | 依赖预训练模型 key |
-| `cif_file/demo.cif` | 示例输入 | 结构弛豫示例 CIF 文件 | 否 | 推理 | `session_workdir/cif_file/demo.cif` | 原始示例文件 |
-| `data/pbe.csv`, `data/pbesol.csv`, `data/pbe/` | 数据文件 | PBE/PBESOL phonon reference CSV 与 PBE YAML.BZ2 数据目录 | 是 | 预检、评测 | `session_workdir/data/` | 来自数据集仓库 `OneScience/pbe` |
-| `upstream/` | 上游材料 | 上游 README、当前 OneScience MatRIS 使用说明、LICENSE、requirements、pyproject | 否 | 说明 | `session_workdir/upstream/` | 便于追溯 |
+- 不支持训练、微调和完整材料性质评测流程。
+- 不内置结构可视化服务。
+- 不内置全部预训练 checkpoint，运行结构弛豫时需当前环境可解析或下载 MatRIS 模型 key。
 
-## Manifest
+# 适用场景
 
-本仓库提供 `manifest.yaml` 和 `onescience_run_manifest.yaml`，两者内容一致。修改文件、下载命令、运行命令或数据关系后必须同步更新两个 Manifest。
+| 场景 | 说明 |
+| :---: | :---: |
+| 晶体能量预测 | 输入 CIF、pymatgen Structure 或 ASE Atoms 结构，预测体系能量 |
+| 力和应力预测 | 为结构弛豫、分子动力学或后续模拟提供力和应力估计 |
+| 磁矩预测 | 在 `efsm` 任务下输出结构相关磁矩结果 |
+| 结构弛豫前处理 | 使用 `StructOptimizer` 对候选晶体结构进行原子位置和晶胞优化 |
+| 环境连通性验证 | 使用 `cif_file/demo.cif` 和轻量 MatRIS 模型检查 OneScience matchem 环境是否可用 |
 
-## 模型 vs 数据集关系
+# 文件说明
 
-模型仓库目标 ID 是 `OneScience/matris`，数据集仓库目标 ID 是 `OneScience/pbe`。模型 Manifest 的 `relations.required_datasets` 指向 `OneScience/pbe` 数据集，并提供完整 `resource_ref`。
+| 路径 | 功能 | 备注 |
+| :---: | :---: | :---: |
+| `README.md` |  工程使用说明文档 | 中文为主 |
+| `model/__init__.py` | MatRIS 模型包入口 | 暴露 `MatRIS`、`GraphConverter`、`RadiusGraph` |
+| `model/matris.py` | MatRIS 模型定义 | MatRIS 核心模型实现 |
+| `download.sh` | 大文件下载脚本 | 从 ModelScope 下载 `weight/` 和 `cif_file/` |
+| `scripts/test_modularization.py` | MatRIS 模块化验证脚本  | 检查导入、实例化、CPU 和 CUDA 前向；使用随机权重 |
+| `scripts/test_relaxation.py` | 结构弛豫示例入口  | 使用 `matris_10m_oam` 预训练模型 key；读取 `cif_file/demo.cif` |
+| `cif_file/demo.cif` |  最小结构弛豫示例输入 | 由 `download.sh` 从 ModelScope 下载 |
+| `weight/` | 预训练权重目录 | 由 `download.sh` 从 ModelScope 下载官方权重 |
 
-## 文件与下载
+# 使用说明
 
-```bash
-modelscope download --model OneScience/matris --local_dir session_workdir
-modelscope download --dataset OneScience/pbe --local_dir session_workdir
-```
+## 1. OneCode 使用
 
-如果网页端使用 `--cache_dir` 下载模型，运行前必须切换到实际下载后的模型包根目录，再执行预检或推理命令。
+可通过 OneCode 在线环境体验智能化一键式 AI4S 编程：
 
-## 环境安装
+[点击体验智能化一键式 AI4S 编程](https://web-2069360198568017922-iaaj.ksai.scnet.cn:58043/home)
+
+## 2. 手动安装使用
+
+**硬件要求**
+
+- 推荐使用 GPU 或 DCU 运行。
+- CPU 可以用于模块验证和小规模前向验证，但结构弛豫速度较慢，不建议用于正式批量推理。
+- DCU 用户需要预先安装 DTK，建议使用 DTK 26.04 或与当前集群匹配的 OneScience 推荐版本。
+
+**软件要求**
+
+使用前请先安装 OneScience matchem 环境：
 
 ```bash
+git clone https://gitee.com/onescience-ai/onescience.git
+cd onescience
 bash install.sh matchem
 ```
 
-## 运行流程
+主要依赖版本：
 
-### 1. 环境预检
+- ase==3.23.0
+- numpy==2.3.4
+- pymatgen==2025.10.07
+- torch==2.6.0
 
-```bash
-python scripts/preflight_matris.py --data-dir data --skip-model-forward
-```
+DCU 用户想了解更多适配内容请联系 liubiao@sugon.com。
 
-完整 OneScience matchem 环境中可进一步执行：
+**环境检测**
 
-```bash
-python scripts/preflight_matris.py --data-dir data
-```
-
-### 2. 下载
+- NVIDIA GPU：
 
 ```bash
-modelscope download --model OneScience/matris --local_dir session_workdir
-modelscope download --dataset OneScience/pbe --local_dir session_workdir
+nvidia-smi
 ```
 
-### 3. 应用运行包和准备文件
+- 海光 DCU：
 
 ```bash
-cd session_workdir
+hy-smi
 ```
 
-### 4. 运行前预检
+## 3. 预训练模型与示例结构
+
+推理测试需要预训练模型和示例 CIF 文件。由于文件较大，本仓库不直接包含 `weight/` 和 `cif_file/`，可通过 `download.sh` 从 ModelScope 完整模型包下载：
 
 ```bash
-python scripts/preflight_matris.py --data-dir data --skip-model-forward
+bash download.sh
 ```
 
-### 5. 运行
+下载完成后，目录结构如下：
+
+```text
+weight/
+├── MatRIS_10M_OAM.pth.tar
+└── MatRIS_10M_MP.pth.tar
+cif_file/
+└── demo.cif
+```
+
+MatRIS 提供以下模型 key：
+
+| 模型 key | 说明 |
+| --- | --- |
+| `matris_10m_omat` | 在 OMat24 数据集上训练 |
+| `matris_10m_oam` | 在 OMat24 上训练，并在 sAlex+MPtrj 上微调 |
+| `matris_10m_mp` | 在 MPTrj 数据集上训练 |
+
+运行 `scripts/test_relaxation.py` 时会从 `weight/` 加载；若本地不存在对应权重，也会尝试从 figshare 自动下载到 `weight/` 目录下。
+
+**注意：推理测试不需要额外材料数据集。** 只有训练、微调或完整评测才需要。
+
+## 4. 快速开始
+
+### 进入示例目录
+
+本示例位于 OneScience Examples 的 `models/matchem/MatRIS`，进入该目录后所有命令均相对于该目录执行：
 
 ```bash
-python test_relaxation.py
+cd models/matchem/MatRIS
 ```
 
-### 6. 验证输出
+### 下载大文件
 
-轻量预检成功时会输出 CSV 行数；完整预检还会输出模块导入和 CPU 前向传播通过。结构弛豫示例成功时会生成能量、力、应力、磁矩和最终结构对象。
+运行推理脚本前，先从 ModelScope 下载预训练权重和示例 CIF：
 
-## 输出说明
+```bash
+bash download.sh
+```
 
-最小验证输出在标准输出中。结构弛豫示例的主要结果包括 `trajectory.energies`、`trajectory.forces`、`trajectory.stresses`、`trajectory.magmoms` 和 `final_structure`。
+下载完成后会生成 `weight/` 和 `cif_file/` 目录。
 
-## 预检与诊断
+### 运行模块化验证
 
-- `ModuleNotFoundError`：缺少 OneScience matchem、torch、pymatgen 或 ase。
-- `数据文件不存在`：未下载数据集或 `data/` 路径不正确。
-- `CSV 表头不匹配`：数据文件不是当前 phonon reference CSV。
-- 预训练模型加载失败：当前环境无法解析 `matris_10m_oam`，请检查模型缓存或下载设置。
+```bash
+python scripts/test_modularization.py
+```
 
-## 限制与适用范围
+该脚本会实例化一个轻量 MatRIS 模型（随机初始化权重），并完成一次 CPU 前向传播，验证模型模块的连通性。
 
-本包当前不提供训练或微调入口；主要用于 MatRIS 模块预检、CPU 前向验证、结构弛豫示例和 phonon reference CSV 读取验证。
+### 运行结构弛豫推理
 
-## 引用与许可证
+```bash
+python scripts/test_relaxation.py
+```
 
-MatRIS 上游材料声明 BSD-3-Clause 许可证，详见 `upstream/LICENSE`。OneScience 集成代码以 OneScience 仓库许可证为准。
+该脚本读取 `cif_file/demo.cif`，通过 `StructOptimizer` 执行结构弛豫。
+
+推理完成后，日志中会输出结构弛豫过程，并在内存中得到能量、力、应力、磁矩和最终结构对象：
+
+```text
+relaxation result
+├── trajectory.energies[-1]
+├── trajectory.forces[-1]
+├── trajectory.stresses[-1]
+├── trajectory.magmoms[-1]
+└── final_structure
+```
+
+默认使用 `matris_10m_oam` 预训练模型 key，并根据当前环境自动选择 CUDA 或 CPU。若当前环境没有可用 GPU/DCU，脚本仍可在 CPU 上运行，但耗时会更长。
+
+## 5. 推理示例
+
+除结构弛豫外，也可以使用 `MatRISCalculator` 对单个结构进行能量、力、应力和磁矩预测：
+
+```python
+import torch
+from ase.build import bulk
+from onescience.utils.matris import MatRISCalculator
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+calc = MatRISCalculator(
+    model="matris_10m_oam",
+    task="efsm",
+    device=device,
+)
+
+atoms = bulk("Cu", a=5.43, cubic=True)
+atoms.calc = calc
+
+energy = atoms.get_potential_energy()   # 总能量 (eV)
+forces = atoms.get_forces()             # 力 (eV/Å)
+stress = atoms.get_stress()             # 应力 (eV/Å³)
+magmoms = atoms.get_magnetic_moments()  # 磁矩 (μB)
+```
+
+## 常用推理参数
+
+可直接修改 `scripts/test_relaxation.py` 中的变量：
+
+| 变量 | 说明 | 示例 |
+| --- | --- | --- |
+| `model_name` | MatRIS 预训练模型 key | `matris_10m_oam`、`matris_10m_mp` |
+| `task` | 预测任务类型，控制输出能量、力、应力和磁矩 | `e`、`ef`、`efs`、`efsm` |
+| `device` | 推理设备 | `cuda` 或 `cpu` |
+| `max_steps` | 最大结构弛豫步数 | `500` |
+| `fmax` | 力收敛阈值 | `0.05` |
+
+
+# OneScience 官方信息
+
+| 平台 | OneScience 主仓库 | Skills 仓库 |
+| --- | --- | --- |
+| Gitee | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
+| GitHub | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+
+# 引用与许可证
+
+- MatRIS 上游材料使用 BSD-3-Clause License。本仓库保留来源说明，并面向 OneScience 社区使用场景进行整理。
+
+- 如果在科研工作中使用 MatRIS 结果，建议引用 MatRIS 原始项目、OneScience 相关项目信息，并根据实际任务补充材料数据集、结构优化工具或下游分析工具引用。

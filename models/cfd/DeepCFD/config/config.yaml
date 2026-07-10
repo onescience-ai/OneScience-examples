@@ -1,0 +1,45 @@
+root:
+  datapipe:
+    verbose: false
+    source:
+      data_dir: "./data/deepcfd"
+      data_x_name: "dataX.pkl"
+      data_y_name: "dataY.pkl"
+
+    data:
+      split_ratio: 0.75
+      seed: 0
+
+    dataloader:
+      batch_size: 1
+      num_workers: 0
+
+  model:
+    name: "UNetEx"
+    in_channels: 3
+    out_channels: 3
+    base_channels: 2
+    num_stages: 1
+    kernel_size: 3
+    bilinear: true
+    normtype: "none"
+
+  training:
+    output_dir: "./weight"
+    checkpoint_name: "best_model.pt"
+    num_epochs: 1
+    lr: 0.001
+    weight_decay: 0.005
+    patience: 20
+    eval_interval: 1
+
+  inference:
+    checkpoint_path: "./weight/best_model.pt"
+    result_dir: "./result/deepcfd"
+    num_visualize: 2
+
+  fake_data:
+    num_samples: 4
+    height: 16
+    width: 16
+    seed: 42

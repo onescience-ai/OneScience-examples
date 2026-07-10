@@ -1,166 +1,231 @@
+---
+license: mit
+language:
+- en
+- zh
+tags:
+- OneScience
+- MACE
+- 机器学习力场
+- 分子模拟
+- 材料计算
+- 图神经网络
+- 等变神经网络
+- 训练
+- 推理
+frameworks: PyTorch
+---
+
 # MACE
 
-<p align="center">
-  <strong>
-    <span style="font-size: 20px;">点击下方图片，体验一键式 MACE 模型开发</span>
-  </strong>
-</p>
+MACE 是面向分子和材料体系的机器学习原子间势（MLIP）模型，基于 **E(3)-等变图神经网络（E(3)-Equivariant GNN）** 构建，可从原子结构数据中学习体系能量、原子受力，并支持基于 HDF5/XYZ 数据的训练与验证流程。
 
-<p align="center">
-  <a href="https://modelscope.cn/models/OneScience/MACE" target="_blank" rel="noopener noreferrer">
-    <img src="https://www.modelscope.cn/api/v1/models/VoyagerX/OneScience-badge/repo?Revision=master&FilePath=LOGOs.png" width="200" alt="Logo">
-  </a>
-</p>
+论文：*MACE: Higher order equivariant message passing neural networks for fast and accurate force fields*  
+参考实现：[MACE 官方 GitHub](https://github.com/ACEsuit/mace)
 
-## OneScience 官方信息
+---
 
-| 平台 | 文档 | OneScience 主仓库 | Skills 仓库 |
-|---|---|---|---|
-| Gitee | https://gitee.com/onescience-ai/onescience-doc | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
-| GitHub | https://github.com/onescience-ai/OneScience-doc | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+## 仓库说明
 
-## 项目说明
+本仓库是 OneScience 整理的 MACE 最小可运行独立模型仓库，面向 OneCode 自动化运行和本地快速验证场景。
 
-MACE 是面向分子和材料体系的机器学习原子间势模型，常用于预测体系能量、原子受力以及基于原子结构的训练和评测流程。本标准仓库整理的是 ANI-1x 训练场景的可运行包，用户下载后只需要把数据集放到模型包根目录的 `data/ani1x/`，再执行标准化配置即可完成预检、训练和基于验证集的评测。
+当前支持能力：
 
-这个包的输入是分子构型的 HDF5/XYZ 数据和统计文件，输出是训练日志、checkpoint 和评测过程中的验证结果。它适合做最小可运行验证、分布式训练预检、ANI-1x 数据集兼容性检查，以及后续继续训练或评测。
+- 训练：使用 HDF5/XYZ 数据训练 MACE 原子间势。
+- 评测：训练过程中按 `eval_interval` 在验证集上输出能量/力误差指标。
+- 预检：检查配置、数据文件、statistics 和关键脚本是否齐全。
+- 分布式训练：支持单卡、单节点多卡（torchrun）以及 SLURM 多节点提交。
 
-## Resource Card
+当前不支持能力：
 
-| 字段 | 内容 |
-|---|---|
-| 资源类型 | 模型 |
-| OneScience 领域 | matchem |
-| 领域标签 | matchem, molecular_potential, atomistic_simulation |
-| 任务 | mlip_training |
-| 任务标签 | mlip, energy_prediction, force_prediction, distributed_training |
-| 主平台资源 | https://modelscope.cn/models/OneScience/MACE |
-| 标准运行包工作目录 | `.` |
-| OneScience examples 兼容路径 | `examples/matchem/mace` |
-| 支持能力 | 训练 / 评测 |
-| 必需模型文件 | `train.py`, `run.sh`, `_parse_config.py`, `configs/ani1x_8dcu.yaml`, `scripts/preflight_mace_ani1x.py` |
-| 必需数据集 | `OneScience/ani1x` |
-| 最小验证 | `python scripts/preflight_mace_ani1x.py --config configs/ani1x_8dcu.yaml --data-dir data/ani1x` |
+- 不内置预训练权重。
+- 不内置真实训练数据集下载与预处理。
+- 不提供独立推理服务、部署脚本或可视化页面。
 
-能力和命令要求
-| 能力 | 必须提供 |
-|---|---|
-| `train` | 训练命令、训练数据、配置文件、输出 checkpoint 路径 |
-| `evaluate` | 评测命令、评测数据、指标、结果路径 |
+---
+
+## 适用场景
+
+| 场景 | 说明 |
+| :---: | :---: |
+| 原子间势训练 | 使用标准配置读取 HDF5/XYZ 数据并训练 MACE 模型 |
+| 分布式训练预检 | 检查多卡/多节点训练配置、数据路径和 statistics 是否一致 |
+| 验证集评测 | 训练过程中在验证集上输出能量和力相关误差指标 |
+| 自有数据迁移 | 参考现有配置替换为自有 HDF5/XYZ 数据和 statistics 文件 |
+| 环境连通性验证 | 使用预检脚本检查 OneScience matchem 环境、pyyaml、h5py 和数据可读性 |
+
+---
 
 ## 文件说明
 
-| 路径 | 类型 | 作用 | 是否必需 | 用于能力 | 下载后放置位置 | 备注 |
-|---|---|---|---|---|---|---|
-| `manifest.yaml` | Manifest 文件 | 机器可读运行说明，声明资源身份、文件、关系、命令和输出。大模型必须先读 README 的文件说明再打开该文件 | 是 | 全部能力 | `session_workdir/manifest.yaml` | 修改文件路径、下载方式或命令后必须同步更新 |
-| `README.md` | 说明文档 | 资源用途、下载、运行和诊断说明 | 是 | 全部能力 | `session_workdir/README.md` | 本文件 |
-| `train.py` | 运行脚本 | MACE 训练主入口 | 是 | 训练、评测 | `session_workdir/train.py` | 来自 OneScience examples 兼容实现 |
-| `run.sh` | 运行脚本 | 统一训练入口，支持 dry-run、直接运行和 SLURM 提交 | 是 | 训练、评测 | `session_workdir/run.sh` | 通过 `configs/ani1x_8dcu.yaml` 驱动 |
-| `_parse_config.py` | 运行脚本 | 解析 YAML 配置并生成训练命令和预检文件列表 | 是 | 训练、预检 | `session_workdir/_parse_config.py` | 已适配标准包目录 |
-| `configs/ani1x_8dcu.yaml` | 配置文件 | ANI-1x 8 DCU 训练配置 | 是 | 训练、评测 | `session_workdir/configs/ani1x_8dcu.yaml` | 已改为读取 `data/ani1x/` |
-| `metadata/sha256_manifest.txt` | 校验清单 | `data/ani1x/` 中数据文件的 SHA256 清单 | 是 | 预检、上传校验 | `session_workdir/metadata/sha256_manifest.txt` | 用于确认模型包内复制数据与原始数据一致 |
-| `scripts/preflight_mace_ani1x.py` | 预检脚本 | 检查配置、统计文件、HDF5 字段、shape、dtype、统计值一致性 | 是 | 预检 | `session_workdir/scripts/preflight_mace_ani1x.py` | 上传前和运行前都可执行 |
-| `data/ani1x/` | 数据目录 | ANI-1x 训练、验证、测试 HDF5 分片、statistics 和 XYZ 辅助文件 | 是 | 预检、训练、评测 | `session_workdir/data/ani1x/` | 为便于模型仓库独立上传和预检，此处为普通文件拷贝，不是软链接 |
+| 路径 | 功能 | 备注 |
+| :---: | :---: | :---: |
+| `README.md` | 工程使用说明文档 | 本文件 |
+| `model/` | MACE 模型源码 | 包含 `__init__.py`、`mace.py`、`__version__.py`、`py.typed` |
+| `scripts/train.py` | MACE 训练主入口 | 来自 OneScience matchem  |
+| `scripts/demo/run.sh` | 统一训练入口 | 支持直接运行、dry-run 和 SLURM 提交 |
+| `scripts/demo/_parse_config.py` | 配置解析脚本 | 生成训练命令、环境变量和预检文件列表 |
+| `scripts/demo/configs/` | 训练配置文件 | 包含 `DMC.yaml`、`ani1x_8dcu.yaml` 等 |
+| `scripts/demo/templates/` | 脚本模板 | 环境初始化、预检、SLURM header 模板 |
+| `scripts/fasteq/` | Fast Equilibration 辅助脚本 | 可选的加速平衡工具 |
 
-## Manifest
+---
 
-独立 Manifest 文件位于仓库根目录的 `manifest.yaml`。如果修改了模型文件、数据路径、下载命令或 `configs/ani1x_8dcu.yaml`，必须同步更新该文件中的 `files`、`relations`、`run_matrix` 和 `configuration_adaptation`。
+## 使用说明
 
-建议在上传前执行：
+### 1. OneCode 使用
 
-```bash
-python - <<'PY'
-import yaml
-yaml.safe_load(open('manifest.yaml', encoding='utf-8'))
-print('YAML OK')
-PY
-```
+可通过 OneCode 在线环境体验智能化一键式 AI4S 编程：
 
-## 模型 vs 数据集关系
+[点击体验智能化一键式 AI4S 编程](https://web-2069360198568017922-iaaj.ksai.scnet.cn:58043/home)
 
-该模型的标准训练与评测都依赖 `OneScience/ani1x`。模型仓库通过 `relations.required_datasets` 显式声明这个依赖，数据集仓库会反向声明其兼容模型。网页端或大模型收到这个模型后，应先下载模型包，再下载 `OneScience/ani1x`，并把数据放到 `data/ani1x/`。
+### 2. 手动安装使用
 
-`run_matrix` 中的最小验证场景只做预检，训练场景则需要训练分片、验证分片和统计文件。当前包没有独立推理入口，因为该整理目标是训练/评测标准包，不是推理服务包。
+**硬件要求**
 
-## 文件与下载
+- 推荐使用 GPU 或 DCU 运行训练。
+- CPU 可以用于导入、配置检查和小数据连通性验证，完整训练速度较慢。
+- DCU 用户需要预先安装 DTK，建议使用 DTK 26.04 或与当前集群匹配的 OneScience 推荐版本。
 
-本模型仓库已经包含一份普通文件拷贝的 `data/ani1x/`，可直接用于预检和训练。若需要从独立数据集仓库重新获取数据，下载命令如下：
+**软件要求**
 
-```bash
-modelscope download --model OneScience/MACE --local_dir session_workdir
-modelscope download --dataset OneScience/ani1x --local_dir session_workdir
-```
+- Python 3.11
+- torch、e3nn、torch_ema
+- pyyaml、h5py
+- OneScience matchem 运行环境
 
-下载后将数据集内容保留在 `session_workdir/data/ani1x/`，模型包根目录保持为运行 cwd。网页端如果使用 `--cache_dir` 下载模型，运行前必须切换到实际解压后的模型包根目录，再执行 `bash run.sh --config configs/ani1x_8dcu.yaml`。
-
-## 环境安装
+OneScience 安装方式（参考 [OneScience README](https://gitee.com/onescience-ai/onescience)）：
 
 ```bash
+git clone https://gitee.com/onescience-ai/onescience.git
+cd onescience
 bash install.sh matchem
 ```
 
-## 运行流程
+### 3. 快速开始
 
-### 1. 环境预检
+**进入示例目录**
 
-```bash
-python scripts/preflight_mace_ani1x.py --config configs/ani1x_8dcu.yaml --data-dir data/ani1x
-```
-
-### 2. 下载
+本示例位于 OneScience Examples 的 `models/matchem/MACE`，进入该目录后所有命令均相对于该目录执行：
 
 ```bash
-modelscope download --model OneScience/MACE --local_dir session_workdir
-modelscope download --dataset OneScience/ani1x --local_dir session_workdir
+cd models/matchem/MACE
 ```
 
-### 3. 应用运行包和准备文件
+**准备数据**
+
+本仓库不内置训练数据。请准备 HDF5/XYZ 格式数据并放到仓库根目录的 `data/` 下。以 DMC 数据集为例，预期目录结构如下：
+
+```text
+data/
+└── data/
+    └── DMC/
+        ├── solvent_xtb_train_200.xyz
+        └── solvent_xtb_test.xyz
+```
+
+`scripts/demo/run.sh` 会自动将仓库根目录作为 `ONESCIENCE_DATASETS_DIR`，因此无需手动设置该变量即可匹配配置文件中的路径。
+
+其他配置（如 `ani1x_8dcu.yaml`、`water_*.yaml` 等）需要下载对应数据集并调整 YAML 中的数据路径。
+
+**预检（不启动训练）**
 
 ```bash
-mkdir -p data
-cp -a /path/to/downloaded/ani1x data/ani1x
+bash scripts/demo/run.sh --config scripts/demo/configs/DMC.yaml --dry-run
 ```
 
-### 4. 运行前预检
+**运行样例训练**
+
+单卡/直接运行：
 
 ```bash
-python scripts/preflight_mace_ani1x.py --config configs/ani1x_8dcu.yaml --data-dir data/ani1x
+bash scripts/demo/run.sh --config scripts/demo/configs/DMC.yaml
 ```
 
-### 5. 运行
+多卡（torchrun）：
 
 ```bash
-bash run.sh --config configs/ani1x_8dcu.yaml
+# 以 8 卡为例，配置文件中 launch.launcher 应为 torchrun
+bash scripts/demo/run.sh --config scripts/demo/configs/ani1x_8dcu.yaml
 ```
 
-### 6. 验证输出
+SLURM 提交：
 
-训练结束后检查 `outputs/` 目录是否生成实验子目录，并确认日志中出现验证指标和 checkpoint 保存信息。最小验证只要求预检脚本返回 `OK`，说明配置和数据可读。
+```bash
+bash scripts/demo/run.sh --config scripts/demo/configs/ani1x_8dcu.yaml --submit
+```
 
-## 输出说明
+训练完成后，输出目录中会生成实验子目录，通常包含配置快照、训练日志、checkpoint 和验证指标：
 
-主要输出位于 `outputs/{实验名}_{时间戳}/`，通常包含：
+```text
+scripts/demo/outputs/
+├── DMC_YYYYmmdd_HHMMSS/
+│   ├── config.yaml
+│   ├── training logs
+│   ├── checkpoints
+│   └── final_model
+```
 
-- 训练日志
-- `config.yaml` 快照
-- checkpoint 文件
-- 验证过程中的错误统计和训练曲线
 
-如果只做最小验证，输出主要是标准输出中的 `[OK]` 检查结果。
+### 4. 常用训练参数
 
-## 预检与诊断
+`scripts/demo/configs/xxx.yaml` 中主要字段说明：
 
-常见问题如下：
+| 参数 | 说明 | 示例 |
+| --- | --- | --- |
+| `name` | 实验名称 | `DMC` |
+| `train_args.model` | 模型类型 | `MACE` |
+| `train_args.train_file` | 训练 HDF5 目录或 XYZ 文件 | `data/ani1x/ANI1x_cc_DFT_rc5_train` |
+| `train_args.valid_file` | 验证 HDF5 目录或 XYZ 文件 | `data/ani1x/ANI1x_cc_DFT_rc5_val` |
+| `train_args.test_file` | 测试 HDF5 目录或 XYZ 文件 | `data/ani1x/ANI1x_cc_DFT_rc5_test` |
+| `train_args.statistics_file` | statistics 文件 | `data/ani1x/ANI1x_cc_DFT_rc5_statistics.json` |
+| `train_args.r_max` | 截断半径，需与 statistics 一致 | `5.0` |
+| `train_args.batch_size` | 训练 batch 大小 | `128` |
+| `train_args.max_num_epochs` | 最大训练轮数 | `20` |
+| `train_args.swa` | 启用随机权重平均 | `true` |
+| `launch.num_gpus` | 单节点使用的 GPU/DCU 数量 | `8` |
+| `launch.launcher` | 启动方式 | `python` / `torchrun` |
 
-- `No such file or directory`：模型包文件或 `data/ani1x` 不完整。
-- `r_max` 相关报错：配置里的 `r_max` 与 statistics 文件不一致。
-- `ModuleNotFoundError`：OneScience matchem 依赖未安装。
-- `CUDA out of memory`：batch size 过大，需要降小 `batch_size` 或 `num_channels`。
+---
 
-## 限制与适用范围
+## 数据格式
 
-这个包主要面向 ANI-1x 训练和验证流程，不包含独立推理服务、部署脚本或可视化页面。它依赖的输入数据必须是 MACE 可读的 HDF5/XYZ 结构，并且 statistics 文件要和训练配置保持一致。
+MACE 训练数据支持两种主要格式：
+
+### 1. HDF5 分片目录
+
+将 HDF5 文件组织为目录，每个文件包含标准字段（由 OneScience datapipes.materials 定义），例如：
+
+- 原子位置、能量、受力、原子类型、边索引等。
+- 通常与 `statistics_file` 配套使用。
+
+### 2. extended XYZ 文件
+
+标准的 ASE extxyz 文件，需包含能量和力字段，字段名在 YAML 中通过 `energy_key` 和 `forces_key` 指定：
+
+```yaml
+train_args:
+  train_file: "${ONESCIENCE_DATASETS_DIR}/data/data/DMC/solvent_xtb_train_200.xyz"
+  energy_key: energy_xtb
+  forces_key: forces_xtb
+```
+
+### 3. statistics 文件
+
+JSON 文件，包含元素参考能量、平均邻居数、`r_max` 等统计信息。配置中的 `r_max` 必须与 statistics 文件中的 `r_max` 一致。
+
+---
+
+## OneScience 官方信息
+
+| 平台 | OneScience 主仓库 | Skills 仓库 |
+| --- | --- | --- |
+| Gitee | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
+| GitHub | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+
+---
 
 ## 引用与许可证
 
-MACE 相关代码来自 OneScience 项目中的 matchem 示例实现。许可证以 OneScience 主仓库和上游 MACE 许可为准。
+- MACE 相关代码来自 OneScience 项目中的 matchem 示例实现，并参考了上游 MACE 项目（https://github.com/ACEsuit/mace）。上游 MACE 代码以 [MIT License](https://github.com/ACEsuit/mace/blob/main/LICENSE) 发布。
+- 如果在科研工作中使用 MACE 训练结果，建议引用 MACE 原始论文、OneScience 相关项目信息和实际使用的数据集来源。

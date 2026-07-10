@@ -1,0 +1,78 @@
+root:
+  datapipe:
+    source:
+      data_dir: "./data/cfdbench"
+      data_name: "tube_prop_bc_geo"
+    verbose: true
+
+    data:
+      task_type: "auto"
+      norm_props: true
+      norm_bc: true
+      delta_time: 0.1
+      stable_state_diff: 0.001
+      split_ratios: [0.7, 0.15, 0.15]
+      seed: 0
+      num_rows: 8
+      num_cols: 8
+
+    dataloader:
+      batch_size: 2
+      eval_batch_size: 2
+      num_workers: 0
+
+  model:
+    name: "fno"
+    num_label_samples: 64
+    in_chan: 2
+    out_chan: 2
+    ffn_depth: 2
+    ffn_width: 64
+    autoffn_depth: 2
+    autoffn_width: 64
+    deeponet_width: 64
+    branch_depth: 2
+    trunk_depth: 2
+    act_fn: "relu"
+    act_scale_invariant: true
+    act_on_output: false
+    autoedeeponet_width: 64
+    autoedeeponet_depth: 2
+    autoedeeponet_act_fn: "relu"
+    fno_depth: 2
+    fno_hidden_dim: 16
+    fno_modes_x: 4
+    fno_modes_y: 4
+    unet_dim: 8
+    unet_insert_case_params_at: "input"
+    resnet_depth: 2
+    resnet_hidden_chan: 16
+    resnet_kernel_size: 7
+    resnet_padding: 3
+
+  training:
+    output_dir: "./result"
+    mode: "train_test"
+    group_by_model: true
+    device: "cpu"
+    num_epochs: 1
+    lr: 1.0e-3
+    lr_step_size: 20
+    lr_gamma: 0.9
+    log_interval: 1
+    eval_interval: 1
+    loss_name: "nmse"
+    checkpoint_name: "auto"
+
+  inference:
+    checkpoint_path: "auto"
+    output_dir: "./result/inference"
+    group_by_model: true
+    device: "cpu"
+    max_batches: 2
+    plot_interval: 1
+
+  fake_data:
+    num_cases_per_subset: 4
+    num_frames: 4
+    seed: 123

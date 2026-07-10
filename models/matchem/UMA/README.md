@@ -1,133 +1,287 @@
+---
+license: mit
+language:
+- en
+- zh
+tags:
+- OneScience
+- UMA
+- 材料科学
+- 催化
+- 分子模拟
+- 机器学习力场
+- 图神经网络
+- 等变神经网络
+- 训练
+- 推理
+frameworks: PyTorch
+---
+
 # UMA
 
-<p align="center">
-  <strong>
-    <span style="font-size: 20px;">点击下方图片，体验一键式 UMA 模型训练预检</span>
-  </strong>
-</p>
+UMA（Universal Materials Interaction Model）是面向材料与催化体系的通用机器学习原子间势示例模型，基于等变图神经网络构建，可用于原子结构的能量、受力预测，并支持 OC20、OC22、OC25、OMat、OMOL、ODAC、OMC 等多种材料与催化任务的微调训练与推理。
 
-<p align="center">
-  <a href="https://modelscope.cn/models/OneScience/UMA" target="_blank" rel="noopener noreferrer">
-    <img src="https://www.modelscope.cn/api/v1/models/VoyagerX/OneScience-badge/repo?Revision=master&FilePath=LOGOs.png" width="200" alt="Logo">
-  </a>
-</p>
+本仓库中的模型实现来自 OneScience MatChem 领域。
 
-## OneScience 官方信息
+---
 
-| 平台 | 文档 | OneScience 主仓库 | Skills 仓库 |
-|---|---|---|---|
-| Gitee | https://gitee.com/onescience-ai/onescience-doc | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
-| GitHub | https://github.com/onescience-ai/OneScience-doc | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+## 仓库说明
 
-## 项目说明
+本仓库是 OneScience 整理的 UMA 最小可运行模型仓库，面向 OneCode 自动化运行和本地快速验证场景。
 
-UMA 是 OneScience MatChem 领域的通用材料相互作用模型示例，当前标准包整理了 `onescience/examples/matchem/uma` 中的训练、推理、数据转换脚本和 OC20 微调配置。模型目标仓库 ID 为 `OneScience/UMA`，适配数据集为 `OneScience/oc20`。
+当前支持能力：
 
-原始示例依赖环境变量 `ONESCIENCE_DATASETS_DIR` 和 `ONESCIENCE_MODELS_DIR`。本标准包新增 `conf/oc20_ef_4dcu_modelscope.yaml`，将 OC20 数据路径改为下载后的相对路径 `data/oc20/uma_oc20_finetune/{train,val}`，并将 checkpoint 路径声明为 `checkpoints/uma-s-1p1_converted.pt`。
+- 多任务能量 + 受力微调训练：OC20、OC22、OC25、OMat、OMOL、ODAC、OMC
+- 训练 dry-run：生成训练命令和 Hydra 配置预览，不启动真实训练
+- 预检：检查运行文件、配置、数据路径和可选 checkpoint 是否齐全
+- 推理脚本参考：无机晶体弛豫、吸附体系弛豫、分子 MD 和批量推理示例
+- GPU/DCU 优先运行
 
-## Resource Card
+当前不支持能力：
 
-| 字段 | 内容 |
-|---|---|
-| 资源类型 | 模型 |
-| OneScience 领域 | matchem |
-| 领域标签 | matchem, uma, mlip, catalysis |
-| 任务 | oc20_energy_force_finetuning |
-| 任务标签 | oc20, energy_prediction, force_prediction, finetune |
-| 主平台资源 | https://modelscope.cn/models/OneScience/UMA |
-| 标准运行包工作目录 | `.` |
-| OneScience examples 兼容路径 | `examples/matchem/uma` |
-| 支持能力 | 训练 / 评测 / 推理脚本 / 预检 |
-| 必需数据集 | `OneScience/oc20` |
-| 最小验证 | `python scripts/preflight_uma.py --package-root .` |
+- 不内置 UMA checkpoint，真实微调前需准备权重文件
+- 不内置各任务真实训练数据，需自行准备
+- 不提供独立在线推理服务、部署脚本或可视化页面
+
+---
+
+## 适用场景
+
+| 场景 | 说明 |
+| :---: | :---: |
+| OC20 能量和力微调 | 使用标准配置读取 OC20 微调数据并训练 UMA 模型 |
+| OC22 氧化物催化微调 | 使用标准配置读取 OC22 微调数据并训练 UMA 模型（仅限 1P2） |
+| OC25 （电）催化微调 | 使用标准配置读取 OC25 微调数据并训练 UMA 模型（仅 1P2） |
+| OMat 无机材料微调 | 使用标准配置读取 OMat 微调数据并训练 UMA 模型 |
+| OMOL 分子+聚合物微调 | 使用标准配置读取 OMOL 微调数据并训练 UMA 模型 |
+| ODAC MOFs 微调 | 使用标准配置读取 ODAC 微调数据并训练 UMA 模型 |
+| OMC 分子晶体微调 | 使用标准配置读取 OMC 微调数据并训练 UMA 模型 |
+| 训练流程预检 | 检查配置、数据路径、运行脚本和 checkpoint 放置位置 |
+| 催化吸附体系建模 | 参考 OC20/OC22/OC25 任务进行吸附/催化表面体系训练与推理 |
+| 推理脚本参考 | 使用上游推理示例进行晶体弛豫、吸附体系弛豫或分子 MD 改造 |
+| 自有数据迁移 | 将 ASE 可读结构转换为 UMA 微调数据后替换训练和验证路径 |
+
+---
 
 ## 文件说明
 
-| 路径 | 类型 | 作用 | 是否必需 | 用于能力 | 下载后放置位置 | 备注 |
-|---|---|---|---|---|---|---|
-| `README.md` | 说明文档 | 模型用途、文件、下载、运行和诊断说明 | 是 | 全部能力 | `session_workdir/README.md` | 本文件 |
-| `manifest.yaml` | Manifest 文件 | 标准默认机器可读运行说明 | 是 | 全部能力 | `session_workdir/manifest.yaml` | 与 `onescience_run_manifest.yaml` 一致 |
-| `onescience_run_manifest.yaml` | Manifest 文件 | 大模型运行 Manifest 文件名 | 是 | 全部能力 | `session_workdir/onescience_run_manifest.yaml` | 修改后需同步 |
-| `scripts/preflight_uma.py` | 预检脚本 | 检查运行文件、配置、OC20 数据路径和可选 checkpoint | 是 | 预检 | `session_workdir/scripts/preflight_uma.py` | 不启动训练 |
-| `conf/oc20_ef_4dcu_modelscope.yaml` | 适配配置 | 面向 ModelScope 下载布局的 UMA OC20 微调配置 | 是 | 训练、预检 | `session_workdir/conf/oc20_ef_4dcu_modelscope.yaml` | 已改数据路径 |
-| `upstream/` | 上游示例代码 | UMA 原始训练、推理、转换脚本和 demo 配置 | 是 | 训练、推理、转换 | `session_workdir/upstream/` | 来自 OneScience 示例 |
-| `metadata/sha256_manifest.txt` | 校验清单 | 模型包脚本和配置 SHA256 | 是 | 预检 | `session_workdir/metadata/sha256_manifest.txt` | 上传前校验 |
-| `checkpoints/uma-s-1p1_converted.pt` | checkpoint | UMA 微调所需权重 | 否 | 训练 | `session_workdir/checkpoints/` | 当前本地源目录未提供权重 |
+| 路径 | 功能 | 备注 |
+| :---: | :---: | :---: |
+| `README.md` | 工程使用说明文档 | 本文件 |
+| `model/` | UMA 模型源码 | 包含 `__init__.py`、`base.py`、`uma_escn_md.py`、`uma_escn_moe.py`、`models/` |
+| `train.py` | UMA 训练主入口 | 来自 OneScience matchem 示例 |
+| `demo/run.sh` | 统一训练入口 | 支持直接运行、dry-run 和 SLURM 提交 |
+| `demo/_parse_config.py` | 配置解析脚本 | 生成训练命令、Hydra 配置和预检文件列表 |
+| `demo/configs/` | 训练配置文件 | 包含 `oc20_ef_4dcu.yaml` 等示例配置；可按需添加 OC22、OC25、OMat、OMOL、ODAC、OMC 等任务配置 |
+| `demo/templates/` | 脚本模板 | 环境初始化、预检、SLURM header 模板 |
+| `configs/` | UMA 数据/任务配置模板 | 包含 `uma_sm_finetune_template.yaml`、`configs/data/` |
+| `scripts/` | 数据转换和模型转换脚本 | 自定义微调数据集、checkpoint 转换、demo 配置更新 |
+| `scripts/update_demo_config.py` | 更新 demo 配置文件 | 把 `create_uma_finetune_dataset.py` 生成的 data yaml 同步到 demo config |
+| `inference/` | UMA 推理示例脚本 | 晶体弛豫、吸附体系、分子 MD、批量推理 |
+| `models-json/` | 预训练模型清单 | 训练/推理时通过输出目录的 `models` 软链访问 |
 
-## Manifest
+---
 
-本仓库提供 `manifest.yaml` 和 `onescience_run_manifest.yaml`，两者内容一致。修改文件、下载命令、数据关系或适配配置后必须同步更新。
+## 使用说明
 
-## 模型 vs 数据集关系
+### 1. OneCode 使用
 
-模型仓库目标 ID 是 `OneScience/UMA`，数据集仓库目标 ID 是 `OneScience/oc20`。模型 Manifest 的 `relations.required_datasets` 指向 `OneScience/oc20`，数据集 Manifest 的 `relations.compatible_models` 反向指向 `OneScience/UMA`。
+可通过 OneCode 在线环境体验智能化一键式 AI4S 编程：
 
-## 文件与下载
+[点击体验智能化一键式 AI4S 编程](https://web-2069360198568017922-iaaj.ksai.scnet.cn:58043/home)
+
+### 2. 手动安装使用
+
+**硬件要求**
+
+- 推荐使用 GPU 或 DCU 运行微调训练。
+- CPU 可以用于配置和数据路径预检，不建议用于正式 UMA 训练。
+- DCU 用户需要预先安装 DTK，建议使用 DTK 26.04 或与当前集群匹配的 OneScience 推荐版本。
+
+**软件要求**
+
+- Python 3.11
+- torch
+- ase
+- pyyaml
+- hydra-core
+- OneScience matchem 运行环境
+
+OneScience 安装方式（参考 [OneScience README](https://gitee.com/onescience-ai/onescience)）：
 
 ```bash
-modelscope download --model OneScience/UMA --local_dir session_workdir
-modelscope download --dataset OneScience/oc20 --local_dir session_workdir
-```
-
-如果网页端使用 `--cache_dir` 下载模型，运行前必须切换到实际下载后的模型包根目录。
-
-## 环境安装
-
-```bash
+git clone https://gitee.com/onescience-ai/onescience.git
+cd onescience
 bash install.sh matchem
 ```
 
-## 运行流程
+### 3. 快速开始
 
-### 1. 下载
+**进入示例目录**
 
-```bash
-modelscope download --model OneScience/UMA --local_dir session_workdir
-modelscope download --dataset OneScience/oc20 --local_dir session_workdir
-cd session_workdir
-```
-
-### 2. 运行前预检
+本示例位于 OneScience Examples 的 `models/matchem/UMA`，进入该目录后所有命令均相对于该目录执行：
 
 ```bash
-python scripts/preflight_uma.py --package-root .
+cd models/matchem/UMA
 ```
 
-如果已经放置 checkpoint，可加严格检查：
+**准备数据**
+
+本仓库不内置训练数据。以下以 **OC20 微调**为例说明流程，OC22、OC25、OMat、OMOL、ODAC、OMC 等其他任务流程相同，只需替换 `--uma-task` 和数据路径即可。
+
+将原始 `.extxyz` 数据放到 `data/oc20/` 下（路径可替换为集群共享数据位置）：
 
 ```bash
-python scripts/preflight_uma.py --package-root . --require-checkpoint
+mkdir -p data/oc20
+cp -r /path/to/s2ef_200k_uncompressed data/oc20/
+cp -r /path/to/s2ef_val_id_uncompressed data/oc20/
 ```
 
-### 3. 训练 dry-run
+**数据格式转换**
+
+下载的原始数据通常是 `.extxyz` 文件，需要先用 `scripts/create_uma_finetune_dataset.py` 转换为 ASE-lmdb 格式，并计算 `elem_refs` 和 `normalizer_rmsd`。该脚本支持以下任务：
+
+| 任务 | 说明 |
+| --- | --- |
+| `oc20` | 催化（示例） |
+| `oc22` | 氧化物催化（仅限 1P2） |
+| `oc25` | （电）催化（仅 1P2） |
+| `omat` | 无机材料 |
+| `omol` | 分子 + 聚合物 |
+| `odac` | MOFs |
+| `omc` | 分子晶体 |
+
+以 OC20 为例：
 
 ```bash
-cd upstream/demo
-bash run.sh --config ../../conf/oc20_ef_4dcu_modelscope.yaml --dry-run
+python scripts/create_uma_finetune_dataset.py \
+    --train-dir data/oc20/s2ef_200k_uncompressed \
+    --val-dir data/oc20/s2ef_val_id_uncompressed \
+    --uma-task oc20 \
+    --regression-tasks ef \
+    --output-dir data/oc20_finetune \
+    --num-workers 8
 ```
 
-### 4. 训练
+转换后生成：
+
+```text
+data/oc20_finetune/
+├── train/                 # ASE-lmdb 训练数据
+├── val/                   # ASE-lmdb 验证数据
+└── data/                  # 生成的数据配置 yaml
+    └── uma_conserving_data_task_energy_force.yaml
+```
+
+然后用 `scripts/update_demo_config.py` 把生成的 `elem_refs`、`normalizer_rmsd` 和数据路径更新到 demo 配置文件：
 
 ```bash
-cd upstream/demo
-bash run.sh --config ../../conf/oc20_ef_4dcu_modelscope.yaml
+python scripts/update_demo_config.py --demo-config demo/configs/oc20_ef_4dcu.yaml
 ```
 
-## 输出说明
+`demo/run.sh` 会自动将仓库根目录作为 `ONESCIENCE_DATASETS_DIR`，因此配置文件中的相对路径会自动匹配。
 
-`run.sh` 会在 `upstream/demo/outputs/` 下生成配置快照、Hydra 配置、训练日志和 `uma_finetune_runs/` 目录。dry-run 只打印命令和配置预览，不启动训练。
+如需真实训练或推理，还需准备 UMA checkpoint 和旋转基文件 `Jd.pt`，并放到：
 
-## 预检与诊断
+```text
+weight/uma-s-1p1_converted.pt
+weight/Jd.pt
+```
 
-- `missing directory`：未下载 `OneScience/oc20` 或数据没有放在 `data/oc20/`。
-- `checkpoint not present`：当前本地源目录未提供 UMA checkpoint，请将转换后的权重放到 `checkpoints/uma-s-1p1_converted.pt`。
-- `ModuleNotFoundError`：缺少 OneScience matchem、torch、fairchem/ASE 等依赖。
-- `配置文件不存在`：运行 `run.sh` 时 cwd 或 `--config` 路径错误。
+`demo/run.sh` 和 `inference/` 下的示例脚本都会自动检测 `weight/Jd.pt` 并设置 `ONESCIENCE_UMA_JD_PATH`。
 
-## 限制与适用范围
+**预检（不启动训练）**
 
-本标准包整理 UMA 示例代码和 OC20 微调配置；当前本地源目录没有提供 checkpoint 文件，因此上传前如需一键真实训练，应补充 `checkpoints/uma-s-1p1_converted.pt` 或在 README/Manifest 中保持 checkpoint 外部依赖说明。
+```bash
+bash demo/run.sh --config demo/configs/oc20_ef_4dcu.yaml --dry-run
+```
+
+**运行样例训练**
+
+```bash
+bash demo/run.sh --config demo/configs/oc20_ef_4dcu.yaml
+```
+
+SLURM 提交：
+
+```bash
+bash demo/run.sh --config demo/configs/oc20_ef_4dcu.yaml --submit
+```
+
+训练完成后，输出目录中会生成实验子目录：
+
+```text
+demo/outputs/
+├── oc20_ef_4dcu_YYYYmmdd_HHMMSS/
+│   ├── config.yaml
+│   ├── hydra_config.yaml
+│   ├── train_merged.out
+│   └── uma_finetune_runs/
+```
+
+### 4. 常用训练参数
+
+| 参数 | 说明 | 示例 |
+| --- | --- | --- |
+| `--config` | `run.sh` 使用的 YAML 配置文件 | `demo/configs/oc20_ef_4dcu.yaml` |
+| `--dry-run` | 仅生成训练命令和 Hydra 配置预览 | 调试用 |
+| `--submit` | 生成并提交 SLURM 作业 | 集群训练使用 |
+| `launch.num_gpus` | 单节点使用的 GPU/DCU 数量 | `4` |
+| `data.dataset_name` | UMA 任务数据集名 | `oc20`、`oc22`、`oc25`、`omat`、`omol`、`odac`、`omc` |
+| `data.train_dataset.splits.train.src` | 训练集 ASE-lmdb 目录 | `data/oc20_finetune/train` |
+| `data.val_dataset.splits.val.src` | 验证集 ASE-lmdb 目录 | `data/oc20_finetune/val` |
+| `runner.train_eval_unit.model.checkpoint_location` | 微调 checkpoint 路径 | `weight/uma-s-1p1_converted.pt` |
+| `epochs` | 训练轮数 | `1` |
+| `batch_size` | 每卡 batch 大小 | `2` |
+| `evaluate_every_n_steps` | 验证间隔步数 | `100` |
+
+---
+
+## 数据格式
+
+UMA 微调支持以 `.extxyz` 作为多种任务的原始输入，但需要先用 `scripts/create_uma_finetune_dataset.py` 转换为 ASE-lmdb 格式。支持的 `--uma-task` 包括 `oc20`、`oc22`、`oc25`、`omat`、`omol`、`odac`、`omc`。
+
+以 OC20 为例：
+
+```bash
+python scripts/create_uma_finetune_dataset.py \
+    --train-dir data/oc20/s2ef_200k_uncompressed \
+    --val-dir data/oc20/s2ef_val_id_uncompressed \
+    --uma-task oc20 \
+    --regression-tasks ef \
+    --output-dir data/oc20_finetune \
+    --num-workers 8
+```
+
+转换后的目录结构如下：
+
+```text
+data/oc20_finetune/
+├── train/
+│   ├── data.0000.aselmdb
+│   ├── ...
+├── val/
+│   ├── data.0000.aselmdb
+│   ├── ...
+└── data/
+    └── uma_conserving_data_task_energy_force.yaml
+```
+
+每个 lmdb 目录包含 ASE 原子的序列化数据。`data.elem_refs` 和 `data.normalizer_rmsd` 需与数据生成脚本输出一致，可通过 `scripts/update_demo_config.py` 自动同步到 demo 配置文件。
+
+---
+
+## OneScience 官方信息
+
+| 平台 | OneScience 主仓库 | Skills 仓库 |
+| --- | --- | --- |
+| Gitee | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
+| GitHub | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+
+---
 
 ## 引用与许可证
 
-UMA 示例代码来自 OneScience 仓库，许可证以 OneScience 仓库说明为准。OC20 数据使用限制以原始数据来源和 ModelScope 页面说明为准。
+- UMA 示例代码来自 OneScience 项目中的 matchem 示例实现，并参考了上游 fairchem 项目（https://github.com/facebookresearch/fairchem）。上游 fairchem 仓库软件以 [MIT License](https://fair-chem.github.io/core/install.html#license) 发布；fairchem 各模型 checkpoint 和数据集可能带有各自独立的许可证，使用时请遵循对应说明。
+- 如果在科研工作中使用 UMA 微调或推理结果，建议引用 UMA/相关通用材料相互作用模型方法、fairchem/OneScience 相关项目信息和实际使用的数据集来源。
+
