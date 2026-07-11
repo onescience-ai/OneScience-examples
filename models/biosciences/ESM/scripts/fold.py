@@ -1,3 +1,12 @@
+from pathlib import Path
+import sys
+
+_PROJECT_FILE = Path(__file__).resolve()
+for _PROJECT_ROOT in _PROJECT_FILE.parents:
+    if (_PROJECT_ROOT / "model").is_dir():
+        if str(_PROJECT_ROOT) not in sys.path:
+            sys.path.insert(0, str(_PROJECT_ROOT))
+        break
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 
 # This source code is licensed under the MIT license found in the
@@ -15,7 +24,7 @@ from timeit import default_timer as timer
 
 import torch
 
-import onescience.models.esm as esm
+import model.esm as esm
 from onescience.datapipes.esm import read_fasta
 
 logger = logging.getLogger()

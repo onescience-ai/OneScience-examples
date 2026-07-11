@@ -1,0 +1,25 @@
+﻿model:
+  name: OpenFold
+  package_path: ../model/openfold
+  base_dependency: OneScience
+
+runtime:
+  pythonpath: ../model
+  onescience_root_env: ONESCIENCE_ROOT
+  default_config_preset: model_1_ptm
+  device: cuda:0
+
+train:
+  data_dir: ../data/mmcif
+  alignment_dir: ../data/alignments
+  template_mmcif_dir: ../data/templates/mmcif
+  output_dir: ../outputs/train
+  checkpoint_dir: ../weight
+  deepspeed_config: ./deepspeed_config.json
+
+inference:
+  fasta_dir: ../data/fasta
+  template_mmcif_dir: ../data/templates/mmcif
+  precomputed_alignment_dir: ../data/alignments
+  output_dir: ../outputs/inference
+  checkpoint_path: ../weight/openfold.pt

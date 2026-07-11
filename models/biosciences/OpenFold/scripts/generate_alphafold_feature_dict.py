@@ -5,7 +5,7 @@ import pickle
 from onescience.flax_models.alphafold.data import pipeline, pipeline_multimer, templates
 from onescience.flax_models.alphafold.data.tools import hmmsearch, hhsearch
 
-from scripts.utils import add_data_args
+from utils import add_data_args
 
 
 def main(args):

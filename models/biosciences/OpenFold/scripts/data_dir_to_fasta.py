@@ -3,7 +3,7 @@ import logging
 import os
 import string
 from collections import defaultdict
-from onescience.datapipes.openfold.data import mmcif_parsing
+from onescience.datapipes.openfold import mmcif_parsing
 from onescience.utils.openfold.np import protein, residue_constants
 
 

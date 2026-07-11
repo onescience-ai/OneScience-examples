@@ -8,9 +8,9 @@ from multiprocessing import cpu_count
 from shutil import copyfile
 import tempfile
 
-import onescience.datapipes.openfold.data.mmcif_parsing as mmcif_parsing
-from openfold.data.data_pipeline import AlignmentRunner
-from onescience.datapipes.openfold.data.parsers import parse_fasta
+import onescience.datapipes.openfold.mmcif_parsing as mmcif_parsing
+from onescience.datapipes.openfold.data_pipeline import AlignmentRunner
+from onescience.datapipes.openfold.parsers import parse_fasta
 from onescience.datapipes.openfold.tools import hhsearch, hmmsearch
 from onescience.utils.openfold.np import protein, residue_constants
 

@@ -1,0 +1,16 @@
+﻿{
+  "model_name": "OpenFold",
+  "framework": "PyTorch",
+  "task": "protein-structure-prediction",
+  "description": "Lightweight OpenFold wrapper package. Scripts, model code, config and weight directory are local; datapipes and utils are provided by the OneScience base package.",
+  "entry_points": {
+    "train": "scripts/train.py",
+    "inference": "scripts/inference.py",
+    "thread_sequence": "scripts/thread_sequence.py"
+  },
+  "source_package": "model/openfold",
+  "base_dependency": "onescience",
+  "config": "config/config.yaml",
+  "weight_dir": "weight",
+  "license": "Apache-2.0"
+}

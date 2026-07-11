@@ -1,1 +1,15 @@
-{"framework": "pytorch", "task": "protein-sequence-design", "allow_remote": true}
+{
+  "model_name": "ProteinMPNN",
+  "framework": "PyTorch",
+  "task": "protein-sequence-design",
+  "entry_points": {
+    "inference": "scripts/inference.py",
+    "train": "scripts/training.py",
+    "helper_scripts": "scripts/helper_scripts"
+  },
+  "source_package": "model/proteinmpnn",
+  "base_dependency": "onescience",
+  "config": "config/config.yaml",
+  "weight_dir": "weight",
+  "license": "MIT"
+}

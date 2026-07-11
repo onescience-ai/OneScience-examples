@@ -1,4 +1,16 @@
-#!/bin/bash
-# 下载所有 >1MB 且非 .sh .py .md .yaml .yml 的文件
-# 共 1 个大文件
-modelscope download --model OneScience/ESM checkpoints/esmfold_3B_v1.pt --local_dir ./
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Run this script from the ESM project root.
+
+PROJECT_MODEL="OneScience/ESM"
+
+download_project_dir() {
+  local remote_path="$1"
+  local local_dir="$2"
+  mkdir -p "$local_dir"
+  modelscope download --model "$PROJECT_MODEL" "$remote_path" --local_dir "$local_dir"
+}
+
+download_project_dir "ESM/data" "./data"
+download_project_dir "ESM/weight" "./weight"

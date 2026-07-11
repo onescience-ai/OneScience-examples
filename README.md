@@ -16,16 +16,16 @@ OneScience Examples 是 OneScience 官方维护的模型示例仓库，旨在为
 
 | 模型 | 描述 |
 |------|------|
-| [AlphaFold3](./models/AlphaFold3/README.md) | DeepMind 第三代蛋白质结构预测模型 |
-| [AlphaGenome](./models/alphagenome/README.md) | DNA 序列分析与变异评分模型 |
-| [ESM](./models/ESM/README.md) | ESMFold 蛋白质结构预测 |
-| [Evo2](./models/evo2/README.md) | 大规模基因组基础模型 |
-| [OpenFold](./models/OpenFold/README.md) | 开源蛋白质结构预测 |
-| [PINNsformer](./models/PINNsformer/README.md) | 物理-informed 神经网络 |
-| [Protenix](./models/protenix/README.md) | 蛋白质结构预测模型 |
-| [ProteinMPNN](./models/ProteinMPNN/README.md) | 蛋白质序列设计 |
-| [RFdiffusion](./models/RFdiffusion/README.md) | 蛋白质反向折叠扩散模型 |
-| [SimpleFold](./models/SimpleFold/README.md) | 轻量级蛋白质结构预测 |
+| [AlphaFold3](./models/biosciences/AlphaFold3/README.md) | DeepMind 第三代蛋白质结构预测模型 |
+| [AlphaGenome](./models/biosciences/alphagenome/README.md) | DNA 序列分析与变异评分模型 |
+| [ESM](./models/biosciences/ESM/README.md) | ESMFold 蛋白质结构预测 |
+| [Evo2](./models/biosciences/evo2/README.md) | 大规模基因组基础模型 |
+| [OpenFold](./models/biosciences/OpenFold/README.md) | 开源蛋白质结构预测 |
+| [PINNsformer](./models/biosciences/PINNsformer/README.md) | 物理-informed 神经网络 |
+| [Protenix](./models/biosciences/protenix/README.md) | 蛋白质结构预测模型 |
+| [ProteinMPNN](./models/biosciences/ProteinMPNN/README.md) | 蛋白质序列设计 |
+| [RFdiffusion](./models/biosciences/RFdiffusion/README.md) | 蛋白质反向折叠扩散模型 |
+| [SimpleFold](./models/biosciences/SimpleFold/README.md) | 轻量级蛋白质结构预测 |
 
 ### 🧪 材料化学
 

@@ -1,159 +1,284 @@
-# ESMFold
-
 <p align="center">
   <strong>
-    <span style="font-size: 20px;">点击下方图片，体验一键式 ESMFold 模型开发</span>
+    <span style="font-size: 30px;">ESM</span>
   </strong>
 </p>
 
-<p align="center">
-  <a href="https://modelscope.cn/models/OneScience/esmfold/" target="_blank" rel="noopener noreferrer">
-    <img src="https://www.modelscope.cn/api/v1/models/VoyagerX/OneScience-badge/repo?Revision=master&FilePath=LOGOs.png" width="200" alt="Logo">
-  </a>
-</p>
+# 模型介绍
 
-ESMFold 是面向蛋白质单序列结构预测的模型运行包。该标准仓库把 OneScience 中 `examples/biosciences/esm` 的 ESMFold 推理脚本、最小 FASTA 样例、权重入口和运行说明整理为 ModelScope 可下载包，可从 FASTA 输入生成 PDB 结构文件。
+ESM（Evolutionary Scale Modeling）是 Meta AI / FAIR 发布的蛋白质语言模型家族，面向蛋白质序列表征、结构预测、变异效应评估和固定骨架序列设计等任务。本项目包含 ESM-1、ESM-2、MSA Transformer、ESMFold、ESM-1v 和 ESM-IF1 相关能力，可支持从 FASTA 提取蛋白表征、预测 PDB 结构、对 DMS 突变数据进行零样本评分，以及基于已知结构进行 inverse folding 采样和序列打分。
 
-## OneScience 官方信息
+主要论文：
 
-| 平台 | 文档 | OneScience 主仓库 | Skills 仓库 |
-|---|---|---|---|
-| Gitee | https://gitee.com/onescience-ai/onescience-doc | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
-| GitHub | https://github.com/onescience-ai/OneScience-doc | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+- ESM-2 / ESMFold：Evolutionary-scale prediction of atomic-level protein structure with a language model  
+  https://www.science.org/doi/10.1126/science.ade2574
+- ESM 系列基础模型：Biological structure and function emerge from scaling unsupervised learning to 250 million protein sequences  
+  https://www.pnas.org/doi/10.1073/pnas.2016239118
+- MSA Transformer：MSA Transformer  
+  https://www.biorxiv.org/content/10.1101/2021.02.12.430858v1
+- ESM-1v 变异效应预测：Language models enable zero-shot prediction of the effects of mutations on protein function  
+  https://www.biorxiv.org/content/10.1101/2021.07.09.450648v1
+- ESM-IF1 inverse folding：Learning inverse folding from millions of predicted structures  
+  https://www.biorxiv.org/content/early/2022/04/10/2022.04.10.487779
 
-## 项目说明
+# 仓库说明
 
-本资源是 `OneScience/esmfold/` 模型标准运行包，领域为 `bio`。它接收蛋白质 FASTA 序列，调用 OneScience 的 ESM/ESMFold 实现和 `esmfold_3B_v1.pt` 权重，输出每条序列对应的 PDB 文件，并在日志中给出 pLDDT、pTM 和推理进度。
+本仓库是 ESM 最小可运行独立模型仓库，面向 OneCode 自动化运行和本地快速验证场景。
 
-当前包支持最小预检和最小推理，不声明训练、微调或评测能力。原始数据目录 `/public/share/sugonhpcapp01/onestore/onedatasets/esmfold/data` 为空，因此本次整理将可用资源明确为 `weight/` 权重集合，并通过 `OneScience/esmfold_dataset` 与模型包双向关联。
+当前支持能力：
 
-## Resource Card
+- ESM / ESM-2 蛋白序列表征提取
+- ESMFold 单序列蛋白三维结构预测
+- ESM-IF1 固定骨架 inverse folding 序列采样
+- ESM-IF1 基于结构的序列 log-likelihood 打分
+- ESM-1v / MSA Transformer 零样本变异效应预测
+- 小样例 FASTA、PDB / CIF 和 DMS 数据的本地流程验证
 
-| 字段 | 内容 |
-|---|---|
-| 资源类型 | 模型 |
-| OneScience 领域 | bio |
-| 领域标签 | bio, protein, structure_prediction |
-| 任务 | protein_structure_prediction |
-| 任务标签 | esmfold, protein_folding, fasta_to_pdb |
-| 主平台资源 | https://modelscope.cn/models/OneScience/esmfold/ |
-| 标准运行包工作目录 | `.` |
-| OneScience examples 兼容路径 | `examples/biosciences/esm` |
-| 必需模型文件 | `checkpoints/esmfold_3B_v1.pt` |
-| 必需数据集 | `OneScience/esmfold_dataset` |
-| 支持能力 | 预检、推理 |
-| 最小验证 | `python scripts/preflight.py --dataset-root ../../dataset/bio_esmfold_dataset` |
+当前不支持能力：
 
-## 文件说明
+- 不负责外部 MSA 搜索、结构数据库检索或蛋白结构可视化服务
+- 不面向临床诊断或医学决策
 
-| 路径 | 类型 | 作用 | 是否必需 | 用于能力 | 下载后放置位置 | 备注 |
-|---|---|---|---|---|---|---|
-| `README.md` | 说明文档 | 人类和大模型运行入口 | 是 | 全部能力 | 模型包根目录 | 中文为主 |
-| `manifest.yaml` | Manifest 文件 | 机器可读运行说明 | 是 | 全部能力 | `manifest.yaml` | 默认 Manifest 路径 |
-| `onescience_run_manifest.yaml` | Manifest 兼容副本 | 供网页端按固定名称读取 | 是 | 全部能力 | `onescience_run_manifest.yaml` | 内容与 `manifest.yaml` 一致 |
-| `conf/config.yaml` | 配置文件 | 声明 FASTA、输出目录、权重目录和数据集位置 | 是 | 预检、推理 | `conf/config.yaml` | 已适配标准包相对路径 |
-| `scripts/preflight.py` | 预检脚本 | 检查 YAML、FASTA、权重大小、SHA256 和关联数据集 | 是 | 预检 | `scripts/preflight.py` | 不加载 3B 模型 |
-| `scripts/fold.py` | 推理脚本 | FASTA 到 PDB 的 ESMFold 推理入口 | 是 | 推理 | `scripts/fold.py` | 依赖 OneScience bio 环境 |
-| `scripts/extract.py` | 辅助脚本 | ESM-2 表征提取入口 | 否 | 可选表征提取 | `scripts/extract.py` | 非默认场景 |
-| `data/sample/few_proteins.fasta` | 样例数据 | 最小推理 FASTA 输入 | 是 | 预检、推理 | `data/sample/few_proteins.fasta` | SHA256 已记录 |
-| `checkpoints/esmfold_3B_v1.pt` | 模型权重 | ESMFold v1 推理 checkpoint | 是 | 预检、推理 | `checkpoints/esmfold_3B_v1.pt` | SHA256 已记录 |
-| `metadata/ONESCIENCE_ESM_EXAMPLES_README.md` | 来源说明 | OneScience ESM examples README 备份 | 否 | 溯源 | `metadata/` | 说明原始运行方式 |
+# 适用场景
 
-## Manifest
+| 场景 | 说明 |
+| :---: | :--- |
+| 蛋白序列表征提取 | 输入 FASTA 文件，输出 per-token、mean、BOS 或 contact 表征 |
+| 蛋白结构预测 | 输入一条或多条氨基酸序列，输出对应 PDB 结构文件 |
+| 变异效应评分 | 输入野生型序列和 DMS 突变表，输出突变影响评分 |
+| 固定骨架序列设计 | 输入 PDB / CIF 结构和链 ID，采样满足骨架约束的候选序列 |
+| 结构条件序列打分 | 输入结构和候选序列，计算 conditional log-likelihood |
+| OneCode / 本地运行 | 在生物领域运行环境中快速验证脚本连通性 |
 
-默认机器可读文件是仓库根目录的 `manifest.yaml`，兼容文件是 `onescience_run_manifest.yaml`。修改运行脚本、文件路径、下载命令、资源 ID 或模型-数据集关系时，必须同步更新这两个文件，并重新执行 YAML 解析和 command_refs 校验。
+# 文件说明
 
-## 模型 vs 数据集关系
+| 路径 | 功能 | 备注 |
+| :--- | :--- | :--- |
+| `README.md` | 工程使用说明文档 | 中文为主 |
+| `model/esm/` | ESM 模型源码 | 包含 ESM-1、ESM-2、MSA Transformer、ESMFold 和 inverse folding |
+| `model/openfold/` | ESMFold 结构模块依赖 | 用于结构预测 |
+| `model/protenix/layer_norm/` | 可选 LayerNorm 加速模块 | GPU 环境可按需使用 |
+| `scripts/extract.py` | 序列表征提取脚本 | 读取 FASTA 并保存 `.pt` 表征文件 |
+| `scripts/fold.py` | ESMFold 结构预测脚本 | 输出 PDB 文件 |
+| `scripts/infer.sh` | 默认连通性示例脚本 | 默认执行 ESM-2 表征提取 |
+| `scripts/inverse_folding/sample_sequences.py` | inverse folding 采样脚本 | 根据结构采样蛋白序列 |
+| `scripts/inverse_folding/score_log_likelihoods.py` | inverse folding 序列打分脚本 | 根据结构评估候选序列 |
+| `scripts/variant_prediction/predict.py` | 变异效应预测脚本 | 支持 ESM-1v 和 MSA Transformer |
+| `scripts/check_import_boundaries.py` | 静态导入检查脚本 | 用于工程完整性验证 |
+| `data/fasta/` | FASTA 样例数据 | 用于表征提取和结构预测示例 |
+| `data/inverse_folding/` | PDB / CIF 和候选序列样例 | 用于 inverse folding 示例 |
+| `data/variant_prediction/` | DMS 变异效应预测样例数据 | 用于变异评分示例 |
+| `weight/` | 权重占位目录 | 建议放置 `weight/checkpoints/*.pt` |
+| `tests/` | 静态测试 | 验证导入边界 |
+| `LICENSE` | 开源许可证 | MIT License |
 
-模型资源 ID 必须保持为 `OneScience/esmfold/`。数据集资源 ID 必须保持为 `OneScience/esmfold_dataset`。模型 Manifest 的 `relations.required_datasets` 指向 `OneScience/esmfold_dataset`，数据集 Manifest 的 `relations.compatible_models` 反向指向 `OneScience/esmfold/`，两端都包含完整 `resource_ref`。
+# 使用说明
 
-推理场景 `esmfold_sample_inference` 需要模型包中的 `scripts/fold.py`、`data/sample/few_proteins.fasta`、`checkpoints/esmfold_3B_v1.pt`，并要求数据集包中存在 `weight/esmfold_3B_v1.pt` 以完成一致性校验。
+## 1. OneCode 使用
 
-## 文件与下载
+可通过 OneCode 在线环境体验智能化一键式 AI4S 编程：
 
-下载模型包：
+[点击体验智能化一键式 AI4S 编程](https://web-2069360198568017922-iaaj.ksai.scnet.cn:58043/home)
+
+## 2. 手动安装使用
+
+**硬件要求**
+
+- 推荐使用 GPU 或 DCU 运行。
+- CPU 可以用于导入和小配置连通性验证，完整训练和推理速度较慢。
+- DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
+
+**软件要求**
+
+请参考 OneScience 生物领域运行环境，DCU 用户想了解更多适配内容请联系 liubiao@sugon.com。
+
+**环境检测**
+
+- NVIDIA GPU：
 
 ```bash
-modelscope download --model OneScience/esmfold/ --local_dir ./bio_esmfold
+nvidia-smi
 ```
 
-下载数据集包：
+- 海光 DCU：
 
 ```bash
-modelscope download --dataset OneScience/esmfold_dataset --local_dir ./bio_esmfold_dataset
+hy-smi
 ```
 
-如果网页端使用 `--cache_dir` 下载，运行前必须切换到实际下载后的模型包根目录，也就是包含 `README.md`、`manifest.yaml`、`conf/`、`scripts/` 的目录。
+## 3. 快速开始
 
-## 环境安装
+本模型包已包含少量样例数据，可直接用于默认流程验证。
 
-需要 OneScience bio 环境，并确保 Python 可以导入 `onescience.models.esm` 和 `onescience.datapipes.esm`。在完整 OneScience 源码环境中通常先加载环境变量，再进入模型包根目录运行命令。
+### 安装运行环境
 
 ```bash
-# 示例：在 OneScience 环境已安装后执行
-python -c "import onescience.models.esm, onescience.datapipes.esm"
+git clone https://gitee.com/onescience-ai/onescience.git
+cd onescience
+bash install.sh bio
 ```
 
-## 运行流程
+安装完成后回到模型包目录：
 
-建议目录放置如下：
+```bash
+cd ../ESM
+```
+
+### 准备权重
+
+请将所需 ESM 权重放置在以下目录：
 
 ```text
-session_workdir/
-├── model/bio_esmfold/
-└── dataset/bio_esmfold_dataset/
+weight/
+  checkpoints/
+    esm2_t6_8M_UR50D.pt
+    esmfold_3B_v1.pt
+    esm1v_t33_650M_UR90S_1.pt
+    esm_if1_gvp4_t16_142M_UR50.pt
+    ...
 ```
 
-预检：
+如果使用共享运行目录，也可以通过环境变量指定权重位置：
 
 ```bash
-cd session_workdir/model/bio_esmfold
-python scripts/preflight.py --dataset-root ../../dataset/bio_esmfold_dataset
+export ESM_WEIGHT_DIR=/path/to/esm/weight
 ```
 
-CPU 最小推理：
+默认示例会读取：
+
+- `weight/checkpoints/esm2_t6_8M_UR50D.pt`
+
+ESMFold、ESM-1v 和 ESM-IF1 示例需要对应权重可用。
+
+### 默认示例
 
 ```bash
-cd session_workdir/model/bio_esmfold
+bash scripts/infer.sh
+```
+
+默认示例会读取 `data/fasta/few_proteins.fasta`，使用 `esm2_t6_8M_UR50D.pt` 提取蛋白表征，并将结果保存至 `outputs/embeddings/`。
+
+### 序列表征提取
+
+```bash
+python scripts/extract.py \
+  weight/checkpoints/esm2_t6_8M_UR50D.pt \
+  data/fasta/few_proteins.fasta \
+  outputs/embeddings \
+  --include mean per_tok \
+  --repr_layers 6
+```
+
+### ESMFold 结构预测
+
+```bash
 python scripts/fold.py \
-  -i data/sample/few_proteins.fasta \
-  -o outputs/esmfold_pdb \
-  --model-dir . \
-  --chunk-size 128 \
+  -i data/fasta/few_proteins.fasta \
+  -o outputs/pdb \
+  --model-dir weight \
   --cpu-only
 ```
 
-有 GPU 时可以去掉 `--cpu-only`，显存不足时降低 `--max-tokens-per-batch` 或把 `--chunk-size` 调整为 `64`、`32`。
+输出目录会生成一个或多个 `.pdb` 文件。正式 GPU / DCU 推理时，可去掉 `--cpu-only`，并根据显存情况设置 `--chunk-size` 或 `--max-tokens-per-batch`。
 
-## 预检与诊断
+也可以通过默认脚本显式启用 ESMFold：
 
-预检脚本会检查：
+```bash
+RUN_ESMFOLD=1 bash scripts/infer.sh
+```
 
-| 检查项 | 说明 |
-|---|---|
-| YAML 可解析 | 读取 `manifest.yaml` 和 `conf/config.yaml` |
-| 资源 ID | 模型 ID 等于 `OneScience/esmfold/`，数据集 ID 等于 `OneScience/esmfold_dataset` |
-| FASTA | `data/sample/few_proteins.fasta` 可读且包含记录 |
-| 权重 | `checkpoints/esmfold_3B_v1.pt` 存在、大小和 SHA256 匹配 |
-| 数据集 | `weight/esmfold_3B_v1.pt` 存在且大小与模型 checkpoint 一致 |
+### inverse folding 序列采样
 
-常见错误：
+```bash
+python scripts/inverse_folding/sample_sequences.py \
+  data/inverse_folding/5YH2.pdb \
+  --chain A \
+  --outpath outputs/sampled_seqs.fasta \
+  --num-samples 1 \
+  --nogpu
+```
 
-| 现象 | 诊断 | 处理 |
-|---|---|---|
-| `Dataset weight not found` | 数据集未下载或路径不对 | 下载 `OneScience/esmfold_dataset`，或用 `--dataset-root` 指定 |
-| `ModuleNotFoundError: onescience` | 未加载 OneScience 环境 | 安装或加载 OneScience bio 环境 |
-| `CUDA out of memory` | 显存不足 | 降低 batch token、减小 chunk size 或使用 CPU |
-| 找不到 `checkpoints/esmfold_3B_v1.pt` | 当前 cwd 不是模型包根目录或下载不完整 | 切换到实际模型包根目录并重新下载 |
+### inverse folding 序列打分
 
-## 输出说明
+```bash
+python scripts/inverse_folding/score_log_likelihoods.py \
+  data/inverse_folding/5YH2.pdb \
+  data/inverse_folding/5YH2_mutated_seqs.fasta \
+  --chain A \
+  --outpath outputs/sequence_scores.csv \
+  --nogpu
+```
 
-推理输出写入 `outputs/esmfold_pdb/`。每条 FASTA 记录生成一个 `{header}.pdb` 文件，日志包含序列长度、pLDDT、pTM、耗时和完成数量。
+### 变异效应预测
 
-## 限制与适用范围
+变异效应预测需要提供与 DMS 突变列匹配的野生型序列：
 
-本包只提供 ESMFold 最小推理和预检。原始数据路径中没有训练/评测样本切分，因此不声明训练、微调和评测能力。CPU 推理可用于连通性验证，但 3B 模型在 CPU 上可能很慢。
+```bash
+python scripts/variant_prediction/predict.py \
+  --model-location esm1v_t33_650M_UR90S_1 \
+  --sequence "${ESM_VARIANT_SEQUENCE}" \
+  --dms-input data/variant_prediction/BLAT_ECOLX_Ranganathan2015.csv \
+  --mutation-col mutant \
+  --dms-output outputs/variant_prediction.csv \
+  --offset-idx 24 \
+  --scoring-strategy wt-marginals
+```
 
-## 引用与许可证
+# 数据格式
 
-ESM/ESMFold 原始代码使用 MIT License。本标准包保留来源说明并面向 OneScience ModelScope 自动运行场景整理。
+样例数据默认存放在 `data/` 下：
+
+```text
+data/
+  fasta/
+    few_proteins.fasta
+    some_proteins.fasta
+  inverse_folding/
+    5YH2.pdb
+    5YH2.cif
+    5YH2_mutated_seqs.fasta
+    example.json
+  variant_prediction/
+    BLAT_ECOLX_Ranganathan2015.csv
+    rho_pp.csv
+    aggregated_rho.csv
+    aggregated_rho_round3.csv
+```
+
+其中：
+
+- FASTA 文件用于序列表征提取和结构预测。
+- PDB / CIF 文件用于 inverse folding 采样和结构条件序列打分。
+- 变异效应预测 CSV 需包含突变列，默认示例列名为 `mutant`，突变格式形如 `A123B`。
+- 自定义 DMS 数据需要保证 `--sequence` 提供的野生型序列与突变列中的野生型氨基酸一致。
+
+# 验证
+
+静态导入检查：
+
+```bash
+python scripts/check_import_boundaries.py
+```
+
+语法检查：
+
+```bash
+python -B -c "import ast, pathlib; [ast.parse(p.read_text(encoding='utf-8'), filename=str(p)) for root in ['model', 'scripts', 'tests'] for p in pathlib.Path(root).rglob('*.py')]"
+```
+
+# OneScience 官方信息
+
+| 平台 | OneScience 主仓库 | Skills 仓库 |
+| --- | --- | --- |
+| Gitee | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
+| GitHub | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+
+# 引用与许可证
+
+- ESM-2 / ESMFold 原始论文：Evolutionary-scale prediction of atomic-level protein structure with a language model。
+- ESM 系列基础模型论文：Biological structure and function emerge from scaling unsupervised learning to 250 million protein sequences。
+- MSA Transformer 原始论文：MSA Transformer。
+- ESM-1v 原始论文：Language models enable zero-shot prediction of the effects of mutations on protein function。
+- ESM-IF1 原始论文：Learning inverse folding from millions of predicted structures。
+- ESM 相关源码使用 MIT License，见 `LICENSE`。模型权重和数据的使用条款请以对应发布方说明为准。
+- 如果在科研工作中使用 ESM 结果，建议引用对应 ESM 原始论文和 OneScience 相关项目信息，并根据实际任务补充下游分析工具或数据集引用。

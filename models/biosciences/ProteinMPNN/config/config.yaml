@@ -1,0 +1,18 @@
+model:
+  name: ProteinMPNN
+  package_path: ../model/proteinmpnn
+  base_dependency: OneScience
+runtime:
+  pythonpath: ../model
+  onescience_root_env: ONESCIENCE_ROOT
+inference:
+  entry: ../scripts/inference.py
+  input_dir: ../data/inputs
+  output_dir: ../outputs
+  weight_dir: ../weight/vanilla_model_weights
+  ca_weight_dir: ../weight/ca_model_weights
+  soluble_weight_dir: ../weight/soluble_model_weights
+train:
+  entry: ../scripts/training.py
+  data_dir: ../data/pdb_2021aug02_sample
+  output_dir: ../outputs/train

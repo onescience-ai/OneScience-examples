@@ -20,7 +20,7 @@ import numpy as np
 import torch
 
 from onescience.configs.bio.openfold.config import model_config
-from onescience.models.bio.openfold.model import AlphaFold
+from onescience.models.openfold.model import AlphaFold
 from onescience.utils.openfold.import_weights import (
     Param, 
     ParamType, 

@@ -1,0 +1,13 @@
+﻿model:
+  name: Evo2
+  package_path: ../model/evo2
+  base_dependency: OneScience
+runtime:
+  pythonpath: ../model
+  onescience_root_env: ONESCIENCE_ROOT
+train:
+  entry: ../scripts/train.py
+  config: ./opengenome2.yml
+inference:
+  entry: ../scripts/infer.py
+  checkpoint_dir: ../checkpoints

@@ -1,4 +1,13 @@
 #!/usr/bin/env python3 -u
+from pathlib import Path
+import sys
+
+_PROJECT_FILE = Path(__file__).resolve()
+for _PROJECT_ROOT in _PROJECT_FILE.parents:
+    if (_PROJECT_ROOT / "model").is_dir():
+        if str(_PROJECT_ROOT) not in sys.path:
+            sys.path.insert(0, str(_PROJECT_ROOT))
+        break
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 #
 # This source code is licensed under the MIT license found in the
@@ -9,7 +18,7 @@ import pathlib
 
 import torch
 
-from onescience.models.esm import Alphabet, FastaBatchedDataset, ProteinBertModel, pretrained, MSATransformer
+from model.esm import Alphabet, FastaBatchedDataset, ProteinBertModel, pretrained, MSATransformer
 
 
 def create_parser():

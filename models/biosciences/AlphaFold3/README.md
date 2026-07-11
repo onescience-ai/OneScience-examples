@@ -1,152 +1,270 @@
-# AlphaFold3
-
 <p align="center">
   <strong>
-    <span style="font-size: 20px;">点击下方图片，体验一键式 AlphaFold3 模型开发</span>
+    <span style="font-size: 30px;">AlphaFold3</span>
   </strong>
 </p>
 
-<p align="center">
-  <a href="https://modelscope.cn/models/OneScience/AlphaFold3/" target="_blank" rel="noopener noreferrer">
-    <img src="https://www.modelscope.cn/api/v1/models/VoyagerX/OneScience-badge/repo?Revision=master&FilePath=LOGOs.png" width="200" alt="Logo">
-  </a>
-</p>
+# 模型介绍
 
-AlphaFold3 是面向生物分子结构预测的模型运行包，可接收 AlphaFold3 JSON 输入，输出结构预测结果、ranking scores 和中间数据管线结果。本仓库整理为 OneScience 标准运行包，模型 ID 固定为 `OneScience/AlphaFold3/`，需要的数据集 ID 固定为 `OneScience/AlphaFold3_dataset`。
+AlphaFold3 是 Google DeepMind 和 Isomorphic Labs 提出的生物分子结构预测模型，可预测蛋白质、DNA、RNA、小分子配体、离子和翻译后修饰等多类型分子之间的三维结构与相互作用。相比仅面向蛋白单体或蛋白复合物的结构预测流程，AlphaFold3 进一步覆盖蛋白-核酸、蛋白-配体、核酸复合物等更广泛的生物分子体系，适用于复合物建模、候选分子机制分析、结构生物学验证前处理和下游分子设计场景。
 
-## OneScience 官方信息
+本模型包提供 AlphaFold3 的 JAX / Flax 推理工程、输入 JSON 示例、数据搜索流程脚本和本地推理启动脚本，可作为独立工程下载、部署和运行。
 
-| 平台 | 文档 | OneScience 主仓库 | Skills 仓库 |
-|---|---|---|---|
-| Gitee | https://gitee.com/onescience-ai/onescience-doc | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
-| GitHub | https://github.com/onescience-ai/OneScience-doc | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+论文：Accurate structure prediction of biomolecular interactions with AlphaFold 3  
+https://www.nature.com/articles/s41586-024-07487-w
 
-## 项目说明
+# 仓库说明
 
-AlphaFold3 用于蛋白质、核酸、配体等生物分子体系的结构预测。它通常读取 AlphaFold3 JSON，输入中可以已经包含 MSA，也可以只包含序列并通过数据库搜索生成 MSA。输出包括结构文件、处理后的 fold input JSON 和 ranking score 等结果。
+本仓库是 AlphaFold3 最小可运行独立模型仓库，面向 OneCode 自动化运行和本地快速验证场景。
 
-本仓库提供 OneScience 兼容的 `run_alphafold.py`、推理包装脚本、路径配置和预检脚本。模型权重、运行库和 mmseqs 二进制位于 `checkpoints/AlphaFold3/`，数据集通过 `OneScience/AlphaFold3_dataset` 下载后放到 `data/alphafold3_dataset/`。
+当前支持能力：
 
-## Resource Card
+- 使用已包含 MSA / template 等特征的 AlphaFold3 JSON 输入进行结构推理
+- 使用 Jackhmmer / Nhmmer 数据搜索流程生成输入特征
+- 使用 MMseqs 数据搜索流程生成输入特征
+- 支持蛋白、核酸、配体等 AlphaFold3 JSON 输入对象
+- 输出结构文件、ranking score、置信度和完整推理结果
+- 支持通过环境变量指定权重、数据库、输入和输出目录
 
-| 字段 | 内容 |
-|---|---|
-| 资源类型 | 模型 |
-| OneScience 领域 | bio |
-| 领域标签 | bio, biosciences, protein_structure, molecular_structure |
-| 任务 | biomolecular_structure_prediction |
-| 任务标签 | inference, msa_search, data_pipeline, structure_prediction |
-| 主平台资源 | https://modelscope.cn/models/OneScience/AlphaFold3/ |
-| 标准运行包工作目录 | `.` |
-| OneScience examples 兼容路径 | `examples/biosciences/alphafold3` |
-| 必需模型文件 | `checkpoints/AlphaFold3/af3.bin`, `libflash_atten_c.so`, `mmseqs/` |
-| 必需数据集 | `OneScience/AlphaFold3_dataset` |
-| 支持能力 | 预检、带 MSA 推理、MMseqs/Jackhmmer 数据管线 |
-| 最小验证 | `python scripts/preflight.py --root . --dataset-root data/alphafold3_dataset --model-dir checkpoints/AlphaFold3` |
+当前不支持能力：
 
-## 文件说明
+- 不提供结构可视化服务或实验结果自动判读
+- 不面向临床诊断或医学决策
 
-| 路径 | 类型 | 作用 | 是否必需 | 用于能力 | 下载后放置位置 | 备注 |
-|---|---|---|---|---|---|---|
-| `manifest.yaml` | Manifest 文件 | 机器可读运行说明，声明资源身份、文件、关系、命令和输出 | 是 | 全部能力 | 模型包根目录 | 大模型必须解析 |
-| `onescience_run_manifest.yaml` | 运行 Manifest | 与 `manifest.yaml` 保持一致，供网页端直接读取 | 是 | 全部能力 | 模型包根目录 | 包含配置适配说明 |
-| `conf/alphafold3_paths.yaml` | 配置文件 | 记录权重、数据集、输入和输出默认路径 | 是 | 预检、推理、数据管线 | `conf/` | 已从原始环境变量路径适配到包内路径 |
-| `run_alphafold.py` | 运行脚本 | OneScience AlphaFold3 主入口 | 是 | 推理、数据管线 | 模型包根目录 | 来自 OneScience 示例 |
-| `run_inference_msa.sh` | 包装脚本 | 使用带 MSA 的 `7r6r_data.json` 执行推理 | 是 | 推理 | 模型包根目录 | 需要 GPU 和 OneScience bio 环境 |
-| `run_data_pipeline_mmseqs.sh` | 包装脚本 | 使用 MMseqs 数据库执行搜索数据管线 | 是 | 数据管线 | 模型包根目录 | 默认不跑推理 |
-| `run_data_pipeline_jackhmmer.sh` | 包装脚本 | 使用 Jackhmmer 分片数据库执行搜索数据管线 | 是 | 数据管线 | 模型包根目录 | 默认不跑推理 |
-| `scripts/preflight.py` | 预检脚本 | 检查配置、权重、数据路径、JSON schema 和关键文件哈希 | 是 | 预检 | `scripts/` | 不加载模型到 GPU |
-| `checkpoints/AlphaFold3/` | 模型文件 | 权重、动态库、mmseqs 可执行文件 | 是 | 推理、数据管线 | `checkpoints/AlphaFold3/` | 本地整理为链接 |
-| `inputs/7r6r_data.json` | 样例输入 | 已带 MSA 的推理样例 | 是 | 最小推理 | `inputs/` | 可跳过数据库搜索 |
-| `inputs/t1119_search.json` | 样例输入 | 无 MSA 的搜索样例 | 是 | 数据管线 | `inputs/` | 配合数据集数据库使用 |
+# 适用场景
 
-## Manifest
+| 场景 | 说明 |
+| :---: | :--- |
+| 已有特征直接推理 | 输入包含 MSA / template 等特征的 AlphaFold3 JSON，输出结构预测结果 |
+| 蛋白结构预测 | 输入蛋白序列，结合搜索数据库生成特征并预测结构 |
+| 生物分子复合物建模 | 输入蛋白、DNA、RNA、配体等多组分对象，预测复合物空间构象 |
+| 数据搜索流程验证 | 使用 Jackhmmer / Nhmmer 或 MMseqs 流程检查数据库路径和搜索工具连通性 |
+| OneCode / 本地运行 | 在生物领域运行环境中快速验证脚本连通性 |
 
-独立 Manifest 文件位于仓库根目录：`manifest.yaml`。网页端也可以读取同目录下的 `onescience_run_manifest.yaml`，两者资源 ID、relations、run_matrix 和配置适配说明保持一致。修改任何运行脚本、文件路径、下载命令或数据集关系时，必须同步更新这两个 Manifest。
+# 文件说明
 
-## 模型 vs 数据集关系
+| 路径 | 功能 | 备注 |
+| :--- | :--- | :--- |
+| `README.md` | 工程使用说明文档 | 中文为主 |
+| `flax_model/alphafold3/` | AlphaFold3 模型源码 | 包含模型、数据管线、结构处理和 C++ 扩展构建入口 |
+| `flax_model/alphafold3/model/` | 模型网络、特征、置信度和后处理模块 | 推理核心实现 |
+| `flax_model/alphafold3/data/` | MSA、template、数据库搜索和特征构建模块 | 供数据搜索流程调用 |
+| `flax_model/alphafold3/structure/` | mmCIF、化学组分、键合与结构表处理模块 | 用于结构读写和后处理 |
+| `scripts/run_alphafold.py` | 主运行脚本 | 支持数据管线和模型推理 |
+| `scripts/infer.sh` | 直接推理启动脚本 | 默认读取 `inputs/7r6r_data.json` |
+| `scripts/infer_jackhmmer.sh` | Jackhmmer / Nhmmer 搜索流程启动脚本 | 需要公共数据库 |
+| `scripts/infer_mmseqs.sh` | MMseqs 搜索流程启动脚本 | 需要 MMseqs 程序和数据库 |
+| `inputs/7r6r_data.json` | 已含特征的示例输入 | 用于直接推理 |
+| `inputs/t1119_search.json` | 仅序列示例输入 | 用于数据搜索流程 |
+| `weight/` | 权重占位目录 | 默认查找 `weight/AlphaFold3` |
+| `tests/check_import_boundaries.py` | 静态导入检查脚本 | 用于工程完整性验证 |
+| `LICENSE` | 许可证说明 | 源码和模型参数遵循各自使用条款 |
 
-本模型必须与数据集 `OneScience/AlphaFold3_dataset` 配套使用。模型 Manifest 的 `relations.required_datasets` 指向完整的 `resource_ref`：`https://modelscope.cn/datasets/OneScience/AlphaFold3_dataset`。数据集 Manifest 的 `relations.compatible_models` 反向指向 `OneScience/AlphaFold3/`。
+# 使用说明
 
-带 MSA 的最小推理场景只需要模型权重和 `inputs/7r6r_data.json`。如果需要从序列搜索 MSA，则必须下载数据集并放到 `data/alphafold3_dataset/`，其中 `mmseqsDB` 支持 MMseqs 流程，`jackhmmer_split` 和 `public_databases` 支持 Jackhmmer 流程。
+## 1. OneCode 使用
 
-## 文件与下载
+可通过 OneCode 在线环境体验智能化一键式 AI4S 编程：
 
-下载模型：
+[点击体验智能化一键式 AI4S 编程](https://web-2069360198568017922-iaaj.ksai.scnet.cn:58043/home)
+
+## 2. 手动安装使用
+
+**硬件要求**
+
+- 推荐使用 GPU 或 DCU 运行。
+- CPU 可以用于导入和小配置连通性验证，完整训练和推理速度较慢。
+- DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
+
+**软件要求**
+
+请参考 OneScience 生物领域运行环境，DCU 用户想了解更多适配内容请联系 liubiao@sugon.com。
+
+**环境检测**
+
+- NVIDIA GPU：
 
 ```bash
-modelscope download --model OneScience/AlphaFold3/
+nvidia-smi
 ```
 
-下载数据集：
+- 海光 DCU：
 
 ```bash
-modelscope download --dataset OneScience/AlphaFold3_dataset
+hy-smi
 ```
 
-如果使用 `--cache_dir`，运行前必须切换到实际下载出的模型包根目录。数据集下载到独立目录时，应将数据集包中的 `data` 子目录放置或链接到：
+## 3. 快速开始
+
+### 安装运行环境
 
 ```bash
-mkdir -p data
-ln -s /path/to/AlphaFold3_dataset/data data/alphafold3_dataset
-```
-
-## 环境安装
-
-默认假设 OneScience 网站环境已安装 bio 领域依赖。环境缺失时参考 OneScience 官方仓库安装：
-
-```bash
+git clone https://gitee.com/onescience-ai/onescience.git
+cd onescience
 bash install.sh bio
 ```
 
-推理需要可用 GPU、JAX 后端和 AlphaFold3 相关依赖。预检脚本只检查文件和 schema，不要求 GPU。
-
-## 运行流程
-
-先执行预检：
+安装完成后回到模型包目录：
 
 ```bash
-python scripts/preflight.py --root . --dataset-root data/alphafold3_dataset --model-dir checkpoints/AlphaFold3
+cd ../AlphaFold3
 ```
 
-使用带 MSA 输入进行最小推理：
+如当前环境尚未构建 AlphaFold3 C++ 扩展和运行数据文件，可执行：
 
 ```bash
-bash run_inference_msa.sh inputs/7r6r_data.json outputs/msa_inference
+python -m flax_model.alphafold3.build_extension
 ```
 
-使用 MMseqs 数据管线：
+### 准备权重
+
+请将 AlphaFold3 模型权重放置在以下目录，或通过环境变量指定：
+
+```text
+weight/
+  AlphaFold3/
+    ...
+```
+
+默认查找顺序为：
+
+- `ALPHAFOLD3_MODEL_DIR`
+- `${ONESCIENCE_MODELS_DIR}/AlphaFold3`
+- `weight/AlphaFold3`
+
+示例：
 
 ```bash
-bash run_data_pipeline_mmseqs.sh inputs/t1119_search.json outputs/mmseqs_pipeline
+export ALPHAFOLD3_MODEL_DIR=/path/to/AlphaFold3
 ```
 
-使用 Jackhmmer 数据管线：
+### 直接推理
+
+当输入 JSON 已包含 MSA、template 等特征时，可直接运行：
 
 ```bash
-bash run_data_pipeline_jackhmmer.sh inputs/t1119_search.json outputs/jackhmmer_pipeline
+bash scripts/infer.sh
 ```
 
-## 预检与诊断
+等价的 Python 命令示例：
 
-常见错误与处理：
+```bash
+python scripts/run_alphafold.py \
+  --json_path inputs/7r6r_data.json \
+  --model_dir weight/AlphaFold3 \
+  --output_dir outputs \
+  --run_data_pipeline=false \
+  --flash_attention_implementation=triton
+```
 
-| 错误现象 | 可能原因 | 处理方式 |
-|---|---|---|
-| `missing_af3_bin` | 模型未完整下载或 cwd 不是模型包根目录 | 重新执行 `modelscope download --model OneScience/AlphaFold3/`，再切换到模型包根目录 |
-| `missing_dataset_database` | 数据集未放到 `data/alphafold3_dataset` | 下载 `OneScience/AlphaFold3_dataset` 并建立链接 |
-| `sha256 mismatch` | 链接或复制的数据与原始文件不一致 | 对照 `metadata_model_files.yaml` 或数据集 `metadata/file_manifest.yaml` 重新整理 |
-| `jax_gpu_not_found` | 无 GPU 或 JAX 后端不可用 | 先执行预检，推理切换到具备 GPU 的 OneScience bio 环境 |
-| `mmseqs not found` | PATH 未包含 mmseqs | 使用 `run_data_pipeline_mmseqs.sh` 包装脚本 |
+输出会写入 `outputs/`，包含最佳结构、不同 seed / sample 的结构结果、ranking score CSV 和输入 JSON 副本。
 
-## 输出说明
+### Jackhmmer / Nhmmer 数据搜索
 
-预检成功时输出 `model_preflight_ok: true`。最小推理输出位于 `outputs/msa_inference/`，通常包含每个 fold job 的结构结果、处理后的 JSON 和 ranking score CSV。数据管线输出位于 `outputs/mmseqs_pipeline/` 或 `outputs/jackhmmer_pipeline/`。
+当输入 JSON 仅包含序列、需要本地数据库搜索时，可使用：
 
-## 限制与适用范围
+```bash
+bash scripts/infer_jackhmmer.sh
+```
 
-当前标准包不声明训练、微调、评测或部署能力，因为原始 `run_alphafold3_trainer.py` 为空，且本次资源主要包含推理权重和搜索数据库。数据库规模很大，本地整理目录采用符号链接指向原始只读目录；正式上传前可按平台要求改为实体文件或大文件存储策略，并重新运行校验。
+常用环境变量：
 
-## 引用与许可证
+```bash
+export ALPHAFOLD3_DATASET_ROOT=/path/to/alphafold3
+export ALPHAFOLD3_MODEL_DIR=/path/to/AlphaFold3
+export ALPHAFOLD3_JSON_PATH=inputs/t1119_search.json
+export ALPHAFOLD3_OUTPUT_DIR=outputs
+export ALPHAFOLD3_RUN_INFERENCE=false
+```
 
-AlphaFold3 源码和权重使用条款需遵守上游 Google DeepMind AlphaFold3 许可与权重使用条款。OneScience 代码、脚本和包装说明遵守 OneScience 项目对应许可证。公共数据库遵守各自上游数据源许可。
+其中 `ALPHAFOLD3_DATASET_ROOT` 默认需要包含 `public_databases/`、`jackhmmer_split/` 和 `mmseqsDB/` 等数据库目录。
+
+### MMseqs 数据搜索
+
+如运行环境提供 MMseqs 程序和 MMseqs 数据库，可使用：
+
+```bash
+bash scripts/infer_mmseqs.sh
+```
+
+常用环境变量：
+
+```bash
+export ALPHAFOLD3_MMSEQS_HOME=/path/to/mmseqs
+export ALPHAFOLD3_DATASET_ROOT=/path/to/alphafold3
+export ALPHAFOLD3_MMSEQS_DB_DIR=/path/to/alphafold3/mmseqsDB
+export ALPHAFOLD3_RUN_INFERENCE=false
+```
+
+如需搜索后继续推理，可将 `ALPHAFOLD3_RUN_INFERENCE` 设为 `true`，并确保权重目录可用。
+
+# 数据格式
+
+AlphaFold3 输入采用 JSON 格式，基本结构如下：
+
+```json
+{
+  "dialect": "alphafold3",
+  "version": 1,
+  "name": "example",
+  "sequences": [
+    {
+      "protein": {
+        "id": "A",
+        "sequence": "..."
+      }
+    }
+  ],
+  "modelSeeds": [100],
+  "bondedAtomPairs": null,
+  "userCCD": null
+}
+```
+
+本仓库提供两个示例：
+
+- `inputs/7r6r_data.json`：包含序列、MSA 和 template 等信息，适合直接推理。
+- `inputs/t1119_search.json`：仅包含序列，适合数据搜索流程验证。
+
+请将数据搜索流程所需数据库准备到模型包下的 `data/alphafold3/`。数据搜索流程默认读取的相对结构如下：
+
+```text
+data/
+  alphafold3/
+    public_databases/
+      mmcif_files/
+      pdb_seqres_2022_09_28.fasta
+      ...
+    jackhmmer_split/
+      bfd-first_non_consensus_sequences.fasta@64
+      mgy_clusters_2022_05.fa@512
+      uniprot_cluster_annot_2021_04.fa@256
+      uniref90_2022_05.fa@128
+    mmseqsDB/
+      small_bfd_db
+      mgnify_db
+      uniprot_cluster_annot_db
+      uniref90_db
+```
+
+# 验证
+
+静态导入检查：
+
+```bash
+python tests/check_import_boundaries.py
+```
+
+# OneScience 官方信息
+
+| 平台 | OneScience 主仓库 | Skills 仓库 |
+| --- | --- | --- |
+| Gitee | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
+| GitHub | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+
+# 引用与许可证
+
+- AlphaFold3 原始论文：Accurate structure prediction of biomolecular interactions with AlphaFold 3。
+- 论文地址：https://www.nature.com/articles/s41586-024-07487-w
+- AlphaFold3 源码使用 CC BY-NC-SA 4.0 许可；模型参数受独立使用条款约束。
+- 如果在科研工作中使用 AlphaFold3 结果，建议引用 AlphaFold3 原始论文和 OneScience 相关项目信息，并根据实际任务补充下游分析工具或数据集引用。

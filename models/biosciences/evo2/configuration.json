@@ -1,0 +1,15 @@
+﻿{
+  "model_name": "Evo2",
+  "framework": "PyTorch/NeMo",
+  "task": "genomic-sequence-modeling",
+  "entry_points": {
+    "train": "scripts/train.py",
+    "inference": "scripts/infer.py",
+    "predict": "scripts/predict.py"
+  },
+  "source_package": "model/evo2",
+  "base_dependency": "onescience",
+  "config": "config/config.yaml",
+  "weight_dir": "checkpoints",
+  "license": "Apache-2.0"
+}

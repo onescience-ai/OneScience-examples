@@ -1,6 +1,26 @@
-#!/bin/bash
-# 下载所有 >1MB 且非 .sh .py .md .yaml .yml 的文件
-# 共 3 个大文件
-modelscope download --model OneScience/alphagenome checkpoints/alphagenome-all-folds/ocdbt.process_0/d/6b08a83c9d6a2ade925dbcdd91299ce2 --local_dir ./
-modelscope download --model OneScience/alphagenome checkpoints/alphagenome-all-folds/ocdbt.process_0/d/48900811ab32b5ad3873d40e96d63846 --local_dir ./
-modelscope download --model OneScience/alphagenome checkpoints/alphagenome-all-folds/ocdbt.process_0/d/bda173d4f00d3afcef0a043614df05a6 --local_dir ./
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Run this script from the alphagenome project root.
+
+PROJECT_MODEL="OneScience/alphagenome"
+DATASET_MODEL="OneScience/alphagenome_dataset"
+
+download_project_dir() {
+  local remote_path="$1"
+  local local_dir="$2"
+  mkdir -p "$local_dir"
+  modelscope download --model "$PROJECT_MODEL" "$remote_path" --local_dir "$local_dir"
+}
+
+download_model_repo() {
+  local model_id="$1"
+  local local_dir="$2"
+  mkdir -p "$local_dir"
+  modelscope download --model "$model_id" --local_dir "$local_dir"
+}
+
+download_project_dir "alphagenome/weight" "./weight"
+download_project_dir "alphagenome/flax_model/alphagenome/model/metadata/OutputMetadataResponse_ORGANISM_HOMO_SAPIENS.textproto" "./flax_model/alphagenome/model/metadata"
+download_project_dir "alphagenome/flax_model/alphagenome/model/metadata/OutputMetadataResponse_ORGANISM_MUS_MUSCULUS.textproto" "./flax_model/alphagenome/model/metadata"
+download_model_repo "$DATASET_MODEL" "./alphagenome_dataset"

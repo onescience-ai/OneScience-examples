@@ -11,7 +11,7 @@ sys.path.append(".") # an innocent hack to get this to run from the top level
 from collections import defaultdict
 from tqdm import tqdm
 
-from onescience.datapipes.openfold.data.mmcif_parsing import parse 
+from onescience.datapipes.openfold.mmcif_parsing import parse 
 from onescience.utils.openfold.np import protein, residue_constants
 
 
