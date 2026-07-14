@@ -122,11 +122,9 @@ cd onescience
 bash install.sh bio
 ```
 
-### 2. 下载模型包并下载权重&案例文件
+### 2. 下载权重&案例文件
 
 ```bash
-modelscope download --model OneScience/RFdiffusion --local_dir ./RFdiffusion
-cd ./RFdiffusion
 bash download_assets.sh
 ```
 
@@ -151,6 +149,8 @@ RF_DIFFUSION_SMOKE_TEST=1 python scripts/run_inference.py
 ```
 
 ### 4. 运行推理
+
+(如果报错.cache文件夹找不到可以自行创建)
 
 无条件骨架采样示例：
 

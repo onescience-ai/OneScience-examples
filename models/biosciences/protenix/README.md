@@ -130,11 +130,9 @@ cd onescience
 bash install.sh bio
 ```
 
-### 2. 下载模型包
+### 2. 下载权重
 
 ```bash
-modelscope download --model OneScience/protenix --local_dir ./protenix
-cd ./protenix
 bash download_assets.sh
 ```
 

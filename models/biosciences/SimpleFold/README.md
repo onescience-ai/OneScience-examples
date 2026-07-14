@@ -134,11 +134,9 @@ cd onescience
 bash install.sh bio
 ```
 
-### 2. 下载模型包及权重&示例
+### 2. 下载权重&示例
 
 ```bash
-modelscope download --model OneScience/SimpleFold --local_dir ./SimpleFold
-cd SimpleFold
 bash download_assets.sh
 ```
 
@@ -179,6 +177,8 @@ python scripts/tokenize_data.py --target_dir datasets --token_dir datasets/token
 ```
 
 `process_data.py` 默认使用包内 `weight/ccd.pkl`，无需额外下载 CCD 或启动 Redis；如需兼容旧 Redis CCD 流程，可显式传入 `--use-redis`。
+
+训练前请在下载文件根目录下创建artifacts文件夹
 
 训练：
 
