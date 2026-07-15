@@ -1,122 +1,150 @@
 # DeePMD
 
-<p align="center">
-  <strong>
-    <span style="font-size: 20px;">点击下方图片，体验一键式 DeePMD 模型训练预检</span>
-  </strong>
-</p>
+DeePMD 是面向原子体系机器学习势函数训练的 Deep Potential Molecular Dynamics 模型生态。本目录是 OneScience MatChem 领域整理的 DeepMD-kit water 训练示例，基于 PyTorch/TensorFlow 后端提供最小可运行训练入口，可用于 DeePMD 模型训练、多卡 SLURM 提交和 OneScience MatChem 环境连通性检查。
 
-<p align="center">
-  <a href="https://modelscope.cn/models/OneScience/DeePMD" target="_blank" rel="noopener noreferrer">
-    <img src="https://www.modelscope.cn/api/v1/models/VoyagerX/OneScience-badge/repo?Revision=master&FilePath=LOGOs.png" width="200" alt="Logo">
-  </a>
-</p>
+---
 
-## OneScience 官方信息
+## 目录说明
 
-| 平台 | 文档 | OneScience 主仓库 | Skills 仓库 |
-|---|---|---|---|
-| Gitee | https://gitee.com/onescience-ai/onescience-doc | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
-| GitHub | https://github.com/onescience-ai/OneScience-doc | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+本目录是 OneScience 主仓库 `examples/matchem/dp` 的示例，面向 OneCode 自动化运行和本地快速验证场景。
 
-## 项目说明
+当前支持能力：
 
-DeePMD 是 OneScience MatChem 领域的 DeepMD-kit 训练示例，包含 PyTorch 后端、TensorFlow 后端以及单卡/多卡 SLURM 提交脚本。本标准模型包整理了 `onescience/examples/matchem/dp`，并新增面向 ModelScope 下载布局的 PyTorch water 配置。
+- 训练：使用 DeepMD-kit PyTorch/TensorFlow 后端训练 water 原子间势。
+- 分布式训练：支持单卡、多卡 SLURM 提交脚本。
+- 环境连通性验证：通过 `dp_install.sh` 安装 DeepMD-kit 并检查依赖。
 
-原始 PyTorch 配置使用 `/public/share/.../matchem/dp/water/data_*` 绝对路径。本标准包新增 `conf/input_torch_modelscope.json`，将数据路径改为 `data/DeePMD/water/data_0..3`。
+当前不支持能力：
 
-## Resource Card
+- 不内置预训练权重或 checkpoint。
+- 不内置 water 训练数据，需从同 ID 数据集仓库下载。
+- 不提供独立推理服务、部署脚本或可视化页面。
 
-| 字段 | 内容 |
-|---|---|
-| 资源类型 | 模型 |
-| OneScience 领域 | matchem |
-| 领域标签 | matchem, deepmd, water, mlip |
-| 任务 | deepmd_water_training |
-| 任务标签 | energy_prediction, force_prediction, pytorch_backend |
-| 主平台资源 | https://modelscope.cn/models/OneScience/DeePMD |
-| 标准运行包工作目录 | `.` |
-| OneScience examples 兼容路径 | `examples/matchem/dp` |
-| 支持能力 | 训练 / 评测 / 预检 |
-| 必需数据集 | `OneScience/DeePMD` |
-| 最小验证 | `python scripts/preflight_deepmd.py --package-root .` |
+---
+
+## 适用场景
+
+| 场景 | 说明 |
+| :---: | :---: |
+| DeePMD water 训练 | 使用 `demo/water_se_e2_a_pt/input_torch.json` 等配置训练 water 势函数 |
+| 多卡 SLURM 提交 | 参考 `demo/water_se_e2_a_pt/submit_4card.sh`、`submit_8card.sh` |
+| 环境连通性验证 | 运行 `dp_install.sh` 检查 DeepMD-kit 是否可安装 |
+| 自有数据迁移 | 替换配置文件中的 `systems` 路径为自有 DeepMD npy 数据 |
+
+---
 
 ## 文件说明
 
-| 路径 | 类型 | 作用 | 是否必需 | 用于能力 | 下载后放置位置 | 备注 |
-|---|---|---|---|---|---|---|
-| `README.md` | 说明文档 | 模型用途、文件、下载、运行和诊断说明 | 是 | 全部能力 | `session_workdir/README.md` | 本文件 |
-| `manifest.yaml` | Manifest 文件 | 标准默认机器可读运行说明 | 是 | 全部能力 | `session_workdir/manifest.yaml` | 与 `onescience_run_manifest.yaml` 一致 |
-| `onescience_run_manifest.yaml` | Manifest 文件 | 大模型运行 Manifest 文件名 | 是 | 全部能力 | `session_workdir/onescience_run_manifest.yaml` | 修改后需同步 |
-| `scripts/preflight_deepmd.py` | 预检脚本 | 检查运行文件、配置和 water 数据路径 | 是 | 预检 | `session_workdir/scripts/preflight_deepmd.py` | 不启动训练 |
-| `conf/input_torch_modelscope.json` | 适配配置 | 面向 ModelScope 下载布局的 PyTorch water 训练配置 | 是 | 训练、预检 | `session_workdir/conf/input_torch_modelscope.json` | 已改数据路径 |
-| `upstream/` | 上游示例代码 | DeePMD 原始安装、配置和提交脚本 | 是 | 训练、说明 | `session_workdir/upstream/` | 来自 OneScience 示例 |
-| `metadata/sha256_manifest.txt` | 校验清单 | 模型包脚本和配置 SHA256 | 是 | 预检 | `session_workdir/metadata/sha256_manifest.txt` | 上传前校验 |
+| 路径 | 功能 | 备注 |
+| :---: | :---: | :---: |
+| `README.md` | 工程使用说明文档 | 本文件 |
+| `dp_install.sh` | DeepMD-kit 安装脚本 | 在 OneScience matchem 环境基础上安装 DeepMD-kit |
+| `demo/water_se_e2_a_pt/` | PyTorch water 示例 | 含 `input_torch.json` 和单卡/多卡提交脚本 |
+| `demo/water_se_atten_pt/` | PyTorch attention 示例 | 含 `input_torch.json` 和单卡/多卡提交脚本 |
+| `demo/water_se_e2_a_tf/` | TensorFlow water 示例 | 含 `input_tf.json` 和提交脚本 |
 
-## Manifest
+---
 
-本仓库提供 `manifest.yaml` 和 `onescience_run_manifest.yaml`，两者内容一致。修改文件、下载命令、数据关系或适配配置后必须同步更新。
+## 使用说明
 
-## 模型 vs 数据集关系
+### 1. OneCode 使用
 
-模型仓库和数据集仓库的目标 ID 都是 `OneScience/DeePMD`，但 repo_type 不同：模型仓库使用 `repo_type: model`，数据集仓库使用 `repo_type: dataset`。模型 Manifest 的 `relations.required_datasets` 指向 `OneScience/DeePMD` 数据集，并提供完整 `resource_ref`。
+可通过 OneCode 在线环境体验智能化一键式 AI4S 编程：
 
-## 文件与下载
+[点击体验智能化一键式 AI4S 编程](https://web-2069360198568017922-iaaj.ksai.scnet.cn:58043/home)
+
+### 2. 手动安装使用
+
+**硬件要求**
+
+- 推荐使用 GPU 或 DCU 运行训练。
+- CPU 可以用于安装检查和小数据连通性验证，完整训练速度较慢。
+- DCU 用户需要预先安装 DTK，建议使用 DTK 26.04 或与当前集群匹配的 OneScience 推荐版本。
+
+**软件要求**
+
+- Python 3.11
+- numpy
+- DeepMD-kit
+- OneScience matchem 运行环境
+
+安装运行环境：
 
 ```bash
-modelscope download --model OneScience/DeePMD --local_dir session_workdir
-modelscope download --dataset OneScience/DeePMD --local_dir session_workdir
+# 激活DTK及CONDA
+conda create -n onescience311 python=3.11 -y
+conda activate onescience311
+pip install onescience[matchem] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
-如果网页端使用 `--cache_dir` 下载模型，运行前必须切换到实际下载后的模型包根目录。
-
-## 环境安装
+安装 DeepMD-kit：
 
 ```bash
-bash install.sh matchem
-cd upstream
 bash dp_install.sh
 ```
 
-## 运行流程
+**环境检测**
 
-### 1. 下载
-
-```bash
-modelscope download --model OneScience/DeePMD --local_dir session_workdir
-modelscope download --dataset OneScience/DeePMD --local_dir session_workdir
-cd session_workdir
-```
-
-### 2. 运行前预检
+- NVIDIA GPU：
 
 ```bash
-python scripts/preflight_deepmd.py --package-root .
+nvidia-smi
 ```
 
-### 3. 训练
+- 海光 DCU：
 
 ```bash
-dp --pt train conf/input_torch_modelscope.json
+hy-smi
 ```
 
-多卡训练可参考 `upstream/demo/water_se_e2_a_pt/submit_4card.sh` 和 `submit_8card.sh`，并将训练配置替换为 `conf/input_torch_modelscope.json`。
+### 3. 快速开始
 
-## 输出说明
+**进入示例目录**
 
-DeepMD-kit 训练会输出 `lcurve.out`、统计文件、checkpoint 和日志。SLURM 模式下还会产生 `slurm_*.out` 和 `slurm_*.err`。
+本示例位于 OneScience 仓库的 `examples/matchem/dp`，进入该目录后所有命令均相对于该目录执行：
 
-## 预检与诊断
+```bash
+cd examples/matchem/dp
+```
 
-- `dp: command not found`：DeepMD-kit 未安装或环境未加载。
-- `missing directory`：未下载 `OneScience/DeePMD` 数据集或数据未放在 `data/DeePMD/`。
-- `training systems mismatch`：配置文件不是标准适配后的 `conf/input_torch_modelscope.json`。
-- `ModuleNotFoundError`：缺少 Python 依赖，例如 numpy。
+**准备数据**
 
-## 限制与适用范围
+本目录不内置训练数据。以 DeePMD water 数据集为例，从 ModelScope 下载并放到目录的 `data/` 下：
 
-本标准包默认使用 PyTorch `se_e2_a` water 配置做最小验证和训练入口。attention 与 TensorFlow 示例保留在 `upstream/demo/`，如需使用这些配置，应按相同规则把绝对路径改为 `data/DeePMD/...`。
+```bash
+modelscope download --dataset OneScience/DeePMD --local_dir ./data
+```
+
+下载后数据路径为 `data/DeePMD/water/data_0..3/`。
+
+**运行样例训练**
+
+以 PyTorch `se_e2_a` water 配置为例：
+
+```bash
+cd demo/water_se_e2_a_pt
+dp --pt train input_torch.json
+```
+
+多卡 SLURM 提交：
+
+```bash
+cd demo/water_se_e2_a_pt
+bash submit_4card.sh
+```
+
+---
+
+## OneScience 官方信息
+
+| 平台 | OneScience 主仓库 | Skills 仓库 |
+| --- | --- | --- |
+| Gitee | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
+| GitHub | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+
+---
 
 ## 引用与许可证
 
-DeePMD 示例代码来自 OneScience 仓库，DeepMD-kit 相关许可请参考其上游项目。数据使用限制以 OneScience 仓库和 ModelScope 页面说明为准。
+- DeePMD 示例代码来自 OneScience 项目中的 matchem 示例实现，并参考了上游 DeepMD-kit 项目。上游 DeepMD-kit 相关许可请参考其官方仓库。
+- 如果在科研工作中使用 DeePMD 训练结果，建议引用 DeepMD-kit、OneScience 相关项目信息和实际使用的数据集来源。

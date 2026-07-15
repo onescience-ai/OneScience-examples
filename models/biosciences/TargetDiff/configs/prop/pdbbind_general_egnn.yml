@@ -35,5 +35,5 @@ train:
 dataset:
   name: pdbbind
   heavy_only: True
-  path: ./data/pdbbind_v2020/pocket_10_general
-  split: ./data/pdbbind_v2020/pocket_10_general/split.pt
+  path: ${ONESCIENCE_DATASETS_DIR}/targetdiff/data/pdbbind_v2020/pocket_10_general
+  split: ${ONESCIENCE_DATASETS_DIR}/targetdiff/data/pdbbind_v2020/pocket_10_general/split.pt

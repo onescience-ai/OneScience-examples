@@ -98,15 +98,16 @@ hy-smi
 ### 安装运行环境
 
 ```bash
-git clone https://gitee.com/onescience-ai/onescience.git
-cd onescience
-bash install.sh bio
+# 激活DTK及CONDA
+conda create -n onescience311 python=3.11 -y
+conda activate onescience311
+pip install onescience[bio] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
 安装完成后回到模型包目录：
 
 ```bash
-cd ../alphagenome
+cd ./alphagenome
 ```
 
 ### 准备权重

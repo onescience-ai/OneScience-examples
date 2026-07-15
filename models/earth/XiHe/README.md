@@ -75,9 +75,10 @@ Xihe（羲和）是面向高分辨率全球海洋预报的 Transformer 模型，
 ### 安装运行环境
 
 ```bash
-git clone https://gitee.com/onescience-ai/onescience.git
-cd onescience
-bash install.sh earth
+# 激活DTK及CONDA
+conda create -n onescience311 python=3.11 -y
+conda activate onescience311
+pip install onescience[earth] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
 ### 生成假数据进行流程验证

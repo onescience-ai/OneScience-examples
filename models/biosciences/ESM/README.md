@@ -113,15 +113,23 @@ hy-smi
 ### 安装运行环境
 
 ```bash
-git clone https://gitee.com/onescience-ai/onescience.git
-cd onescience
-bash install.sh bio
+# 激活DTK及CONDA
+conda create -n onescience311 python=3.11 -y
+conda activate onescience311
+pip install onescience[bio] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
+```bash
+#如果需要找不到库的情况需要激活cuda，参考下列代码
+source ${ROCM_PATH}/cuda/env.sh
+export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$CONDA_PREFIX/lib/python3.11/site-packages/fastpt/torch/lib:$LD_LIBRARY_PATH"
+```
+
 
 安装完成后回到模型包目录：
 
 ```bash
-cd ../ESM
+cd ./ESM
 ```
 
 ### 准备权重

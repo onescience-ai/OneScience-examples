@@ -1,7 +1,28 @@
-#!/usr/bin/env bash
-set -euo pipefail
 
-cd "$(dirname "$0")/.."
-export DATA_ROOT_DIR="${DATA_ROOT_DIR:-../bio_protenix_dataset}"
-export HIP_VISIBLE_DEVICES="${HIP_VISIBLE_DEVICES:-0}"
-python3 scripts/train.py "$@"
+#source ../../../env.sh
+source ${ROCM_PATH}/cuda/env.sh
+export PYTHONPATH=$(pwd):$PYTHONPATH
+export DATA_ROOT_DIR=${ONESCIENCE_DATASETS_DIR}/protenix/
+export HIP_VISIBLE_DEVICES=0 # 指定运行gpu
+
+
+python3 scripts/runner/train.py \
+--run_name protenix_train \
+--seed 42 \
+--base_dir ./output \
+--dtype bf16 \
+--project protenix \
+--use_wandb false \
+--diffusion_batch_size 48 \
+--eval_interval 400 \
+--log_interval 50 \
+--checkpoint_interval 400 \
+--ema_decay 0.999 \
+--train_crop_size 384 \
+--max_steps 100000 \
+--warmup_steps 2000 \
+--lr 0.001 \
+--sample_diffusion.N_step 20 \
+--data.train_sets weightedPDB_before2109_wopb_nometalc_0925 \
+--data.test_sets recentPDB_1536_sample384_0925,posebusters_0925 \
+--data.posebusters_0925.base_info.max_n_token 768

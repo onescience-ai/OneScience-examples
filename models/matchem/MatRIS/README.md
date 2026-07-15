@@ -1,21 +1,3 @@
----
-license: bsd-3-clause
-language:
-- en
-- zh
-tags:
-- OneScience
-- 材料科学
-- 材料表征
-- 晶体结构
-- 能量预测
-- 力预测
-- 应力预测
-- 磁矩预测
-- 结构弛豫
-frameworks: PyTorch
----
-
 <p align="center">
   <strong>
     <span style="font-size: 30px;">MatRIS</span>
@@ -88,9 +70,10 @@ MatRIS 是面向材料表征与相互作用模拟的基础模型，全称为 Mat
 使用前请先安装 OneScience matchem 环境：
 
 ```bash
-git clone https://gitee.com/onescience-ai/onescience.git
-cd onescience
-bash install.sh matchem
+# 激活DTK及CONDA
+conda create -n onescience311 python=3.11 -y
+conda activate onescience311
+pip install onescience[matchem] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
 主要依赖版本：

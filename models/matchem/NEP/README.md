@@ -1,122 +1,149 @@
 # NEP
 
-<p align="center">
-  <strong>
-    <span style="font-size: 20px;">点击下方图片，体验一键式 NEP 模型训练预检</span>
-  </strong>
-</p>
+NEP（Neural Evolution Potential）是基于 MatPL 的神经网络势训练示例，面向原子结构数据学习能量、力和 virial 等材料相互作用信息。本目录是 OneScience MatChem 领域整理的 NEP 最小可运行训练示例，提供 Cu、LiSiC 等体系的训练配置和提交脚本。
 
-<p align="center">
-  <a href="https://modelscope.cn/models/OneScience/NEP" target="_blank" rel="noopener noreferrer">
-    <img src="https://www.modelscope.cn/api/v1/models/VoyagerX/OneScience-badge/repo?Revision=master&FilePath=LOGOs.png" width="200" alt="Logo">
-  </a>
-</p>
+---
 
-## OneScience 官方信息
+## 目录说明
 
-| 平台 | 文档 | OneScience 主仓库 | Skills 仓库 |
-|---|---|---|---|
-| Gitee | https://gitee.com/onescience-ai/onescience-doc | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
-| GitHub | https://github.com/onescience-ai/OneScience-doc | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+本目录是 OneScience 主仓库 `examples/matchem/nep` 的示例，面向 OneCode 自动化运行和本地快速验证场景。
 
-## 项目说明
+当前支持能力：
 
-NEP 是 OneScience MatChem 领域基于 MatPL 的神经网络势训练示例，支持 Cu、LiSiC、AuAg、HfO2 等体系。本标准模型包整理了 `onescience/examples/matchem/nep` 中的安装脚本、示例 JSON 和提交脚本，并新增面向 ModelScope 数据布局的 Cu 入门配置。
+- 训练：使用 MatPL 训练 NEP 原子间势。
+- 分布式训练：支持单卡 SLURM 提交脚本。
+- 多体系示例：保留 Cu、LiSiC 等上游示例配置。
 
-原始 Cu 配置使用 `/public/share/.../matchem/matpl/...` 绝对路径。本标准包新增 `conf/Cu_nep_train_modelscope.json`，将数据路径改为下载后的相对路径 `data/MatPL/Cu/pwdata/...`。
+当前不支持能力：
 
-## Resource Card
+- 不内置预训练权重或 checkpoint。
+- 不内置训练数据，需从同 ID 数据集仓库 `OneScience/MatPL` 下载。
+- 不提供独立推理服务、部署脚本或可视化页面。
 
-| 字段 | 内容 |
-|---|---|
-| 资源类型 | 模型 |
-| OneScience 领域 | matchem |
-| 领域标签 | matchem, nep, matpl, mlip |
-| 任务 | neural_evolution_potential_training |
-| 任务标签 | energy_prediction, force_prediction, virial_prediction, movement |
-| 主平台资源 | https://modelscope.cn/models/OneScience/NEP |
-| 标准运行包工作目录 | `.` |
-| OneScience examples 兼容路径 | `examples/matchem/nep` |
-| 支持能力 | 训练 / 评测 / 预检 |
-| 必需数据集 | `OneScience/MatPL` |
-| 最小验证 | `python scripts/preflight_nep.py --package-root .` |
+---
+
+## 适用场景
+
+| 场景 | 说明 |
+| :---: | :---: |
+| Cu 体系 NEP 训练 | 使用 `demo/nep_Cu/Cu_nep_train.json` 训练 Cu 势函数 |
+| LiSiC 体系 NEP 训练 | 使用 `demo/nep_LiSiC/LiSiC_nep_train.json` 训练 LiSiC 势函数 |
+| SLURM 作业提交 | 参考 `demo/nep_Cu/submit.sh` 在集群上运行训练 |
+| 自有数据迁移 | 将客户数据整理为 `pwmat/movement` 等 MatPL 支持格式后替换训练路径 |
+
+---
 
 ## 文件说明
 
-| 路径 | 类型 | 作用 | 是否必需 | 用于能力 | 下载后放置位置 | 备注 |
-|---|---|---|---|---|---|---|
-| `README.md` | 说明文档 | 模型用途、文件、下载、运行和诊断说明 | 是 | 全部能力 | `session_workdir/README.md` | 本文件 |
-| `manifest.yaml` | Manifest 文件 | 标准默认机器可读运行说明 | 是 | 全部能力 | `session_workdir/manifest.yaml` | 与 `onescience_run_manifest.yaml` 一致 |
-| `onescience_run_manifest.yaml` | Manifest 文件 | 大模型运行 Manifest 文件名 | 是 | 全部能力 | `session_workdir/onescience_run_manifest.yaml` | 修改后需同步 |
-| `scripts/preflight_nep.py` | 预检脚本 | 检查运行文件、Cu 配置和 MatPL 数据路径 | 是 | 预检 | `session_workdir/scripts/preflight_nep.py` | 不启动训练 |
-| `conf/Cu_nep_train_modelscope.json` | 适配配置 | 面向 ModelScope 下载布局的 NEP Cu 训练配置 | 是 | 训练、预检 | `session_workdir/conf/Cu_nep_train_modelscope.json` | 已改数据路径 |
-| `upstream/` | 上游示例代码 | NEP 原始安装、JSON 配置和提交脚本 | 是 | 训练、说明 | `session_workdir/upstream/` | 来自 OneScience 示例 |
-| `metadata/sha256_manifest.txt` | 校验清单 | 模型包脚本和配置 SHA256 | 是 | 预检 | `session_workdir/metadata/sha256_manifest.txt` | 上传前校验 |
+| 路径 | 功能 | 备注 |
+| :---: | :---: | :---: |
+| `README.md` | 工程使用说明文档 | 本文件 |
+| `matpl_install.sh` | MatPL 安装脚本 | 在 OneScience matchem 环境基础上安装 MatPL |
+| `demo/nep_Cu/` | Cu 单卡训练示例 | 含 `Cu_nep_train.json`、`std_input.json`、`submit.sh` |
+| `demo/nep_LiSiC/` | LiSiC 单卡训练示例 | 含 `LiSiC_nep_train.json`、`std_input.json`、`submit.sh` |
 
-## Manifest
+---
 
-本仓库提供 `manifest.yaml` 和 `onescience_run_manifest.yaml`，两者内容一致。修改文件、下载命令、数据关系或适配配置后必须同步更新。
+## 使用说明
 
-## 模型 vs 数据集关系
+### 1. OneCode 使用
 
-模型仓库目标 ID 是 `OneScience/NEP`，数据集仓库目标 ID 是 `OneScience/MatPL`。模型 Manifest 的 `relations.required_datasets` 指向 `OneScience/MatPL`，数据集 Manifest 的 `relations.compatible_models` 反向指向 `OneScience/NEP`。
+可通过 OneCode 在线环境体验智能化一键式 AI4S 编程：
 
-## 文件与下载
+[点击体验智能化一键式 AI4S 编程](https://web-2069360198568017922-iaaj.ksai.scnet.cn:58043/home)
+
+### 2. 手动安装使用
+
+**硬件要求**
+
+- 推荐使用 DCU 或 GPU 运行训练。
+- CPU 可以用于配置检查，不建议用于正式 NEP 训练。
+- DCU 用户需要预先安装 DTK，建议使用 DTK 26.04 或与当前集群匹配的 OneScience 推荐版本。
+
+**软件要求**
+
+- Python 3.11
+- numpy
+- MatPL
+- OneScience matchem 运行环境
+
+安装运行环境：
 
 ```bash
-modelscope download --model OneScience/NEP --local_dir session_workdir
-modelscope download --dataset OneScience/MatPL --local_dir session_workdir
+# 激活DTK及CONDA
+conda create -n onescience311 python=3.11 -y
+conda activate onescience311
+pip install onescience[matchem] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
-如果网页端使用 `--cache_dir` 下载模型，运行前必须切换到实际下载后的模型包根目录。
-
-## 环境安装
+安装 MatPL：
 
 ```bash
-bash install.sh matchem
-cd upstream
 bash matpl_install.sh
 ```
 
-## 运行流程
+**环境检测**
 
-### 1. 下载
-
-```bash
-modelscope download --model OneScience/NEP --local_dir session_workdir
-modelscope download --dataset OneScience/MatPL --local_dir session_workdir
-cd session_workdir
-```
-
-### 2. 运行前预检
+- NVIDIA GPU：
 
 ```bash
-python scripts/preflight_nep.py --package-root .
+nvidia-smi
 ```
 
-### 3. 训练
+- 海光 DCU：
 
 ```bash
-MatPL train conf/Cu_nep_train_modelscope.json
+hy-smi
 ```
 
-如果使用 SLURM，可参考 `upstream/demo/nep_Cu/submit.sh`，并将末尾训练命令替换为上述标准配置路径。
+### 3. 快速开始
 
-## 输出说明
+**进入示例目录**
 
-MatPL 会在当前运行目录输出训练日志、NEP 模型文件和中间结果；SLURM 模式下还会产生 `slurm_*.out` 和 `slurm_*.err`。
+本示例位于 OneScience 仓库的 `examples/matchem/nep`，进入该目录后所有命令均相对于该目录执行：
 
-## 预检与诊断
+```bash
+cd examples/matchem/nep
+```
 
-- `MatPL: command not found`：MatPL 未安装或环境未加载。
-- `missing file`：未下载 `OneScience/MatPL` 或数据未放在 `data/MatPL/`。
-- `train_data mismatch`：配置文件不是标准适配后的 `conf/Cu_nep_train_modelscope.json`。
-- `ModuleNotFoundError`：缺少 Python 依赖，例如 numpy。
+**准备数据**
 
-## 限制与适用范围
+本目录不内置训练数据。以 MatPL 数据集为例，从 ModelScope 下载并放到目录的 `data/` 下：
 
-本标准包默认使用 Cu 入门配置做最小验证和训练入口。AuAg、HfO2、LiSiC 的原始示例配置保留在 `upstream/demo/`，如需使用这些配置，应按相同规则把绝对路径改为 `data/MatPL/...`。
+```bash
+modelscope download --dataset OneScience/MatPL --local_dir ./data
+```
+
+下载后数据路径为 `data/MatPL/`。
+
+**运行样例训练**
+
+以 Cu 体系为例：
+
+```bash
+cd demo/nep_Cu
+MatPL train Cu_nep_train.json
+```
+
+SLURM 提交：
+
+```bash
+cd demo/nep_Cu
+bash submit.sh
+```
+
+---
+
+## OneScience 官方信息
+
+| 平台 | OneScience 主仓库 | Skills 仓库 |
+| --- | --- | --- |
+| Gitee | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
+| GitHub | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+
+---
 
 ## 引用与许可证
 
-NEP 示例代码来自 OneScience 仓库，许可证以 OneScience 仓库说明为准。MatPL 数据使用限制以原始数据来源和 ModelScope 页面说明为准。
+- NEP 示例代码来自 OneScience 仓库。本仓库保留来源说明，并面向 OneScience 社区使用场景进行整理。
+- 如果在科研工作中使用 NEP 或 MatPL 训练结果，建议引用 OneScience 相关项目信息、MatPL/NEP 相关方法和实际使用的数据集来源。

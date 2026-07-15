@@ -136,12 +136,12 @@ hy-smi
 
 ## 快速开始
 
-### 1. 安装onescience库
+### 1. 安装运行环境
 
 ```bash
-git clone https://gitee.com/onescience-ai/onescience
-cd onescience
-bash install.sh bio
+conda create -n onescience311 python=3.11 -y
+conda activate onescience311
+pip install onescience[bio] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
 ### 2. 下载数据库(含权重)

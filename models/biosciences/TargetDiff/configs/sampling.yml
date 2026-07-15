@@ -1,5 +1,5 @@
 model:
-   checkpoint: ${ONESCIENCE_DATASETS_DIR}/targetdiff/pretrained_models/pretrained_diffusion.pt
+   checkpoint: /public/home/liuyx19/onescience-examples/models/biosciences/TargetDiff/weight/pretrained_diffusion.pt
 
 sample:
   seed: 2021

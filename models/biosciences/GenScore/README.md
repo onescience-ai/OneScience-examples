@@ -104,12 +104,19 @@ hy-smi
 
 ## 快速开始
 
-### 1. 安装onescience库
+### 1. 安装运行环境
 
 ```bash
-git clone https://gitee.com/onescience-ai/onescience
-cd onescience
-bash install.sh bio
+conda create -n onescience311 python=3.11 -y
+conda activate onescience311
+pip install onescience[bio] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
+```
+#如果下述代码运行存在找不到库的情况，需要激活cuda，参考下列代码
+
+```bash
+source ${ROCM_PATH}/cuda/env.sh
+export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$CONDA_PREFIX/lib/python3.11/site-packages/fastpt/torch/lib:$LD_LIBRARY_PATH"
 ```
 
 ### 2. 下载数据库(含权重)
