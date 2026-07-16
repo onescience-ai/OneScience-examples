@@ -1,0 +1,103 @@
+root:
+  common:
+    device: "auto"
+    dtype: "float64"
+    seed: 42
+    weight_dir: "weight"
+    result_dir: "result"
+
+  cases:
+    laplace:
+      model:
+        input_dim: 1
+        n_layers: 4
+        n_neurons: 50
+        activation: "tanh"
+      attention:
+        enabled: true
+        lr: 0.01
+      training:
+        epochs: 10000
+        lr: 0.001
+        lbfgs_iters: 2000
+        log_interval: 1000
+      loss:
+        data: 10.0
+        pde: 1.0
+        boundary: 10.0
+      data:
+        domain: [0.0, 1.0]
+        n_sol: 200
+        n_pde: 1000
+        n_bnd: 2
+        noise_std: 0.0
+        test_res: 200
+      output:
+        checkpoint_name: "sapinn_laplace.pt"
+        predictions_name: "sapinn_laplace.npz"
+        figure_name: "sapinn_laplace.png"
+        history_name: "sapinn_laplace_history.npz"
+
+    helmholtz:
+      model:
+        input_dim: 2
+        n_layers: 4
+        n_neurons: 50
+        activation: "tanh"
+      attention:
+        enabled: true
+        lr: 0.001
+      training:
+        epochs: 10000
+        lr: 0.001
+        lbfgs_iters: 5000
+        log_interval: 1000
+      loss:
+        data: 0.0
+        pde: 1.0
+        boundary: 10.0
+      data:
+        domain_x: [-1.0, 1.0]
+        domain_y: [-1.0, 1.0]
+        n_sol: 200
+        n_pde: 10000
+        n_bnd: 400
+        test_res: 100
+        wave_number: 1.0
+      output:
+        checkpoint_name: "sapinn_helmholtz.pt"
+        predictions_name: "sapinn_helmholtz.npz"
+        figure_name: "sapinn_helmholtz.png"
+        history_name: "sapinn_helmholtz_history.npz"
+
+    burgers:
+      model:
+        input_dim: 2
+        n_layers: 8
+        n_neurons: 20
+        activation: "tanh"
+      attention:
+        enabled: true
+        lr: 0.005
+      training:
+        epochs: 100
+        lr: 0.005
+        lbfgs_iters: 5000
+        log_interval: 10
+      loss:
+        data: 10.0
+        pde: 1.0
+        boundary: 10.0
+      data:
+        domain_x: [-1.0, 1.0]
+        domain_t: [0.0, 1.0]
+        n_sol: 100
+        n_pde: 10000
+        n_bnd: 50
+        test_res: 100
+        viscosity: 0.003183098861837907
+      output:
+        checkpoint_name: "sapinn_burgers.pt"
+        predictions_name: "sapinn_burgers.npz"
+        figure_name: "sapinn_burgers.png"
+        history_name: "sapinn_burgers_history.npz"

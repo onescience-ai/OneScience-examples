@@ -1,0 +1,45 @@
+root:
+  common:
+    device: "auto"
+    dtype: "float64"
+    seed: 1234
+    weight_dir: "weight"
+    result_dir: "result"
+
+  data:
+    mat_file: "data/XPINN_2D_PoissonEqn.mat"
+    samples:
+      residual_1: 5000
+      residual_2: 1800
+      residual_3: 1200
+      boundary: 200
+      interface_1: 100
+      interface_2: 100
+
+  model:
+    name: "XPINNPoisson2D"
+    subnetworks:
+      domain1:
+        layers: [2, 30, 30, 1]
+        activation: "tanh"
+      domain2:
+        layers: [2, 20, 20, 20, 20, 1]
+        activation: "sin"
+      domain3:
+        layers: [2, 25, 25, 25, 1]
+        activation: "cos"
+
+  loss:
+    boundary: 20.0
+    pde: 1.0
+    interface_residual: 1.0
+    interface_value: 20.0
+
+  training:
+    steps: 501
+    lr: 0.0008
+    log_interval: 20
+    checkpoint_name: "xpinn_poisson_2d.pt"
+
+  inference:
+    figure_name: "xpinn_poisson_2d.png"

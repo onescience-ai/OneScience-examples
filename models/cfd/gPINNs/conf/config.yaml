@@ -1,0 +1,39 @@
+root:
+  common:
+    device: "auto"
+    dtype: "float64"
+    seed: 1234
+    weight_dir: "weight"
+    result_dir: "result"
+
+  poisson1d:
+    nf: 30
+    w_g: 0.1
+    epochs: 30000
+    lbfgs_iters: 2000
+    lr: 0.001
+    log_every: 1000
+    layers: [1, 30, 30, 30, 30, 1]
+
+  poisson2d:
+    a: 2.0
+    nf: 400
+    w_g: 0.001
+    epochs: 15000
+    lr: 0.001
+    log_every: 2000
+    layers: [2, 30, 30, 30, 1]
+
+  burgers:
+    data: "data/Burgers.npz"
+    nf: 1500
+    w_g: 0.0001
+    epochs: 20000
+    lr: 0.001
+    log_every: 2000
+    layers: [2, 32, 32, 32, 1]
+    rar_rounds: 5
+    rar_epochs: 5000
+    rar_candidate_points: 100000
+    rar_candidate_batch_size: 10000
+    rar_add_points: 10

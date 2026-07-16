@@ -1,0 +1,31 @@
+root:
+  common:
+    case: "1d"
+    device: "auto"
+    dtype: "float64"
+    seed: 1234
+    weight_dir: "weight"
+    result_dir: "result"
+
+  poisson1d:
+    n_element: 8
+    n_test: 40
+    n_quad: 60
+    epochs: 10000
+    lbfgs_iters: 1000
+    lr: 0.001
+    log_every: 2000
+    layers: [1, 20, 20, 20, 1]
+
+  poisson2d:
+    n_el_x: 4
+    n_el_y: 4
+    n_test: 8
+    n_quad: 12
+    n_bound: 80
+    boundary_weight: 50.0
+    epochs: 10000
+    lbfgs_iters: 1000
+    lr: 0.001
+    log_every: 2000
+    layers: [2, 30, 30, 30, 30, 1]

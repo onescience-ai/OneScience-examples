@@ -1,0 +1,58 @@
+root:
+  common:
+    task: "forward"
+    device: "auto"
+    dtype: "float32"
+    seed: 1111
+    weight_dir: "weight"
+    result_dir: "result"
+
+  data:
+    mat_file: "data/AC.mat"
+    n_train: 8000
+    evaluation_batch_size: 8192
+
+  model:
+    hidden_layers: [200, 200, 200, 200]
+    linear_dim: 10
+    fuzzy_dim: 4
+    activation: "tanh"
+
+  tasks:
+    forward:
+      training:
+        epochs: 10000
+        lr: 0.001
+        lbfgs_iters: 0
+        log_interval: 500
+      loss:
+        data: 1.0
+        pde: 1.0
+      pde:
+        lambda_1: 0.0001
+        lambda_2: 5.0
+      output:
+        checkpoint_name: "fpinn_forward.pt"
+        history_name: "fpinn_forward_history.npz"
+        predictions_name: "fpinn_forward.npz"
+        figure_name: "fpinn_forward.png"
+
+    inverse:
+      training:
+        epochs: 10000
+        lr: 0.001
+        lbfgs_iters: 0
+        log_interval: 500
+      loss:
+        data: 1.0
+        pde: 1.0
+      pde:
+        initial_lambda_1: 1.0
+        initial_lambda_2: 0.0
+        true_lambda_1: 0.0001
+        true_lambda_2: 5.0
+      output:
+        checkpoint_name: "fpinn_inverse.pt"
+        history_name: "fpinn_inverse_history.npz"
+        predictions_name: "fpinn_inverse.npz"
+        figure_name: "fpinn_inverse.png"

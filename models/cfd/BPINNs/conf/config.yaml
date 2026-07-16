@@ -1,0 +1,42 @@
+root:
+  common:
+    device: "auto"
+    dtype: "float64"
+    seed: 1234
+    weight_dir: "weight"
+    result_dir: "result"
+
+  model:
+    name: "BPINN"
+    input_dim: 1
+    n_layers: 4
+    n_neurons: 50
+    n_out_sol: 1
+    n_out_par: 0
+    activation: "tanh"
+
+  training:
+    epochs: 10000
+    lr: 0.001
+    lbfgs_iters: 2000
+    refinement_lr: 1.0
+    log_interval: 500
+    checkpoint_name: "bpinn_laplace1d.pt"
+    refined_checkpoint_name: "bpinn_laplace1d_refined.pt"
+
+  loss:
+    data: 10.0
+    pde: 1.0
+    boundary: 10.0
+
+  data:
+    domain: [0.0, 1.0]
+    n_sol: 200
+    n_pde: 1000
+    noise_std: 0.0
+    test_res: 200
+
+  inference:
+    predictions_name: "bpinn_laplace1d.npz"
+    figure_name: "bpinn_laplace1d.png"
+    history_name: "training_history.npz"

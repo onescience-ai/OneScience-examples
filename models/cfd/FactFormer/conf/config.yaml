@@ -1,0 +1,61 @@
+root:
+  common:
+    device: "auto"
+    seed: 1234
+
+  datapipe:
+    source:
+      data_dir: "/public/share/sugonhpcapp01/onestore/onedatasets/Kolmogorov_flow_2d"
+      file_name: "kf_2d_re1000_256_120seed.npy"
+    data:
+      train_num: 100
+      test_num: 20
+      resolution: 128
+      interval: 2
+      t_in: 10
+      t_out: 16
+      out_dim: 1
+      normalize: true
+      val_mode: false
+      split_seed: 1234
+      stats_file: "data/km2d_stat.npz"
+      stats_max_trajectories: 8
+    dataloader:
+      batch_size: 4
+      num_workers: 2
+      pin_memory: true
+
+  model:
+    in_dim: 10
+    out_dim: 1
+    hidden_dim: 128
+    depth: 4
+    heads: 8
+    mlp_ratio: 2
+    dropout: 0.0
+    activation: "gelu"
+    include_pos: true
+    space_dim: 2
+    latent_multiplier: 2.0
+    max_latent_steps: 4
+
+  training:
+    epochs: 50
+    lr: 0.0005
+    weight_decay: 0.0001
+    step_size: 20
+    gamma: 0.5
+    eval_interval: 1
+    patience: 20
+    train_latent_steps: 4
+    max_grad_norm: 1.0
+    max_train_batches: null
+    max_eval_batches: null
+    weight_dir: "weight"
+    checkpoint_name: "factformer_kolmogorov.pt"
+
+  inference:
+    result_dir: "result"
+    num_samples: 4
+    figure_name: "prediction_sample.png"
+    tensor_name: "prediction_sample.pt"
