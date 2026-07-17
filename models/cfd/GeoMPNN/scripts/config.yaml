@@ -1,0 +1,40 @@
+data:
+  data_dir: "/root/private_data/wangqi/AirfRans/data/data/Dataset"
+  manifest: ".subset100_manifest.json"
+  cache_dir: ".cache_subset100"
+  use_cache: false
+  train_split: "subset100_train"
+  test_id_split: "subset100_test"
+  test_ood_split: "subset100_test"
+  val_ratio: 0.1
+  subsample_n: 16000
+  surface_radius: 0.05
+  surface_M: 8
+  s2v_k: 8
+  normal_match_eps: 1.0e-4
+  normalize_inputs: false
+model:
+  hidden: 64
+  edge_hidden: 64
+  num_surface_layers: 4
+  num_s2v_layers: 4
+  nbasis: 8
+  dropout: 0.0
+  activation: "relu"
+  field_config: {ux: "sph", uy: "sph", nut: "inlet", p: "inlet"}
+  log_pressure: true
+training:
+  lr: 1.0e-3
+  epochs: 60
+  batch_size: 1
+  optimizer: "adam"
+  scheduler: "onecycle"
+  onecycle_pct_start: 0.3
+  weight_decay: 0.0
+  seeds: [0]
+  val_eval_every: 5
+  num_workers: 0
+  device: "cuda"
+  out_dir: "/root/private_data/wangqi/geompnn/output_subset100"
+eval:
+  compute_cl_cd: true

@@ -1,0 +1,52 @@
+fno_config:
+  datapipe:
+    source:
+      data_dir: "./data"
+      file_name: "2D_DarcyFlow_beta0.1_Train.hdf5"
+    verbose: true
+    data:
+      single_file: true
+      reduced_resolution: 1
+      reduced_resolution_t: 1
+      reduced_batch: 1
+      initial_step: 1
+      test_ratio: 0.1
+      pde_name: "2D_Darcy_Flow"
+    dataloader:
+      batch_size: 2
+      num_workers: 0
+      pin_memory: false
+
+  model:
+    name: "FNO"
+    num_channels: 1
+    modes: 4
+    width: 8
+
+  training:
+    output_dir: "./weight"
+    if_training: true
+    continue_training: false
+    model_path: null
+    save_period: 1
+    seed: 0
+    training_type: "single"
+    t_train: 2
+    epochs: 1
+    optimizer:
+      name: "Adam"
+      lr: 1.0e-3
+      weight_decay: 1.0e-4
+    scheduler:
+      name: "StepLR"
+      step_size: 100
+      gamma: 0.5
+
+  inference:
+    checkpoint: "./weight/best_model.pt"
+    output_dir: "./result/output"
+    max_batches: 2
+
+  result:
+    prediction_dir: "./result/output"
+    output_dir: "./result"

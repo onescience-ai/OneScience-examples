@@ -1,0 +1,38 @@
+package_name: funcattn_airfrans
+paper:
+  arxiv: "2605.31559"
+  title: "Functional Attention: From Pairwise Affinities to Functional Correspondences"
+data:
+  root: "model/funcattn_airfrans/data/raw/Dataset"
+  train_split: "reynolds_train"
+  test_split: "reynolds_test"
+  max_points: 32000
+  eval_max_points: 32000
+  cache_dir: "model/funcattn_airfrans/data/cache"
+  normalize: true
+  stats_path: "model/funcattn_airfrans/data/stats_reynolds_train.npz"
+model:
+  input_dim: 7
+  output_dim: 4
+  channels: 256
+  layers: 8
+  heads: 8
+  bases: 32
+  ffn_ratio: 4
+  dropout: 0.0
+  ridge_lambda: 0.001
+  share_basis: true
+training:
+  epochs: 400
+  batch_size: 4
+  lr: 0.001
+  optimizer: "adam"
+  surface_loss_weight: 1.0
+  num_workers: 2
+  seed: 42
+  resume: true
+  checkpoint: "weight/funcattn_reynolds.pt"
+  log_interval: 1
+evaluation:
+  split: "reynolds_test"
+  output: "weight/result_reynolds.json"

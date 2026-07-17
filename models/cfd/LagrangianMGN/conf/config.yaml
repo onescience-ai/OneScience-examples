@@ -1,158 +1,122 @@
-# =========================
-# Hydra 默认配置
-# =========================
-defaults:
-  - /logging/python: default      # Python logging 配置
-  - override hydra/job_logging: disabled
-  - _self_
+# Standard runtime configuration for the Lagrangian MeshGraphNet example.
+# Relative paths are resolved from the project root by scripts/common.py.
 
-hydra:
-  run:
-    dir: ${output}               # 每次运行的工作目录（Hydra 会 cd 到这里）
-  output_subdir: hydra            # 保存 Hydra 生成的配置快照
+dim: 2
+output: result/train
+resume_dir: weight/checkpoints
 
-
-# =========================
-# 全局通用参数
-# =========================
-dim: 2                            # 空间维度（2D / 3D），用于 loss 归一化
-output: outputs                   # 实验输出根目录（日志 / checkpoint）
-resume_dir: ${output}             # 从该目录恢复 checkpoint（为空则不恢复）
-
-
-# =========================
-# 数据集描述（抽象层）
-# 这里只描述“数据语义”，不涉及 DataLoader
-# =========================
 data:
-  data_dir: ${oc.env:ONESCIENCE_LAGRANGIAN_DATA_DIR,data/Water}
-                                  # 整理包默认匹配 OneScience/lagrangian 的 Water 子集。
-                                  # 可用环境变量 ONESCIENCE_LAGRANGIAN_DATA_DIR 指向数据集仓库 data/Water。
+  data_dir: data/fake_lagrangian
+  name: FakeWater
+  num_history: 5
+  num_node_types: 6
+  noise_std: 0.0
 
-  name: "Water"                   # 当前整理包只声明 Water 子集为默认可运行数据
-  num_history: 5                  # 输入历史帧数（Graph 时间窗口）
-  num_node_types: 6               # 节点类型数（边界 / 内部 / 物体等）
-  noise_std: 0.0003               # 训练时加入的噪声（数据增强）
-
-  # 数据集切分策略
-  # 这里的 train / valid / test 只描述 split 逻辑
   train:
-    split: "train"
-    num_sequences: 1000           # Water train.tfrecord 序列数量
+    split: train
+    num_sequences: 2
+    num_steps: 8
   valid:
-    split: "valid"
-    num_sequences: 30             # Water valid.tfrecord 序列数量
+    split: valid
+    num_sequences: 1
+    num_steps: 8
   test:
-    split: "test"
-    num_sequences: 30             # Water test.tfrecord 序列数量
+    split: test
+    num_sequences: 1
+    num_steps: 8
 
+  fake:
+    seed: 42
+    num_particles: 12
+    num_steps: 8
+    connectivity_radius: 0.35
+    bounds: [0.0, 1.0]
 
-# =========================
-# 训练相关参数
-# =========================
-train:
-  batch_size: 20                  # 训练 batch size
-  epochs: 100                     # 总训练 epoch 数
-  checkpoint_save_freq: 5         # 每多少个 epoch 保存一次 checkpoint
-
-  # DataLoader 配置（训练）
-  dataloader:
-    batch_size: ${..batch_size}   # 与 train.batch_size 保持一致
-    shuffle: true                 # 训练集必须 shuffle
-    num_workers: 2
-    pin_memory: true
-    drop_last: true               # 保证 batch size 恒定（对 DDP 友好）
-
-
-# =========================
-# 测试 / 验证配置
-# =========================
-test:
-  batch_size: 1                   # 【关键】
-                                  # MeshGraphNet 推理必须 batch=1
-  device: cuda
-
-  dataloader:
-    batch_size: ${..batch_size}
-    shuffle: false
-    num_workers: 1
-    pin_memory: true
-    drop_last: false
-
-
-# =========================
-# Datapipe（真正的数据加载实现）
-# =========================
 datapipe:
   source:
-    data_dir: ${data.data_dir}    # 实际传给 Datapipe 的数据路径
-
-  verbose: True                   # 是否打印 datapipe 初始化信息
-
-  # 数据集构造参数（直接传给 DeepMindLagrangianDatapipe）
+    data_dir: ${data.data_dir}
+  verbose: true
   data:
     name: ${data.name}
     num_history: ${data.num_history}
     num_node_types: ${data.num_node_types}
     noise_std: ${data.noise_std}
-
     train: ${data.train}
     valid: ${data.valid}
     test: ${data.test}
-
-  # DataLoader 映射
   dataloader:
     train: ${train.dataloader}
-    valid: ${test.dataloader}     # 验证阶段通常用 test 的配置（bs=1）
+    valid: ${test.dataloader}
     test: ${test.dataloader}
 
+model:
+  _target_: model.meshgraphnet.MeshGraphNet
+  _convert_: all
+  input_dim_nodes:
+  input_dim_edges:
+  output_dim:
+  processor_size: 2
+  aggregation: sum
+  hidden_dim_processor: 32
+  hidden_dim_node_encoder: 64
+  hidden_dim_edge_encoder: 64
+  hidden_dim_node_decoder: 64
+  num_layers_node_processor: 2
+  num_layers_edge_processor: 2
+  mlp_activation_fn: relu
+  do_concat_trick: false
+  num_processor_checkpoint_segments: 0
+  recompute_activation: false
 
-# =========================
-# 模型与优化器（Hydra 动态实例化）
-# 必须在 experiment 中具体指定
-# =========================
-model: ???                         # _target_: xxx
-loss: ???                          # _target_: torch.nn.MSELoss 等
-optimizer: ???                     # _target_: torch.optim.Adam / AdamW
-lr_scheduler: ???                  # 学习率调度器配置
+loss:
+  _target_: torch.nn.MSELoss
+  reduction: none
 
+optimizer:
+  _target_: torch.optim.Adam
+  lr: 1e-4
+  weight_decay: 1e-5
 
-# =========================
-# torch.compile 配置
-# =========================
+lr_scheduler:
+  _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+  T_max:
+  eta_min: 1e-6
+
+train:
+  device: auto
+  batch_size: 1
+  epochs: 1
+  patience: 50
+  checkpoint_save_freq: 1
+  log_interval: 1
+  dataloader:
+    batch_size: ${..batch_size}
+    shuffle: true
+    num_workers: 0
+    pin_memory: false
+    drop_last: false
+
+test:
+  batch_size: 1
+  device: auto
+  dataloader:
+    batch_size: ${..batch_size}
+    shuffle: false
+    num_workers: 0
+    pin_memory: false
+    drop_last: false
+
 compile:
-  enabled: false                  # 是否启用 torch.compile
+  enabled: false
   args:
     backend: inductor
 
-
-# =========================
-# AMP（混合精度）
-# =========================
 amp:
-  enabled: false                  # 是否启用 AMP（autocast + GradScaler）
+  enabled: false
 
-
-# =========================
-# 日志系统（可组合）
-# =========================
-loggers:
-  wandb:
-    _target_: loggers.WandBLogger
-    project: meshgraphnet
-    entity: onescience
-    name: l-mgn
-    mode: disabled                # disabled / online / offline
-    dir: ${output}
-
-  tensorboard:
-    _target_: loggers.TensorBoardLogger
-    log_dir: ${output}/tensorboard
-
-
-# =========================
-# 推理相关参数
-# =========================
 inference:
-  frame_skip: 1                   # 推理时跳帧间隔
-  frame_interval: 1               # 输出帧间隔
+  output_dir: result/inference
+  max_sequences: 1
+  save_animations: false
+  frame_skip: 1
+  frame_interval: 100

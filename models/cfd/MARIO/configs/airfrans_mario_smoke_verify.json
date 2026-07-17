@@ -1,0 +1,68 @@
+{
+  "paper": "arXiv:2505.14704",
+  "data_root": "/public/share/sugonhpcapp01/onestore/onedatasets/Transolver-Airfoil-Design/Dataset",
+  "train_split": "scarce_train",
+  "test_split": "full_test",
+  "cache_dir": "/public/home/liuyushuang/code/onecode_new_model/paper_2505_14704/mario/outputs/airfrans_case_cache_smoke",
+  "stats_path": "/public/home/liuyushuang/code/onecode_new_model/paper_2505_14704/mario/outputs/mario_smoke_verify/stats.npz",
+  "seed": 7,
+  "model": {
+    "latent_dim": 4,
+    "hidden_dim": 32,
+    "encoder_layers": 2,
+    "decoder_layers": 2,
+    "decoder_local_dim": 6,
+    "output_dim": 4,
+    "fourier_features": 8,
+    "fourier_sigma": 1.0,
+    "hyper_hidden_dim": 32,
+    "boundary_layer_tau": 0.02
+  },
+  "geometry": {
+    "epochs": 1,
+    "lr": 0.001,
+    "inner_steps": 1,
+    "inner_lr": 0.1,
+    "second_order": false,
+    "resume": true
+  },
+  "decoder": {
+    "epochs": 1,
+    "lr": 0.001,
+    "optimizer": "adam",
+    "weight_decay": 0.0,
+    "grad_clip_norm": 1.0,
+    "resume": true
+  },
+  "loss": {
+    "channel_weights": {
+      "ux": 1.0,
+      "uy": 1.0,
+      "p": 1.0,
+      "nut": 1.0
+    },
+    "surface_point_weight": 0.0,
+    "surface_pressure_weight": 0.0,
+    "boundary_layer_weight": 0.0
+  },
+  "validation": {
+    "enabled": false
+  },
+  "training": {
+    "points_per_case": 512,
+    "batch_size": 1,
+    "num_workers": 0,
+    "preload_cases": false,
+    "normalize_condition": true,
+    "max_train_samples": 2,
+    "max_test_samples": 1,
+    "device": "auto",
+    "output_dir": "/public/home/liuyushuang/code/onecode_new_model/paper_2505_14704/mario/outputs/mario_smoke_verify"
+  },
+  "evaluation": {
+    "checkpoint": "last",
+    "geometry_points": 512,
+    "chunk_points": 8192,
+    "max_cases": 1
+  }
+}

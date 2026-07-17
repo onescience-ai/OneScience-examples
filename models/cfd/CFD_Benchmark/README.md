@@ -116,9 +116,9 @@ CFD_Benchmark 是一个面向神经偏微分方程（PDE）求解器研究的开
 ### 安装运行环境
 
 ```bash
-git clone https://gitee.com/onescience-ai/onescience.git
-cd onescience
-bash install.sh cfd
+conda create -n onescience311 python=3.11 -y
+conda activate onescience311
+pip install onescience[cfd] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
 ### 生成假数据进行流程验证
@@ -139,7 +139,6 @@ ShapeNet-Car [[TOG 2018]](https://dl.acm.org/doi/abs/10.1145/3197517.3201325)，
 
 BubbleML [[Multiphase Multiphysics Dataset]](https://arxiv.org/abs/2307.14623)用于研究多物理相变现象数据集，可以通过[[此链接]](https://github.com/HPCForge/BubbleML/blob/main/bubbleml_data/README.md)下载。
 
-曙光新一代机器平台数据集统一存放在：/public/onestore/onedatasets/CFD_Benchmark
 
 
 
@@ -179,4 +178,4 @@ python scripts/inference.py
 
 # 引用与许可证
 - 参考仓库：[Neural-Solver-Library](https://github.com/thuml/Neural-Solver-Library)。
-- 本仓库保留来源说明，并面向 OneScience 自动运行场景进行整理。
+- 本仓库已保留相关来源及归属说明。使用、修改或分发本仓库内容时，请遵循相应的许可证要求。

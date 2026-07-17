@@ -1,0 +1,47 @@
+defaults:
+  data_root: "/root/private_data/wangqi/AirfRans/data/data/Dataset"
+  manifest: "/root/private_data/wangqi/infinity_airfrans/configs/large_manifest.json"
+  train_split: "train"
+  test_split: "test"
+  out_dir: "/root/private_data/wangqi/infinity_airfrans/outputs_large_n4096"
+  seed: 42
+
+normalize:
+  enabled: true
+  method: "zscore"
+
+sampling:
+  n_pts: 4096
+  eval_full_mesh: false
+
+inr:
+  coord_dim: 2
+  fourier_dim: 16
+  hidden_dim: 128
+  n_layers: 4
+  latent_dim: 16
+  activation: "relu"
+  fourier_scale: 1.0
+
+inr_train:
+  K_inner: 3
+  inner_lr: 0.1
+  outer_lr: 1.0e-3
+  batch_size: 8
+  epochs: 80
+  second_order: true
+
+mapping:
+  hidden_dim: 128
+  n_layers: 3
+  lr: 1.0e-3
+  epochs: 150
+  batch_size: 16
+
+optim:
+  type: "adam"
+  weight_decay: 0.0
+
+force_coeffs:
+  enabled: true
+  rho_ref: 1.225

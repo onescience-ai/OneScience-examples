@@ -1,0 +1,66 @@
+root:
+  datapipe:
+    source:
+      data_dir: "${ONESCIENCE_BENO_DATA_DIR}/Dirichlet/"
+      cache_dir: "./cache_data"
+      file_prefix: "N8_smoke"
+    verbose: false
+
+    data:
+      name: "BENO_Elliptic"
+      ntrain: 2
+      ntest: 1
+      resolution: 8
+      ns: 4
+      domain_bounds: [[0, 1], [0, 1]]
+
+    dataloader:
+      batch_size: 1
+      num_workers: 0
+      pin_memory: false
+
+  model:
+    name: "HeteroGNS"
+    nnode_in_features: 10
+    nnode_out_features: 1
+    nedge_in_features: 7
+    nmlp_layers: 2
+    act: "relu"
+    boundary_dim: 16
+    trans_layer: 1
+    latent_dim: 16
+    nmessage_passing_steps: 1
+    mlp_hidden_dim: 16
+
+  training:
+    device: "cpu"
+    output_dir: "./weight"
+    epochs: 1
+    save_period: 1
+    checkpoint_name: "model_epoch_{epoch}.pt"
+    seed: 2025
+
+    optimizer:
+      name: "Adam"
+      lr: 1.0e-3
+      weight_decay: 5.0e-4
+
+    scheduler:
+      name: "CosineAnnealingWarmRestarts"
+      T_0: 2
+      T_mult: 1
+
+  inference:
+    device: "cpu"
+    checkpoint_dir: "./weight"
+    checkpoint_path: ""
+    result_dir: "./result/output"
+    picture_dir: "./result/picture"
+    metrics_path: "./result/metrics.json"
+    num_visualize: 1
+
+  fake_data:
+    root_dir: "./data"
+    seed: 2025
+    boundary_points: 128
+    noise_std: 0.001

@@ -1,0 +1,99 @@
+{
+  "paper": "arXiv:2505.14704",
+  "data_root": "/public/share/sugonhpcapp01/onestore/onedatasets/Transolver-Airfoil-Design/Dataset",
+  "train_split": "scarce_train",
+  "test_split": "full_test",
+  "cache_dir": "/public/home/liuyushuang/code/onecode_new_model/paper_2505_14704/mario/outputs/airfrans_case_cache",
+  "stats_path": "/public/home/liuyushuang/code/onecode_new_model/paper_2505_14704/mario/outputs/mario_e02r1n06_paper_aligned/stats.npz",
+  "seed": 42,
+  "model": {
+    "latent_dim": 8,
+    "hidden_dim": 256,
+    "encoder_layers": 5,
+    "decoder_layers": 5,
+    "decoder_local_dim": 6,
+    "output_dim": 4,
+    "fourier_features": 64,
+    "fourier_sigma": 1.0,
+    "hyper_hidden_dim": 256,
+    "boundary_layer_tau": 0.02
+  },
+  "geometry": {
+    "epochs": 100,
+    "lr": 0.001,
+    "inner_steps": 3,
+    "inner_lr": 0.1,
+    "second_order": true,
+    "resume": true
+  },
+  "decoder": {
+    "epochs": 500,
+    "lr": 0.000025,
+    "optimizer": "adamw",
+    "weight_decay": 0.00001,
+    "grad_clip_norm": 1.0,
+    "resume": true
+  },
+  "loss": {
+    "channel_weights": {
+      "ux": 1.0,
+      "uy": 1.0,
+      "p": 1.25,
+      "nut": 1.0
+    },
+    "surface_point_weight": 0.25,
+    "surface_pressure_weight": 0.5,
+    "boundary_layer_weight": 0.25
+  },
+  "validation": {
+    "enabled": true,
+    "split_ratio": 0.1,
+    "holdout": false,
+    "seed": 42,
+    "points_per_case": 16000,
+    "batch_size": 8,
+    "eval_every": 5,
+    "metric": "paper_table_ratio",
+    "score_weights": {
+      "ux": 0.3,
+      "uy": 0.3,
+      "p": 0.5,
+      "nut": 1.0,
+      "surface_p": 20.0
+    },
+    "paper_targets": {
+      "ux": 0.152,
+      "uy": 0.113,
+      "p": 0.24,
+      "nut": 0.096,
+      "surface_p": 0.27
+    },
+    "min_delta": 0.001,
+    "patience": 40,
+    "restore_best": true
+  },
+  "training": {
+    "points_per_case": 16000,
+    "batch_size": 8,
+    "num_workers": 0,
+    "preload_cases": true,
+    "normalize_condition": true,
+    "max_train_samples": null,
+    "max_test_samples": null,
+    "device": "auto",
+    "output_dir": "/public/home/liuyushuang/code/onecode_new_model/paper_2505_14704/mario/outputs/mario_e02r1n06_paper_aligned"
+  },
+  "evaluation": {
+    "checkpoint": "best",
+    "geometry_points": 16000,
+    "chunk_points": 131072,
+    "max_cases": null
+  },
+  "reproduction_notes": {
+    "purpose": "Validation-best, paper-metric-aware continuation config for e02r1n06.",
+    "seed_source": "scripts/run_e02r1n06_paper_aligned.sh copies geometry/decoder/stats/latents from the best available previous run when this output_dir is empty.",
+    "validation_policy": "Use a deterministic 10 percent scarce_train subset for checkpoint selection while still training on all 200 scarce cases, avoiding full_test-guided model selection without shrinking the already small training set.",
+    "loss_policy": "Pressure, surface pressure and boundary-layer regions receive moderate extra weight because Table 2 and force metrics are sensitive to near-wall pressure; validation selection is more strongly surface-pressure aware.",
+    "regularization_policy": "AdamW weight decay, gradient clipping, validation patience and best checkpoint restore reduce 200-case memorization."
+  }
+}

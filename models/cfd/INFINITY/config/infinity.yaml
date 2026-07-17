@@ -1,0 +1,47 @@
+defaults:
+  data_root: "/root/private_data/wangqi/AirfRans/data/data/Dataset"
+  manifest: "/root/private_data/wangqi/AirfRans/data/data/Dataset/manifest.json"
+  train_split: "full_train"
+  test_split: "full_test"
+  out_dir: "/root/private_data/wangqi/infinity_airfrans/outputs"
+  seed: 42
+
+normalize:
+  enabled: true
+  method: "zscore"          # per-variable z-score on train set
+
+sampling:
+  n_pts: 4096               # points sampled per case for training INR / g_psi
+  eval_full_mesh: true      # evaluate on full mesh at inference
+
+inr:
+  coord_dim: 2
+  fourier_dim: 32           # L_ff: Fourier feature dimension (output 2*L_ff)
+  hidden_dim: 256           # H
+  n_layers: 4               # L (incl. input Fourier + hidden + output)
+  latent_dim: 32            # D_z
+  activation: "relu"
+  fourier_scale: 1.0        # multiply input coords; B = 2*pi*2^(0..L_ff-1)*scale
+
+inr_train:
+  K_inner: 3                # K (paper: 3 inner steps for training AND testing)
+  inner_lr: 0.1             # alpha
+  outer_lr: 1.0e-3          # eta
+  batch_size: 8             # B
+  epochs: 200
+  inner_steps_per_eval: 3   # K for encoding target codes
+
+mapping:
+  hidden_dim: 256
+  n_layers: 3
+  lr: 1.0e-3
+  epochs: 500
+  batch_size: 32
+
+optim:
+  type: "adam"
+  weight_decay: 0.0
+
+force_coeffs:
+  enabled: true             # compute CD/CL from predicted fields
+  rho_ref: 1.225            # air density kg/m^3 (ASSUMPTION for force scaling)

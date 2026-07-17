@@ -1,0 +1,56 @@
+{
+  "paper": "arXiv:2505.14704",
+  "data_root": "/public/share/sugonhpcapp01/onestore/onedatasets/Transolver-Airfoil-Design/Dataset",
+  "train_split": "scarce_train",
+  "test_split": "full_test",
+  "cache_dir": "/public/home/liuyushuang/code/onecode_new_model/paper_2505_14704/mario/outputs/airfrans_case_cache",
+  "stats_path": "/public/home/liuyushuang/code/onecode_new_model/paper_2505_14704/mario/outputs/mario_strict/stats.npz",
+  "seed": 42,
+  "model": {
+    "latent_dim": 8,
+    "hidden_dim": 256,
+    "encoder_layers": 5,
+    "decoder_layers": 5,
+    "decoder_local_dim": 6,
+    "output_dim": 4,
+    "fourier_features": 64,
+    "fourier_sigma": 1.0,
+    "hyper_hidden_dim": 256,
+    "boundary_layer_tau": 0.02
+  },
+  "geometry": {
+    "epochs": 1000,
+    "lr": 0.001,
+    "inner_steps": 3,
+    "inner_lr": 0.1,
+    "second_order": true,
+    "resume": true
+  },
+  "decoder": {
+    "epochs": 1000,
+    "lr": 0.001,
+    "resume": true
+  },
+  "training": {
+    "points_per_case": 16000,
+    "batch_size": 4,
+    "num_workers": 0,
+    "preload_cases": true,
+    "normalize_condition": true,
+    "max_train_samples": null,
+    "max_test_samples": null,
+    "device": "auto",
+    "output_dir": "/public/home/liuyushuang/code/onecode_new_model/paper_2505_14704/mario/outputs/mario_strict"
+  },
+  "evaluation": {
+    "geometry_points": 16000,
+    "chunk_points": 65536,
+    "max_cases": null
+  },
+  "assumptions_not_explicit_in_paper": {
+    "decoder_layers": "Paper specifies a 3-layer hypernetwork for the output field but does not state the main decoder MLP depth; use the same 5-layer, 256-hidden neural-field backbone as the SDF encoder.",
+    "geometry_inner_lr": "Paper gives K=3 inner-loop steps but not alpha; use 0.1 as a configurable CAVIA-style inner learning rate.",
+    "condition_normalization": "Paper reports standardized output MSE but does not specify condition normalization; normalize Vx,Vy over the scarce training set for numerical stability.",
+    "boundary_layer_mask_normalization": "The local VTK data stores SDF, not normalized inverse distance d_hat; compute d_hat as 1 - abs(sdf) / max(abs(sdf)) per case."
+  }
+}

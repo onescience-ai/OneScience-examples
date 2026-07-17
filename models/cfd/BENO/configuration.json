@@ -1,0 +1,14 @@
+{
+  "framework": "Pytorch",
+  "task": "other",
+  "model": {
+    "type": "BENO",
+    "entrypoint": "model.HeteroGNS"
+  },
+  "pipeline": {
+    "fake_data": "scripts/fake_data.py",
+    "train": "scripts/train.py",
+    "inference": "scripts/inference.py",
+    "result": "scripts/result.py"
+  }
+}

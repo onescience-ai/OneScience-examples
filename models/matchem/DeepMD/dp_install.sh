@@ -14,11 +14,37 @@ echo ">>> Step 1: 加载环境"
 source "$SCRIPT_DIR/../matchem_env.sh"
 module load sghpc-mpi-gcc/26.3
 
+# 1.5 确保 gflags/glog 运行库存在（torch cmake 与 lmp_mpi 的运行时依赖，pip 环境通常缺失）
+echo ">>> Step 1.5: 检查 gflags/glog 运行库"
+MISSING_PKGS=""
+ls "$CONDA_PREFIX"/lib/libgflags.so* >/dev/null 2>&1 || MISSING_PKGS="${MISSING_PKGS} gflags"
+ls "$CONDA_PREFIX"/lib/libglog.so* >/dev/null 2>&1 || MISSING_PKGS="${MISSING_PKGS} glog"
+if [ -n "${MISSING_PKGS}" ]; then
+    echo ">>> 安装缺失的运行库:${MISSING_PKGS}（conda-forge）"
+    conda install -y -c conda-forge ${MISSING_PKGS}
+else
+    echo ">>> gflags/glog 已存在，跳过"
+fi
+
+# 下载辅助：优先 curl，失败时回退 wget（部分节点 curl 存在 TLS/代理问题）
+download_file() {
+    local url="$1" out="$2"
+    if command -v curl >/dev/null 2>&1 && curl -fL -o "$out" "$url"; then
+        return 0
+    fi
+    echo "[提示] curl 下载失败，改用 wget: $url"
+    if command -v wget >/dev/null 2>&1 && wget -O "$out" "$url"; then
+        return 0
+    fi
+    echo "[错误] 下载失败: $url"
+    return 1
+}
+
 # 2. 源码准备
 # 说明：
 #   - 开发/测试阶段：自动通过 HTTPS + 代理拉取源码
 #   - 生产/客户场景：建议提前上传源码到集群，通过 DEEPMD_SRC_DIR 指定
-DEEPMD_SRC="${DEEPMD_SRC_DIR:-/public/home/easyscience2024/wangrui/software/deepmd-kit_dcu}"
+DEEPMD_SRC="${DEEPMD_SRC_DIR:-${SCRIPT_DIR}/deepmd-kit}"
 if [ ! -d "$DEEPMD_SRC/.git" ] && [ ! -f "$DEEPMD_SRC/setup.py" ]; then
     echo ">>> Step 2: 拉取 DeepMD-kit 源码"
     # 当前集群需通过 HTTP 代理访问外网，配置 git 代理
@@ -34,7 +60,7 @@ pip install numpy==1.26.3 --no-deps -i https://pypi.tuna.tsinghua.edu.cn/simple 
 
 # 4. 修复 Torch cmake 硬编码 DTK 路径
 echo ">>> Step 4: 修复 Torch cmake 硬编码 DTK 路径"
-TORCH_PATH=$(python -c "import torch; print(torch.__path__[0])")
+TORCH_PATH=$(python -c "import importlib.util, os; spec = importlib.util.find_spec('torch'); print(os.path.dirname(spec.origin) if spec and spec.origin else '')")
 CAFFE2_CMAKE="${TORCH_PATH}/share/cmake/Caffe2/Caffe2Targets.cmake"
 DTK_REAL_PATH="/public/software/sghpc_sdk.bak/Linux_x86_64/26.3/dtk/dtk-25.04.4"
 if [ -f "$CAFFE2_CMAKE" ] && grep -q '/opt/dtk' "$CAFFE2_CMAKE"; then
@@ -50,7 +76,7 @@ ROCM_ROOT="$ROCM_PATH" \
 DP_ENABLE_TENSORFLOW=1 \
 DP_ENABLE_PYTORCH=1 \
 PYTORCH_ROOT="${TORCH_PATH}" \
-    pip install . -i https://pypi.tuna.tsinghua.edu.cn/simple --trusted-host pypi.tuna.tsinghua.edu.cn
+    pip install . "numpy==1.26.3" -i https://pypi.tuna.tsinghua.edu.cn/simple --trusted-host pypi.tuna.tsinghua.edu.cn
 
 # 6. 验证
 echo ">>> Step 6: 验证安装"
@@ -83,11 +109,11 @@ if [ "${COMPILE_DP_CPP:-0}" = "1" ]; then
     cmake -DENABLE_TENSORFLOW=ON \
           -DENABLE_PYTORCH=ON \
           -DUSE_ROCM_TOOLKIT=ON \
-          -DTENSORFLOW_ROOT="/public/home/easyscience2024/.conda/envs/matchem_opt/lib/python3.11/site-packages/tensorflow" \
-          -DTensorFlow_INCLUDE_DIRS="/public/home/easyscience2024/.conda/envs/matchem_opt/lib/python3.11/site-packages/tensorflow/include" \
-          -DTorch_DIR="/public/home/easyscience2024/.conda/envs/matchem_opt/lib/python3.11/site-packages/torch/share/cmake/Torch" \
-          -DHIP_ROOT_DIR="/public/software/sghpc_sdk.bak/Linux_x86_64/26.3/dtk/dtk-25.04.4/hip" \
-          -DCMAKE_PREFIX_PATH="/public/home/easyscience2024/.conda/envs/matchem_opt;/public/software/sghpc_sdk.bak/Linux_x86_64/26.3/dtk/dtk-25.04.4/lib/cmake" \
+          -DTENSORFLOW_ROOT="${CONDA_PREFIX}/lib/python3.11/site-packages/tensorflow" \
+          -DTensorFlow_INCLUDE_DIRS="${CONDA_PREFIX}/lib/python3.11/site-packages/tensorflow/include" \
+          -DTorch_DIR="${CONDA_PREFIX}/lib/python3.11/site-packages/torch/share/cmake/Torch" \
+          -DHIP_ROOT_DIR="${ROCM_PATH}/hip" \
+          -DCMAKE_PREFIX_PATH="${CONDA_PREFIX};${ROCM_PATH}/lib/cmake" \
           -DLAMMPS_SOURCE_ROOT="${LAMMPS_SRC_DIR}" \
           -DCMAKE_INSTALL_PREFIX="${DP_CPP_DIR}" \
           ..
@@ -104,7 +130,7 @@ else
     echo ">>> Step 7: 下载预编译 C++ 接口包"
     mkdir -p "${DP_CPP_DIR}"
     cd "${DP_CPP_DIR}"
-    curl -L -o dp_cpp_dcu.tar.gz "${DP_CPP_URL}"
+    download_file "${DP_CPP_URL}" dp_cpp_dcu.tar.gz || exit 1
     tar -xzf dp_cpp_dcu.tar.gz --strip-components=1
     rm -f dp_cpp_dcu.tar.gz
     echo ">>> Step 7: C++ 接口安装完成（${DP_CPP_DIR}）"

@@ -1,0 +1,40 @@
+root:
+  problem: "doublepipe"
+  seed: 11
+  output_names: ["u", "v", "p", "ro"]
+
+  runtime:
+    onescience_src: null
+
+  data:
+    n_train_per_bc: 25
+    n_col_domain: 10000
+
+  model:
+    mean_function: "neural_network"
+    nn_layers_base: [64, 64, 64, 64, 64]
+    dtype: "float32"
+
+  training:
+    device: "auto"
+    gpu: 0
+    num_iter: 50000
+    lr_default: 0.001
+    diff_method: "Numerical"
+    checkpoint_path: "./weight/gp_for_to.pt"
+    output_dir: "./result/training"
+    plot_outputs: true
+    checkpoints: [1000, 10000, 20000, 30000, 40000, 50000]
+
+  inference:
+    device: "auto"
+    gpu: 0
+    checkpoint_path: "./weight/gp_for_to.pt"
+    output_dir: "./result/inference"
+    n_col_domain: 10000
+
+  fake_data:
+    problem: "doublepipe"
+    n_train_per_bc: 25
+    n_col_domain: 10000
+    output_dir: "./data/fake"

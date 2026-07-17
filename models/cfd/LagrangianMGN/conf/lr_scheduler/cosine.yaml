@@ -1,4 +1,0 @@
-_target_: torch.optim.lr_scheduler.CosineAnnealingLR
-
-T_max:  # if not set via the command line, will be set in the code.
-eta_min: 1e-6

@@ -80,8 +80,12 @@ pip install onescience[matchem] -i http://mirrors.onescience.ai:3141/pypi/simple
 安装 DeepMD-kit：
 
 ```bash
+# 默认使用 test_pip 环境；若使用其他 conda 环境名，请先指定：
+# export MATCHEM_CONDA_NAME=your_env
 bash dp_install.sh
 ```
+
+> 安装脚本会自动检查并通过 conda-forge 安装 `gflags`/`glog`（torch cmake 的运行时依赖）；下载预编译包时优先 curl，失败自动回退 wget。
 
 **环境检测**
 

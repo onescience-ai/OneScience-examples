@@ -1,0 +1,8 @@
+[g_psi] 200 cases, 150 epochs
+  epoch 1: code MSE 0.001282
+  epoch 30: code MSE 0.000002
+  epoch 60: code MSE 0.000001
+  epoch 90: code MSE 0.000001
+  epoch 120: code MSE 0.000001
+  epoch 150: code MSE 0.000001
+Saved full model

@@ -1,0 +1,46 @@
+project:
+  name: PINNsformer
+  task: 1d_reaction
+
+runtime:
+  seed: 0
+  device: auto
+
+model:
+  name: PINNsformer1D
+  d_out: 1
+  d_hidden: 128
+  d_model: 32
+  num_layers: 1
+  heads: 2
+
+data:
+  x_range: [0.0, 6.283185307179586]
+  t_range: [0.0, 1.0]
+  x_num: 31
+  t_num: 31
+  sequence:
+    num_step: 5
+    step: 0.0001
+
+equation:
+  reaction_rate: 5.0
+  initial:
+    center: 3.141592653589793
+    sigma: 0.7853981633974483
+
+training:
+  epochs: 2
+  optimizer:
+    name: LBFGS
+    lr: 1.0
+    max_iter: 5
+    line_search_fn: strong_wolfe
+  checkpoint: weight/1dreaction_pinnsformer.pt
+
+paths:
+  fake_data: data/reaction_fake.npz
+  prediction: result/prediction.npz
+  metrics: result/metrics.json
+  loss: result/train_loss.npy
+  figure: result/1dreaction_pinnsformer.png

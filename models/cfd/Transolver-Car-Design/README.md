@@ -64,15 +64,16 @@ Transolver-Car-Design 是基于清华大学 THUML 团队提出的 Transolver / T
 - CPU 可以用于导入和小配置连通性验证，完整训练和推理速度较慢。
 - DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
 
-**运行环境**
-
-```bash
-git clone https://gitee.com/onescience-ai/onescience.git
-cd onescience
-bash install.sh cfd
-```
 
 ## 3. 快速开始
+
+### 安装运行环境
+
+```bash
+conda create -n onescience311 python=3.11 -y
+conda activate onescience311
+pip install onescience[cfd] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
+```
 
 ### 生成假数据进行流程验证
 
@@ -80,6 +81,11 @@ bash install.sh cfd
 
 ```bash
 python scripts/fake_data.py
+```
+
+OneScience 社区提供可供训练的 ShapeNetCar 数据，用户可通过下述命令下载，并确认 config/config.yaml 中数据路径设置正确：
+```bash
+modelscope download --dataset OneScience/ShapeNetCar --local_dir ./data
 ```
 
 ### 训练
@@ -125,4 +131,4 @@ python scripts/result.py
 
 - Transolver 原始论文：[Transolver: A Fast Transformer Solver for PDEs on General Geometries](https://arxiv.org/pdf/2402.02366)。
 - Transolver++ 相关工作请参考 THUML Transolver 项目和论文说明。
-- 本仓库保留来源说明，并面向 OneScience 自动运行场景进行整理。
+- 本仓库已保留相关来源及归属说明。使用、修改或分发本仓库内容时，请遵循相应的许可证要求。

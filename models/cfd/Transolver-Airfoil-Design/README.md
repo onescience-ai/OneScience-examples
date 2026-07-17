@@ -66,9 +66,9 @@ Transolver-Airfoil-Design 是基于清华大学 THUML 团队提出的 Transolver
 ### 安装运行环境
 
 ```bash
-git clone https://gitee.com/onescience-ai/onescience.git
-cd onescience
-bash install.sh cfd
+conda create -n onescience311 python=3.11 -y
+conda activate onescience311
+pip install onescience[cfd] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
 ### 生成假数据进行流程验证
@@ -79,8 +79,11 @@ bash install.sh cfd
 python scripts/fake_data.py
 ```
 
-如需使用真实 AirfRANS 数据，请准备数据集，并确认 `conf/config.yaml` 中数据路径设置正确。
+OneScience 社区提供可供训练的 `airfrans` 数据，用户可通过下述命令下载，并确认 `config/config.yaml` 中数据路径设置正确：
 
+```bash
+modelscope download --dataset OneScience/airfrans --local_dir ./data
+```
 ### 训练
 
 ```bash

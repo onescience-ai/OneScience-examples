@@ -1,0 +1,14 @@
+defaults:
+  data_root: "/root/private_data/wangqi/AirfRans/data/data/Dataset"
+  manifest: "/tmp/tiny_manifest.json"
+  train_split: "full_train"
+  test_split: "full_test"
+  out_dir: "/root/private_data/wangqi/infinity_airfrans/outputs_tiny"
+  seed: 42
+normalize: {enabled: true, method: "zscore"}
+sampling: {n_pts: 512, eval_full_mesh: false}
+inr: {coord_dim: 2, fourier_dim: 8, hidden_dim: 32, n_layers: 4, latent_dim: 8, activation: "relu", fourier_scale: 1.0}
+inr_train: {K_inner: 3, inner_lr: 0.1, outer_lr: 1.0e-3, batch_size: 4, epochs: 10}
+mapping: {hidden_dim: 32, n_layers: 3, lr: 1.0e-3, epochs: 20, batch_size: 4}
+optim: {type: "adam", weight_decay: 0.0}
+force_coeffs: {enabled: true, rho_ref: 1.225}

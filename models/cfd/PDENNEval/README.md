@@ -1,162 +1,176 @@
-# PDENNEval
-
+---
+license: apache-2.0
+language:
+- en
+- zh
+tags:
+- OneScience
+- PDE
+- CFD
+- neural-operator
+- PDEBench
+frameworks: PyTorch
+---
 <p align="center">
   <strong>
-    <span style="font-size: 20px;">点击下方图片，体验一键式 PDENNEval 模型开发</span>
+    <span style="font-size: 30px;">PDENNEval</span>
   </strong>
 </p>
 
-<p align="center">
-  <a href="https://modelscope.cn/models/OneScience/PDENNEval" target="_blank" rel="noopener noreferrer">
-    <img src="https://www.modelscope.cn/api/v1/models/VoyagerX/OneScience-badge/repo?Revision=master&FilePath=LOGOs.png" width="200" alt="Logo">
-  </a>
-</p>
+# 模型介绍
+PDENNEval 是中山大学团队提出的用于神经网络 PDE 求解方法评测的综合基准系统。它不是单一 PDE 求解模型，而是集成并比较 12 种代表性神经网络方法，包括 PINN、DRM、WAN、DFVM、FNO、DeepONet、PINO、U-NO、MPNN 和 U-Net 等，用于评估不同方法在多类 PDE 问题上的精度、效率、鲁棒性和泛化表现。它主要适用于 PDE 神经网络方法横向评测、神经算子与物理约束方法对比、复杂科学计算任务基准测试，以及流体、材料、金融、电磁等领域的 PDE 求解方法选型。
 
-## OneScience 官方信息
+# 仓库说明
 
-| 平台 | 文档 | OneScience 主仓库 | Skills 仓库 |
-|---|---|---|---|
-| Gitee | https://gitee.com/onescience-ai/onescience-doc | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
-| GitHub | https://github.com/onescience-ai/OneScience-doc | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
+本仓库是 OneScience 整理的 PDENNEval 标准运行包，面向 ModelScope 下载、OneCode 自动化运行和本地快速验证场景。
 
-## 项目说明
+当前支持能力：
 
-PDENNEval 是面向偏微分方程求解任务的 OneScience CFD 模型集合，保留了 FNO、DeepONet、UNet、UNO、PINO、MPNN、PINN 和 WAN 等方法的训练入口与配置示例。该模型包适合用于 PDEBench 风格 HDF5 数据上的训练、评测和方法对比，输入通常是时空网格场或 PDE 系数场，输出为预测的物理场或训练得到的 checkpoint。
+* 训练
+* 测试
+* 评估可视化
+* 多模型定义 smoke 测试
 
-本仓库整理为 ModelScope 可上传的 OneScience 标准运行包。根目录 `conf/` 下提供经过当前数据集 `OneScience/pdenneval` 预检的标准入口配置：`fno_2d_darcy.yaml` 和 `fno_1d_burgers.yaml`。原始方法子目录中的配置文件完整保留，作为扩展运行参考；网页端大模型默认应优先使用根目录 `conf/`、`scripts/preflight_check.py` 和 `onescience_run_manifest.yaml`。
+当前不支持能力：
 
-## Resource Card
+* 不内置预训练权重
+* 不自动下载真实 PDEBench/PDENNEval 数据集
+* 不默认训练全部 PDENNEval 方法；非 FNO 方法当前以模型定义和 smoke 验证为主
 
-| 字段 | 内容 |
-|---|---|
-| 资源类型 | 模型 |
-| OneScience 领域 | cfd |
-| 领域标签 | cfd, pde, neural_operator, benchmark |
-| 任务 | pde_surrogate_training_evaluation |
-| 任务标签 | train, evaluate, preflight, hdf5 |
-| 主平台资源 | https://modelscope.cn/models/OneScience/PDENNEval |
-| 标准运行包工作目录 | `.` |
-| OneScience examples 兼容路径 | `onescience/examples/cfd/PDENNEval` |
-| 必需模型文件 | `FNO/train.py`, `conf/fno_2d_darcy.yaml`, `conf/fno_1d_burgers.yaml`, `scripts/preflight_check.py` |
-| 必需数据集 | `OneScience/pdenneval` |
-| 支持能力 | 预检、训练、评测；推理需先提供或训练得到 checkpoint |
-| 最小验证 | `python scripts/preflight_check.py --all` |
+## 适用场景
 
-## 文件说明
+| 场景 | 说明 |
+| --- | --- |
+| PDE 神经算子训练验证 | 使用 FNO 在 PDEBench 风格 HDF5 数据上完成最小训练和推理闭环 |
+| 神经网络 PDE 方法扩展 | `model/` 已包含 FNO、DeepONet、PINO-FNO、UNO、MPNN、UNet 等模型定义 |
+| 标准运行包上传 | 工程包含 `configuration.json`、统一配置、脚本入口和空权重目录 |
+| 快速连通性检查 | 使用 `fake_data.py` 和 `smoke_models.py` 验证数据、模型和脚本可运行 |
 
-| 路径 | 类型 | 作用 | 是否必需 | 用于能力 | 下载后放置位置 | 备注 |
-|---|---|---|---|---|---|---|
-| `README.md` | 说明文件 | 人类与大模型的第一入口 | 是 | 全部能力 | 模型包根目录 | 正文为中文 |
-| `onescience_run_manifest.yaml` | Manifest 文件 | 机器可读运行协议，声明资源身份、关系、命令和输出 | 是 | 全部能力 | 模型包根目录 | 大模型必须解析 |
-| `onescience_relations.yaml` | 关系索引 | 模型和数据集的双向关系索引 | 是 | 资源发现 | 模型包根目录 | 与 Manifest relations 一致 |
-| `conf/fno_2d_darcy.yaml` | 标准配置 | FNO + 2D Darcy Flow 默认训练/评测配置 | 是 | 预检、训练、评测 | `conf/fno_2d_darcy.yaml` | 已适配 `OneScience/pdenneval` |
-| `conf/fno_1d_burgers.yaml` | 标准配置 | FNO + 1D Burgers 默认训练/评测配置 | 是 | 预检、训练、评测 | `conf/fno_1d_burgers.yaml` | 已适配 `OneScience/pdenneval` |
-| `scripts/preflight_check.py` | 预检脚本 | 检查配置、数据环境变量、HDF5 文件结构和输出目录 | 是 | 预检 | `scripts/preflight_check.py` | 不加载完整大文件 |
-| `FNO/train.py` | 训练脚本 | FNO 训练和评测入口 | 是 | 训练、评测 | `FNO/train.py` | 从 `FNO/` 目录执行 |
-| `DeepONet/`, `UNet/`, `UNO/`, `PINO/`, `MPNN/`, `PINN/`, `WAN/` | 原始方法代码 | 保留 PDENNEval 的其他方法代码与配置参考 | 否 | 扩展训练、研究复现 | 对应子目录 | 默认 run_matrix 不直接引用 |
-| `run_pdenneval.ipynb` | Notebook | 原始示例 notebook | 否 | 参考 | 模型包根目录 | 手动运行 |
+# 文件说明
 
-## Manifest
+| 路径 | 功能 | 备注 |
+| :--- | :--- | :--- |
+| `README.md` | 工程使用说明文档 | 中文为主 |
+| `configuration.json` | ModelScope/OneCode 元信息 | 保持最小配置 |
+| `conf/config.yaml` | 训练、推理和数据配置 | 默认使用 2D Darcy/FNO 小规模配置 |
+| `model/fno.py` | FNO 模型定义 | 默认训练和推理使用 |
+| `model/deeponet.py` | DeepONet 模型定义 | 用于扩展和 smoke 验证 |
+| `model/pino_fno.py` | PINO 使用的 FNO 模型定义 | 用于扩展和 smoke 验证 |
+| `model/uno.py` | UNO 模型定义 | 依赖 OneScience 的 `integral_operators` 工具 |
+| `model/mpnn.py` | MPNN 模型定义 | 依赖 PyTorch Geometric；PDE 类型仅用于类型检查 |
+| `model/unet.py` | UNet 模型定义 | 支持 1D/2D/3D UNet |
+| `scripts/fake_data.py` | 假数据生成脚本 | 生成 2D Darcy HDF5：`tensor`、`nu` 和坐标数据集 |
+| `scripts/preflight_check.py` | 数据和输出目录预检脚本 | 检查默认 HDF5 schema 和写入权限 |
+| `scripts/train.py` | FNO 训练脚本 | 默认输出到 `weight/` |
+| `scripts/inference.py` | FNO 推理脚本 | 默认读取 `weight/best_model.pt` |
+| `scripts/result.py` | 推理指标汇总脚本 | 统计 `.npz` 推理结果的 MSE/MAE |
+| `scripts/smoke_models.py` | 多模型 smoke 脚本 | 覆盖 DeepONet、FNO、MPNN、PINO-FNO、UNet、UNO |
+| `weight/` | 权重目录 | 默认仅保留 `.gitkeep`，不随包分发权重 |
 
-Manifest 文件路径为 `onescience_run_manifest.yaml`。当配置文件、默认数据集、命令或输出目录发生变化时，必须同步更新该 Manifest 中的 `files`、`relations`、`run_matrix`、`commands` 和 `configuration_adaptation` 字段。大模型在自动运行前应先解析 YAML，确认 `resource.id` 与 `platform_resource.primary.repo_id` 都是 `OneScience/PDENNEval`。
+# 使用说明
 
-## 模型 vs 数据集关系
+## 1. OneCode 使用
 
-本模型包必须配套数据集 `OneScience/pdenneval`。模型 Manifest 中通过 `relations.required_datasets` 声明该数据集，数据集 Manifest 中通过 `relations.compatible_models` 反向声明本模型。默认运行场景只引用数据集中已验证可用的 `2D_DarcyFlow_beta0.1_Train.hdf5` 和 `1D_Burgers_Sols_Nu0.001.hdf5`。
+可通过 OneCode 在线环境体验智能化一键式 AI4S 编程：
 
-## 文件与下载
+[点击体验智能化一键式 AI4S 编程](https://web-2069360198568017922-iaaj.ksai.scnet.cn:58043/home)
 
-下载模型包：
+## 2. 手动安装使用
 
-```bash
-modelscope download --model OneScience/PDENNEval
-```
+**硬件要求**
 
-下载数据集：
+- 推荐使用 GPU 或 DCU 运行。
+- DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
 
-```bash
-modelscope download --dataset OneScience/pdenneval
-```
 
-如果使用 `modelscope download --cache_dir`，下载后请先切换到实际模型包根目录，再执行 Manifest 中的命令。例如：
+## 3. 快速开始
+
+### 下载模型包
 
 ```bash
-cd /path/to/downloaded/OneScience/PDENNEval
+modelscope download --model OneScience/PDENNEval --local_dir ./PDENNEval
+cd PDENNEval
 ```
 
-## 环境安装
-
-本包默认运行在已有 OneScience CFD 环境中。缺少 OneScience 时可参考官方仓库安装 CFD 域依赖：
+### 安装运行环境
 
 ```bash
-bash install.sh cfd
+# 激活DTK及CONDA
+conda create -n onescience311 python=3.11 -y
+conda activate onescience311
+pip install onescience[cfd] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
-运行前通常需要 Python、PyTorch、h5py、PyYAML、ruamel.yaml、numpy，以及训练脚本涉及的 OneScience CFD 模块。MPNN、PINN 等扩展方法还可能需要 `torch_geometric`、`torch_cluster` 或 `deepxde`。
+### 生成假数据进行流程验证
 
-## 运行流程
-
-1. 下载模型包和数据集包。
-2. 设置数据目录环境变量，指向数据集仓库中的 `data` 目录：
+默认配置使用 `conf/config.yaml` 中的 `datapipe.source.data_dir: ./data` 和 `file_name: 2D_DarcyFlow_beta0.1_Train.hdf5`。可先生成一个小型 2D Darcy HDF5 文件验证流程：
 
 ```bash
-export ONESCIENCE_PDENNEVAL_DATA_DIR=/path/to/OneScience/pdenneval/data
+python scripts/fake_data.py --overwrite
 ```
 
-3. 在模型包根目录执行预检：
+生成后可执行预检：
 
 ```bash
-python scripts/preflight_check.py --all
+python scripts/preflight_check.py
 ```
 
-4. 训练 FNO + 2D Darcy Flow：
+### 训练
 
 ```bash
-cd FNO
-python train.py ../conf/fno_2d_darcy.yaml
+python scripts/train.py
 ```
 
-5. 训练 FNO + 1D Burgers：
+训练默认运行 1 个 epoch，并在 `weight/` 下写入：
+
+* `latest_model.pt`
+* `best_model.pt`
+* `model_epoch_0.pt`
+
+如需使用真实 PDENNEval/PDEBench 数据，可下载 OneScience 社区数据集，并将 `conf/config.yaml` 中的 `data.data_dir` 指向包含 `metadata.json` 和 `<split>.tfrecord` 的目录：
 
 ```bash
-cd FNO
-python train.py ../conf/fno_1d_burgers.yaml
+modelscope download --dataset OneScience/pdenneval  --local_dir ./data
+python scripts/train.py --data-dir /path/to/data --output-dir ./weight
 ```
 
-如需评测已有 checkpoint，请在相应 YAML 中设置 `training.if_training: False` 和 `training.model_path`，再执行同一个 `train.py` 入口。
+### 推理
 
-## 预检与诊断
+```bash
+python scripts/inference.py
+```
 
-预检脚本会检查：
+推理默认读取 `weight/best_model.pt`，并将 `.npz` 结果写入 `result/output/`。也可以手动指定 checkpoint：
 
-- `ONESCIENCE_PDENNEVAL_DATA_DIR` 是否存在。
-- `conf/fno_2d_darcy.yaml` 和 `conf/fno_1d_burgers.yaml` 是否指向标准数据目录。
-- 必需 HDF5 文件是否存在，`tensor`、`nu`、坐标数据集的维度与 dtype 是否符合预期。
-- 输出目录是否可写。
+```bash
+python scripts/inference.py --checkpoint ./weight/best_model.pt
+```
 
-常见错误：
+### 评估
 
-| 错误现象 | 可能原因 | 处理方式 |
-|---|---|---|
-| `ONESCIENCE_PDENNEVAL_DATA_DIR is not set` | 未设置数据目录环境变量 | 设置为下载后数据集包的 `data` 目录 |
-| `missing HDF5 data file` | 数据集未下载或路径不对 | 运行 `modelscope download --dataset OneScience/pdenneval` 并重新设置环境变量 |
-| `datapipe.source.data_dir must be ${ONESCIENCE_PDENNEVAL_DATA_DIR}` | 使用了未适配的原始配置 | 优先使用根目录 `conf/` 下的标准配置 |
-| `ModuleNotFoundError` | OneScience 或深度学习依赖缺失 | 安装 OneScience CFD 域依赖和对应 Python 包 |
-| CUDA 显存不足 | HDF5 文件和 batch 较大 | 调小配置中的 `batch_size`、`reduced_batch` 或使用更大显存设备 |
+```bash
+python scripts/result.py
+```
 
-## 输出说明
+脚本会读取 `result/output/*.npz`，计算 MSE/MAE，并写入 `result/metrics.json`。
 
-默认训练输出写入：
+### 多模型 smoke 验证
 
-- `outputs/fno_2d_darcy/`
-- `outputs/fno_1d_burgers/`
+```bash
+python scripts/smoke_models.py
+```
 
-训练脚本通常会生成 checkpoint、训练日志和验证损失。具体文件名由原始 `FNO/train.py` 控制，Manifest 的 `expected_outputs` 给出默认预期。
+该脚本会用随机小张量分别实例化并前向运行 DeepONet、FNO、MPNN、PINO-FNO、UNet 和 UNO。若环境中的 `torch_geometric` 可导入但可选 CUDA 扩展缺失，可能会出现 `torch-scatter` 或 `torch-cluster` 的 warning；只要脚本输出 `[OK]`，说明模型定义 smoke 验证通过。
 
-## 限制与适用范围
 
-当前标准包只把已与本次数据目录匹配的 FNO Darcy 与 FNO Burgers 场景列为默认自动运行场景。数据集中的 `1D_Advection_Sols_beta1.0.hdf5` 已上传并可读，但原始多数 Advection 配置引用 `beta0.1` 文件，未作为默认网页端运行场景。其他方法子目录保留原始配置，扩展使用前需要按数据文件名、PDE 元数据、依赖和显存重新预检。
+# OneScience 官方信息
 
-## 引用与许可证
+| 平台 | OneScience 主仓库 | Skills 仓库 |
+| --- | --- | --- |
+| Gitee | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
+| GitHub | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
 
-PDENNEval 参考论文：`PDENNEval: A Comprehensive Evaluation of Neural Network Methods for Solving PDEs`。原始数据主要来自 PDEBench / DaRUS 以及项目自生成数据。许可证信息以上游 OneScience、PDENNEval 和数据来源为准；上传到 ModelScope 前如需公开分发，请再次确认数据授权。
+# 引用与许可证
+
+- PDENNEval 原始论文：[PDENNEval: A Comprehensive Evaluation of Neural Network Methods for Solving PDEs](https://www.ijcai.org/proceedings/2024/0573.pdf)。
+- 本仓库已保留相关来源及归属说明。使用、修改或分发本仓库内容时，请遵循相应的许可证要求。

@@ -1,0 +1,8 @@
+[INR] 200 cases, device=cuda, K=3, n_pts=4096, second_order=True
+  epoch 1: recon loss 0.609465
+  epoch 16: recon loss 0.562734
+  epoch 32: recon loss 0.561553
+  epoch 48: recon loss 0.560550
+  epoch 64: recon loss 0.559499
+  epoch 80: recon loss 0.558460
+Saved INR checkpoint
