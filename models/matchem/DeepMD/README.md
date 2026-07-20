@@ -59,7 +59,7 @@ DeePMD 是面向原子体系机器学习势函数训练的 Deep Potential Molecu
 
 - 推荐使用 GPU 或 DCU 运行训练。
 - CPU 可以用于安装检查和小数据连通性验证，完整训练速度较慢。
-- DCU 用户需要预先安装 DTK，建议使用 DTK 26.04 或与当前集群匹配的 OneScience 推荐版本。
+- DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
 
 **软件要求**
 
@@ -70,11 +70,24 @@ DeePMD 是面向原子体系机器学习势函数训练的 Deep Potential Molecu
 
 安装运行环境：
 
+DCU环境
+
 ```bash
-# 激活DTK及CONDA
+# 请首先激活DTK及CONDA
 conda create -n onescience311 python=3.11 -y
 conda activate onescience311
-pip install onescience[matchem] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
+# 支持uv安装
+pip install onescience[matchem-dcu] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
+```
+
+GPU环境
+
+```bash
+# 请首先激活CONDA
+conda create -n onescience311 python=3.11 -y libstdcxx-ng=12 libgcc-ng=12 gcc_linux-64=12 gxx_linux-64=12
+conda activate onescience311
+# 支持uv安装
+pip install onescience[matchem-gpu] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
 安装 DeepMD-kit：

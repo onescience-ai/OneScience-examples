@@ -18,24 +18,25 @@ https://arxiv.org/abs/2406.01465
 
 当前支持能力：
 
-- 训练
-- 推理
-- 评估与可视化（ACC / RMSE + 变量绘图）
-- 生成空壳 HDF5 假数据用于流程连通性验证
+- 生成轻量级 ERA5 HDF5 测试数据和N320网格坐标数据。
+- AIFS_v1.1单卡训练
+- 使用训练权重推理并保存 `.npy` 预测结果。
+- 计算 RMSE/ACC，并绘制基于变量的预测结果图。
 
 当前不支持的能力：
 
-- 提供预训练权重
-- 内置真实 ERA5 数据下载与预处理
+- 不随包提供真实 ERA5 数据或预训练权重。
+- 默认配置面向 720 x 1440 输入网格，完整训练需要较高显存和存储。
+- 虚拟数据只用于流程连通性验证，不代表模型效果。
 
 # 适用场景
 
 | 场景 | 说明 |
 | :---: | :--- |
 | 天气预报训练 | 使用 ERA5 HDF5 数据从零训练 AIFS |
-| 自回归推理 | 加载训练得到的权重，生成多步预报结果 |
-| 结果评估 | 对推理输出计算 RMSE / ACC 并绘制示例变量 |
-| 流程验证 | 使用 `fake_data.py` 生成小样本空壳数据检查脚本连通性 |
+| 本地快速验证 | 使用虚拟数据检查数据读取、模型训练与推理、推理结果可视化。 |
+| ModelScope/OneCode 运行 | 作为独立模型包下载后直接安装依赖并运行脚本。 |
+
 
 # 文件说明
 
@@ -43,7 +44,7 @@ https://arxiv.org/abs/2406.01465
 | :--- | :--- | :--- |
 | `README.md` | 工程使用说明文档 | 中文为主 |
 | `conf/config.yaml` | 训练、推理和数据配置 | 已适配本仓库相对路径 |
-| `scripts/train.py` | 训练脚本 | 支持从零训练 (`from_scratch: true`) |
+| `scripts/train.py` | 训练脚本 | 支持从零训练 |
 | `scripts/inference.py` | 推理脚本 | 自回归多步预报，需训练权重 |
 | `scripts/result.py` | 评估与可视化脚本 | 读取推理输出 |
 | `scripts/fake_data.py` | 假数据生成脚本 | 生成测试用 ERA5 H5 数据 |
@@ -74,11 +75,23 @@ https://arxiv.org/abs/2406.01465
 
 ### 安装运行环境
 
+**DCU环境**
+
 ```bash
-# 激活DTK及CONDA
+# 请首先激活DTK及CONDA
 conda create -n onescience311 python=3.11 -y
 conda activate onescience311
-pip install onescience[earth] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
+# 支持uv安装
+pip install onescience[earth-dcu] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
+```
+
+**GPU环境**
+```bash
+# 请首先激活CONDA
+conda create -n onescience311 python=3.11 -y libstdcxx-ng=12 libgcc-ng=12 gcc_linux-64=12 gxx_linux-64=12
+conda activate onescience311
+# 支持uv安装
+pip install onescience[earth-gpu] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
 ### 生成假数据进行流程验证

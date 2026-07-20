@@ -98,11 +98,14 @@ hy-smi
 
 ### 安装运行环境
 
+**DCU环境**
+
 ```bash
-# 激活DTK及CONDA
+# 请首先激活DTK及CONDA
 conda create -n onescience311 python=3.11 -y
 conda activate onescience311
-pip install onescience[bio] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
+# 支持uv安装
+pip install onescience[bio-dcu] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
 安装完成后回到模型包目录：

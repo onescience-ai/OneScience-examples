@@ -1,0 +1,38 @@
+model:
+  type: "conv_afno"  # cnn, transformer, ensemble
+  architecture: "Seasonal AFNOCast"
+  params:
+    n_feature: 10  # Number of input channels, e.g., feature channels
+    dropout_state: 1 # location of dropout in model architecture
+    n_ens: 1   # number ensemble member that are being processed in the one model architecture branch
+data:
+  variable: "precipitation"
+  source_data: "ECMWF SEAS5"
+  target_data: "ERA5_Land"
+  resolution_input_deg: 0.281 
+  resolution_output_deg: 0.1
+  input_grid: 
+    lat: 38
+    lon: 28
+    time_window: 11
+  output_grid: 
+    lat: 106 
+    lon: 78
+  spatial_domain: 
+    lat_min: 7.1 
+    lat_max: 17.6 
+    lon_min: 32.0 
+    lon_max: 39.7
+per_month_checkpoints: 
+    1:  "afnocast_best_01.safetensors"
+    2:  "afnocast_best_02.safetensors"
+    3:  "afnocast_best_03.safetensors"
+    4:  "afnocast_best_04.safetensors"
+    5:  "afnocast_best_05.safetensors"
+    6:  "afnocast_best_06.safetensors"
+    7:  "afnocast_best_07.safetensors"
+    8:  "afnocast_best_08.safetensors"
+    9:  "afnocast_best_09.safetensors"
+    10: "afnocast_best_10.safetensors"
+    11: "afnocast_best_11.safetensors"
+    12: "afnocast_best_12.safetensors"

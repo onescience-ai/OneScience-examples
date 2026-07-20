@@ -63,27 +63,34 @@ MatRIS 是面向材料表征与相互作用模拟的基础模型，全称为 Mat
 
 - 推荐使用 GPU 或 DCU 运行。
 - CPU 可以用于模块验证和小规模前向验证，但结构弛豫速度较慢，不建议用于正式批量推理。
-- DCU 用户需要预先安装 DTK，建议使用 DTK 26.04 或与当前集群匹配的 OneScience 推荐版本。
+- DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
 
 **软件要求**
 
-使用前请先安装 OneScience matchem 环境：
+- Python 3.11
+- OneScience matchem 运行环境
+
+安装运行环境：
+
+DCU环境
 
 ```bash
-# 激活DTK及CONDA
+# 请首先激活DTK及CONDA
 conda create -n onescience311 python=3.11 -y
 conda activate onescience311
-pip install onescience[matchem] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
+# 支持uv安装
+pip install onescience[matchem-dcu] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
-主要依赖版本：
+GPU环境
 
-- ase==3.23.0
-- numpy==2.3.4
-- pymatgen==2025.10.07
-- torch==2.6.0
-
-DCU 用户想了解更多适配内容请联系 liubiao@sugon.com。
+```bash
+# 请首先激活CONDA
+conda create -n onescience311 python=3.11 -y libstdcxx-ng=12 libgcc-ng=12 gcc_linux-64=12 gxx_linux-64=12
+conda activate onescience311
+# 支持uv安装
+pip install onescience[matchem-gpu] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
+```
 
 **环境检测**
 

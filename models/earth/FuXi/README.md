@@ -19,24 +19,25 @@ https://arxiv.org/abs/2306.12873
 
 当前支持能力：
 
+- 生成轻量级 ERA5 HDF5 测试数据。
 - 三阶段级联训练（short → medium → long）
-- 各阶段独立推理
-- 评估与可视化
-- 生成空壳 HDF5 假数据用于流程连通性验证
+- 基于各阶段训练权重独立推理
+- 计算 RMSE/ACC，绘制推理结果可视化图像
 
 当前不支持能力：
 
-- 提供预训练权重
-- 内置真实 ERA5 数据下载与预处理
+- 不随包提供真实 ERA5 数据或预训练权重。
+- 默认配置面向 720 x 1440 输入网格，完整训练需要较高显存和存储。
+- 虚拟数据只用于流程连通性验证，不代表模型效果。
 
 # 适用场景
 
 | 场景 | 说明 |
 | :---: | :--- |
 | 天气预报训练 | 使用 ERA5 HDF5 数据训练 Fuxi（short/medium/long 三阶段） |
-| 单步推理 | 加载训练得到的权重，按阶段生成预测结果 |
-| 结果评估 | 对推理输出计算 RMSE/ACC 并绘制示例变量 |
-| 流程验证 | 使用 `fake_data.py` 生成小样本空壳数据检查脚本连通性 |
+| 本地快速验证 | 使用虚拟数据检查数据读取、模型训练与推理、推理结果可视化。 |
+| ModelScope/OneCode 运行 | 作为独立模型包下载后直接安装依赖并运行脚本。 |
+| 多卡训练 | 通过 `torchrun` 启动多进程训练。 |
 
 # 文件说明
 
@@ -76,11 +77,23 @@ https://arxiv.org/abs/2306.12873
 
 ### 安装运行环境
 
+**DCU环境**
+
 ```bash
-# 激活DTK及CONDA
+# 请首先激活DTK及CONDA
 conda create -n onescience311 python=3.11 -y
 conda activate onescience311
-pip install onescience[earth] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
+# 支持uv安装
+pip install onescience[earth-dcu] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
+```
+
+**GPU环境**
+```bash
+# 请首先激活CONDA
+conda create -n onescience311 python=3.11 -y libstdcxx-ng=12 libgcc-ng=12 gcc_linux-64=12 gxx_linux-64=12
+conda activate onescience311
+# 支持uv安装
+pip install onescience[earth-gpu] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
 ### 生成假数据进行流程验证

@@ -1,0 +1,10 @@
+{
+ "dataset": "nuimages",
+ "num_bucket_per_side": [512, 512],
+ "width": 512,
+ "height": 512,
+ "prompt_template": "A {timeofday} {weather} driving scene image of {camera} camera with {bbox}",
+ "cfg_scale": 5.0,
+ "num_inference_steps": 100,
+ "max_num_bbox": 22
+}
