@@ -1,0 +1,47 @@
+# TorNet datasets and indexes
+catalog.csv
+train/
+test/
+*.nc
+*.npy
+*.npz
+*.tar
+*.tar.gz
+*.zip
+*.7z
+
+# Model weights
+tornado_detector_baseline.keras
+*.keras
+*.h5
+*.hdf5
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.safetensors
+
+# Runtime logs
+*.log
+*.out
+*.err
+*.tmp
+*.temp
+
+# Python and Jupyter caches
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.cache/
+
+# Platform-generated files
+.ps__*
+
+# Upload-only tools
+model_file_audit.py
+modelscope_upload_cleanup.py
+
+# Accidental nested repositories
+onescience-examples/

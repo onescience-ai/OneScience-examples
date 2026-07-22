@@ -1,0 +1,20 @@
+absl-py==2.1.0
+chex==0.1.88
+dask[array]==2024.8.0
+dm-haiku==0.0.13
+dm-tree==0.1.8
+google-cloud-storage==2.18.2
+# Deliberately do not pin/install jax or jaxlib here. On the target server,
+# inspect the accelerator-provided pair with environment_check.py first and
+# retain it unless an actual incompatibility is demonstrated.
+jraph==0.0.6.dev0
+matplotlib==3.9.2
+netCDF4==1.7.1.post2
+numpy==1.26.4
+pandas==2.2.3
+psutil==6.0.0
+rtree==1.3.0
+scipy==1.14.1
+trimesh==4.4.9
+typing_extensions==4.12.2
+xarray==2024.9.0
