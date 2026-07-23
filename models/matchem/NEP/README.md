@@ -94,6 +94,7 @@ pip install onescience[matchem-gpu] -i http://mirrors.onescience.ai:3141/pypi/si
 ```bash
 # 默认使用 test_pip 环境；若使用其他 conda 环境名，请先指定：
 # export MATCHEM_CONDA_NAME=your_env
+source matchem_env.sh
 bash matpl_install.sh
 ```
 

@@ -1,0 +1,11 @@
+# cerra_tas_vqvae 适配测试依赖
+# 注意:torch 请使用镜像 flagos_earth_onecode 自带的 DCU 版(2.4.1+das.opt2.dtk2504),
+#       不要用本文件覆盖安装 torch。以下为需要额外补装的包。
+diffusers>=0.21,<0.31
+transformers
+accelerate
+safetensors
+huggingface_hub
+scikit-learn
+numpy
+matplotlib

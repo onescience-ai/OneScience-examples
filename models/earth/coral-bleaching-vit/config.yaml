@@ -1,0 +1,11 @@
+{ "model_type": "ViTForImageClassification",
+  "framework": "PyTorch",
+  "repo_name": "noaa-esd-coral-bleaching-vit-classifier-v1",
+  "repo_url": "https://huggingface.co/akridge/noaa-esd-coral-bleaching-vit-classifier-v1",
+  "countDownloads": [
+    "path:'noaa-esd-coral-bleaching-vit-classifier-v1.pt'",
+    "path:'noaa-esd-coral-bleaching-vit-classifier-v1.onnx'",
+    "path:'model.safetensors'",
+    "path:'noaa-esd-coral-bleaching-vit-classifier-v1/'"
+  ]
+}

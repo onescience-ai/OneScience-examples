@@ -25,7 +25,7 @@ job:
   logger: null
 max_neighbors: 300
 epochs: 1
-steps: 20
+steps: null
 batch_size: 2
 lr: 0.0004
 weight_decay: 0.001

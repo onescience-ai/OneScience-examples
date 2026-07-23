@@ -1,0 +1,40 @@
+{
+  "_name_or_path": "google/vit-base-patch16-224",
+  "architectures": [
+    "ViTForImageClassification"
+  ],
+  "attention_probs_dropout_prob": 0.0,
+  "encoder_stride": 16,
+  "hidden_act": "gelu",
+  "hidden_dropout_prob": 0.0,
+  "hidden_size": 768,
+  "id2label": {
+    "0": "CORAL",
+    "1": "CORAL_BL"
+  },
+  "image_size": 224,
+  "initializer_range": 0.02,
+  "intermediate_size": 3072,
+  "label2id": {
+    "CORAL": 0,
+    "CORAL_BL": 1
+  },
+  "layer_norm_eps": 1e-12,
+  "model_type": "vit",
+  "num_attention_heads": 12,
+  "num_channels": 3,
+  "num_hidden_layers": 12,
+  "patch_size": 16,
+  "problem_type": "single_label_classification",
+  "qkv_bias": true,
+  "torch_dtype": "float32",
+  "transformers_version": "4.49.0",
+  "repo_name": "noaa-esd-coral-bleaching-vit-classifier-v1",
+  "repo_url": "https://huggingface.co/akridge/noaa-esd-coral-bleaching-vit-classifier-v1",
+  "countDownloads": [
+    "path:'noaa-esd-coral-bleaching-vit-classifier-v1.pt'",
+    "path:'noaa-esd-coral-bleaching-vit-classifier-v1.onnx'",
+    "path:'model.safetensors'",
+    "path:'noaa-esd-coral-bleaching-vit-classifier-v1/'"
+  ]
+}

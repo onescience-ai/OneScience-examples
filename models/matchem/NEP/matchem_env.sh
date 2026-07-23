@@ -1,44 +1,46 @@
-#!/bin/bash
-# ==========================================
-# MatChem 统一环境配置脚本
-# 用途：加载模块、激活 conda、导出各组件路径
-# 用法：source matchem_env.sh
-# 注意：默认激活 conda 环境 test_pip；若使用其他环境名，请执行：
-#       MATCHEM_CONDA_NAME=your_env source matchem_env.sh
-# ==========================================
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ---------- 1. 基础环境配置 ----------
-export MATCHEM_CONDA_NAME="${MATCHEM_CONDA_NAME:-test_pip}"
+export MATCHEM_CONDA_NAME="${MATCHEM_CONDA_NAME:-matchem_pip}"
 
+# 获取本脚本所在目录的绝对路径
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export SCRIPT_DIR
+# ---------- 2. OneScience 运行时环境变量 ----------
 # ---------- 2. OneScience 运行时环境变量 ----------
 export ONESCIENCE_DATASETS_DIR="/public/share/sugonhpcapp01/onestore/onedatasets"
 export ONESCIENCE_MODELS_DIR="/public/share/sugonhpcapp01/onestore/onemodels"
 export device="gpu"  # 根据实际平台改为 gpu 或 dcu
 export LD_LIBRARY_PATH="${CONDA_PREFIX:-}/lib:${LD_LIBRARY_PATH:-}"
 
-# ---------- 3. 外部软件路径（使用 dp_install.sh / matpl_install.sh / lmp_install.sh 时会自动更新） ----------
-# DeepMD-kit 源码目录
-export DEEPMD_SRC_DIR="${SCRIPT_DIR}/deepmd-kit"
+# ---------- 3. 外部软件路径 ----------
+export DEEPMD_SRC_DIR="${DEEPMD_SRC_DIR:-/path/to/deepmd-kit_dcu}"
+export MATPL_SRC_DIR="${MATPL_SRC_DIR:-/path/to/matpl_dcu}"
+export LAMMPS_INSTALL_DIR="${LAMMPS_INSTALL_DIR:-/path/to/lammps_dcu}"
+export DP_CPP_DIR="${DP_CPP_DIR:-/path/to/dp_cpp_dcu}"
 
-# MatPL 源码目录
-export MATPL_SRC_DIR="${SCRIPT_DIR}/matpl_dcu"
 
-# LAMMPS 安装目录
-export LAMMPS_INSTALL_DIR="${SCRIPT_DIR}/lammps_dcu"
-
-# DeepMD C++ 接口目录
-export DP_CPP_DIR="${SCRIPT_DIR}/dp_cpp_dcu"
-
-# ---------- 4. 加载集群模块与 conda ----------
-set +u
+# ---------- 5. 加载集群模块与 conda----------
 source ~/.bashrc
-set -u
-module load sghpcdas/25.6        # DTK / PyTorch 等 SDK
-module load sghpc-mpi-gcc/26.3   # MPI 与 GCC 编译器
 
-conda activate "$MATCHEM_CONDA_NAME"
+module load sghpcdas/25.6        || { echo "❌ 加载模块 sghpcdas/25.6 失败"; return 1; }
+module load sghpc-mpi-gcc/26.3   || { echo "❌ 加载模块 sghpc-mpi-gcc/26.3 失败"; return 1; }
+
+# conda 激活必须在 set +u 状态下执行！
+if ! conda env list 2>/dev/null | grep -q "^${MATCHEM_CONDA_NAME} "; then
+    echo "❌ Conda 环境 '${MATCHEM_CONDA_NAME}' 不存在！" >&2
+    echo "   可用环境：" >&2
+    conda env list >&2
+    return 1
+fi
+
+conda activate "$MATCHEM_CONDA_NAME" || { echo "❌ 激活 conda 环境失败"; return 1; }
+
+# 验证激活成功
+if [[ -z "${CONDA_PREFIX:-}" ]] || [[ "$CONDA_DEFAULT_ENV" != "$MATCHEM_CONDA_NAME" ]]; then
+    echo "❌ Conda 环境激活验证失败" >&2
+    return 1
+fi
 
 # ---------- 6. LAMMPS 运行时环境 ----------
 export LD_LIBRARY_PATH=${LAMMPS_INSTALL_DIR}/lib64:${LD_LIBRARY_PATH:-}
@@ -46,3 +48,7 @@ export LD_LIBRARY_PATH=${LAMMPS_INSTALL_DIR}/lib_override:${LD_LIBRARY_PATH:-}
 export LAMMPS_PLUGIN_PATH=${DP_CPP_DIR}/lib
 
 echo "✅ MatChem 环境已激活: ${MATCHEM_CONDA_NAME}"
+echo "   📁 Datasets: ${ONESCIENCE_DATASETS_DIR}"
+echo "   📁 Models:   ${ONESCIENCE_MODELS_DIR}"
+echo "   🐍 Python:   $(which python 2>/dev/null || echo '未找到')"
+echo "   🏠 Conda:    ${CONDA_PREFIX:-}"

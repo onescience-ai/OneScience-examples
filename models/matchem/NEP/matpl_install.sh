@@ -11,7 +11,7 @@ cd "$SCRIPT_DIR"
 
 # 1. 环境准备
 echo ">>> Step 1: 加载环境"
-source "$SCRIPT_DIR/../matchem_env.sh"
+source "$SCRIPT_DIR/matchem_env.sh"
 
 # 1.5 确保 gflags/glog 运行库存在（torch cmake 的运行时依赖，pip 环境通常缺失）
 echo ">>> Step 1.5: 检查 gflags/glog 运行库"
