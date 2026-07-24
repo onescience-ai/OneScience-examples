@@ -1,0 +1,10 @@
+model.safetensors
+tokenizer.json
+spm.model
+test_result.json
+model_file_audit.py
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+*.part
+*.docx
