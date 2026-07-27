@@ -7,3 +7,7 @@
 .___temp/
 .ipynb_checkpoints/
 **/__pycache__/
+
+# 忽略集群任务输出
+slurm_*.out
+slurm_*.err

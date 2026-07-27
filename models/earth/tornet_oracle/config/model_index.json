@@ -1,0 +1,7 @@
+{
+  "_class_name": "CondDDIMPipeline",
+  "_diffusers_version": "0.25.0",
+  "unet": ["diffusers", "UNet2DModel"],
+  "scheduler": ["diffusers", "DDIMScheduler"]
+}
+

@@ -1,0 +1,20 @@
+{
+  "model_type": "RainMapUNet",
+  "input_frames": 6,
+  "target_frames": 6,
+  "image_size": [
+    64,
+    64
+  ],
+  "base_channels": 8,
+  "pixel_encoding": "grayscale_0_255_to_0_1",
+  "rain_scale": {
+    "min_mm_per_hour": 0.0,
+    "max_mm_per_hour": 50.0,
+    "description": "Linear placeholder scale for MVP demos; calibrate with real data before use."
+  },
+  "weights": "rainmap-nowcasting-sevir-finetuned.safetensors",
+  "dataset_name": "SEVIR VIL mini local fine-tune",
+  "created_at": "2026-05-12T06:54:47.260938+00:00",
+  "warning": "Small SEVIR VIL subset fine-tuned benchmark model. Not for operational weather forecasting."
+}
