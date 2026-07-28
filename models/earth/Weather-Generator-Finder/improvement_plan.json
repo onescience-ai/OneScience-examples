@@ -1,0 +1,232 @@
+{
+  "target_model": "aurora",
+  "target_model_meta": {
+    "hub_repo": "microsoft/aurora",
+    "family": "Aurora",
+    "resolution_deg": 0.25,
+    "pressure_levels": 13,
+    "variables_in": [
+      "u",
+      "v",
+      "t",
+      "q",
+      "z",
+      "sp",
+      "t2m",
+      "u10",
+      "v10",
+      "msl",
+      "tp",
+      "pm2_5",
+      "pm10",
+      "no2",
+      "o3",
+      "swh"
+    ],
+    "variables_out": [
+      "u",
+      "v",
+      "t",
+      "q",
+      "z",
+      "sp",
+      "t2m",
+      "u10",
+      "v10",
+      "msl",
+      "tp",
+      "pm2_5",
+      "pm10",
+      "no2",
+      "o3",
+      "swh"
+    ],
+    "lead_time_hours": 6,
+    "autoregressive_steps": 12,
+    "notes": "Microsoft atmospheric foundation model. 3D Perceiver Encoder + 3D Swin Transformer U-Net + 3D Perceiver Decoder. Trained on 1M+ hours of diverse data (ERA5, HRES, GFS, CMIP6, MERRA-2, CAMS). Outperforms GraphCast on 94% of targets. Best at >3 day leads. 0.1\u00b0 high-res fine-tuning beats IFS HRES on 92% of variables. Supports air quality and ocean waves.",
+    "license": "MIT",
+    "paper": "arXiv:2405.13063",
+    "training_data": "ERA5 + HRES + GFS + GEFS + CMIP6 + MERRA-2 + CAMS (>1M hours)",
+    "model_size": "~200-300MB"
+  },
+  "strategies": [
+    {
+      "name": "AMSE Loss Function (Subich 2025)",
+      "applies_to": [
+        "graphcast_era5_37L",
+        "graphcast_operational_13L",
+        "graphcast_finetuned_2019_2021",
+        "aifs_single_1_0",
+        "aifs_ens_1_0",
+        "weathernext2_gencast"
+      ],
+      "description": "Replace MSE with Adjusted MSE that decomposes error in spherical harmonic space. Separates amplitude and correlation errors by wavenumber. Eliminates double penalty for displaced features.",
+      "implementation": "Modify loss to: L = sum_k [ (A_k_pred - A_k_true)^2 + (C_k_pred - C_k_true)^2 ] where A=amplitude, C=correlation per wavenumber k.",
+      "expected_gain": "~5-10% RMSE reduction on T2M and TP in extratropical regions.",
+      "paper": "arXiv:2501.19374"
+    },
+    {
+      "name": "GenCast Diffusion Training Recipe (DeepMind 2024)",
+      "applies_to": [
+        "weathernext2_gencast"
+      ],
+      "description": "GenCast is a conditional diffusion model. Fine-tuning should focus on (a) conditioning on recent climate anomalies, (b) regional precipitation via radar assimilation, (c) ensemble diversity via learned noise schedules. Precipitation was excluded from main GenCast results due to ERA5 quality; radar-based fine-tuning is the key improvement vector.",
+      "implementation": "(1) Add conditional channels: ENSO index, NAO index, 30-day running mean T2M anomaly. (2) Replace ERA5 precip with IMERG / RADKLIM for training target. (3) Use learned noise schedule: beta_start=1e-4, beta_end=0.02, timesteps=1000. (4) For regional focus, increase weight of target region in diffusion loss by 5x.",
+      "expected_gain": "Radar-conditioned GenCast can reduce precipitation RMSE by 20-30% vs ERA5-trained baseline in targeted region.",
+      "paper": "arXiv:2312.15796"
+    },
+    {
+      "name": "AtmoRep Multiformer Fine-Tuning (Lessig 2023)",
+      "applies_to": [
+        "atmo_atmorep"
+      ],
+      "description": "AtmoRep uses per-field transformers with cross-attention. Since weights are not public, the improvement path is to replicate the architecture and train on regional high-resolution data. The zero-shot nowcasting capability can be improved via task-specific fine-tuning for 6h forecasting.",
+      "implementation": "(1) Replicate Multiformer: 5-field (u,v,t,q,z) with cross-attention. (2) Pretrain on ERA5 hourly 1979-2020 with masked token prediction (30% mask ratio). (3) Fine-tune on target region with regional loss weighting alpha=0.33. (4) For precipitation, add RADKLIM / IMERG bias correction head. (5) Ensemble: 16 members via linear prediction heads on frozen encoder.",
+      "expected_gain": "Zero-shot nowcasting competitive with IFS; fine-tuned version +30% skill for 6h T2M and TP in target region.",
+      "paper": "arXiv:2308.13280"
+    },
+    {
+      "name": "Regional Loss Weighting (Nipen 2024)",
+      "applies_to": [
+        "graphcast_era5_37L",
+        "graphcast_operational_13L",
+        "graphcast_finetuned_2019_2021",
+        "pangu_weather_1h",
+        "aifs_single_1_0",
+        "aurora",
+        "weathernext2_gencast",
+        "atmo_atmorep"
+      ],
+      "description": "During fine-tuning, up-weight regional domain loss despite small surface area. Example: Nordics = 33% of loss weight despite 1.2% of Earth surface. Dramatically improves regional skill.",
+      "implementation": "Add a spatial mask weight tensor to loss. For target region R: w_R = alpha * mask_R + beta * (1 - mask_R), where alpha >> beta. Use alpha=0.33, beta=0.01 for single-region focus.",
+      "expected_gain": "+24h skill for T2M, similar ETS for 6h precipitation in targeted region.",
+      "paper": "arXiv:2409.02891"
+    },
+    {
+      "name": "Focal Loss / Quantile Loss for Precipitation",
+      "applies_to": [
+        "graphcast_era5_37L",
+        "graphcast_operational_13L",
+        "graphcast_finetuned_2019_2021",
+        "pangu_weather_1h",
+        "aifs_single_1_0",
+        "aurora",
+        "ocf_gwf_0.25deg",
+        "weathernext2_gencast",
+        "atmo_atmorep"
+      ],
+      "description": "All deterministic AI models suffer from MSE-induced smoothing (drizzle bias). Replace MSE with focal loss or quantile loss to sharpen precipitation extremes.",
+      "implementation": "For quantile: L = max(tau*(y-\u0177), (1-tau)*(\u0177-y)). Use tau=0.9 for 90th percentile extremes. Combine with MSE via L_total = 0.7*MSE + 0.3*Quantile_0.9.",
+      "expected_gain": "Better ETS for heavy precipitation events; reduces drizzle bias.",
+      "paper": "Inspired by StormCast (arXiv:2408.10958)"
+    },
+    {
+      "name": "Stretched-Grid / Variable Resolution (Nipen 2024)",
+      "applies_to": [
+        "graphcast_era5_37L",
+        "graphcast_operational_13L",
+        "aifs_single_1_0"
+      ],
+      "description": "Use a stretched computational grid that dedicates high resolution to region of interest while maintaining global coverage for boundary conditions.",
+      "implementation": "Modify multi-mesh processor to use non-uniform icosahedral refinement. Higher mesh levels over target region.",
+      "expected_gain": "Comparable to 2.5km NWP for T2M; better precipitation occurrence discrimination at >6h leads.",
+      "paper": "arXiv:2409.02891"
+    },
+    {
+      "name": "Autoregressive Curriculum Extension (Subich 2024)",
+      "applies_to": [
+        "graphcast_era5_37L",
+        "graphcast_finetuned_2019_2021",
+        "aifs_single_1_0"
+      ],
+      "description": "Extend autoregressive training beyond 12 steps (3 days) to 20+ steps (5 days). Reduces error accumulation at longer lead times.",
+      "implementation": "Continue curriculum: ar12 -> ar16 -> ar20. Each stage 1250 batches, lr 2.5e-6 -> 7.5e-8 cosine. Use gradient checkpointing.",
+      "expected_gain": "Extends skillful lead time for T2M from ~10d to ~14d.",
+      "paper": "arXiv:2408.14587"
+    },
+    {
+      "name": "End-to-End Satellite Assimilation (FuXi Weather 2024)",
+      "applies_to": [
+        "graphcast_era5_37L",
+        "pangu_weather_1h",
+        "aifs_single_1_0"
+      ],
+      "description": "For observation-sparse regions (Central Africa, S. America), replace ERA5/HRES initial conditions with direct satellite radiance assimilation.",
+      "implementation": "Add encoder (ViT or CNN) that ingests raw satellite radiances and outputs analysis fields. Fine-tune end-to-end. 6-hourly cycling.",
+      "expected_gain": "Outperforms HRES in central Africa and northern S. America.",
+      "paper": "arXiv:2408.05472"
+    },
+    {
+      "name": "Hierarchical Temporal Aggregation (Pangu-Weather / AIFS style)",
+      "applies_to": [
+        "pangu_weather_1h",
+        "aifs_single_1_0"
+      ],
+      "description": "Train separate models for 1h, 3h, 6h, 24h leads and cascade greedily. Reduces autoregressive error accumulation.",
+      "implementation": "4 separate models. At inference, choose largest possible step. E.g., for 18h forecast: 24h model back 6h -> 6h model. Total 2 steps instead of 3.",
+      "expected_gain": "Lowers RMSE by reducing error compounding; maintains hourly output resolution.",
+      "paper": "arXiv:2211.02556"
+    },
+    {
+      "name": "Polar Loss Reweighting",
+      "applies_to": [
+        "graphcast_era5_37L",
+        "graphcast_operational_13L",
+        "pangu_weather_1h",
+        "aifs_single_1_0",
+        "aurora"
+      ],
+      "description": "AI models are explicitly weaker at poles because loss weighting under-weights stratosphere and high latitudes.",
+      "implementation": "In loss function, multiply polar latitudes (>60\u00b0N or <60\u00b0S) by factor 3.0x. For GraphCast/AIFS, also increase 50hPa level weight from 0.66% to 5%.",
+      "expected_gain": "Improves T2M and TP skill in Arctic/Antarctica by 10-15%.",
+      "paper": "GraphCast supplement Fig S16 (arXiv:2212.12794)"
+    },
+    {
+      "name": "Diffusion-Based Post-Processing (GenCast / StormCast)",
+      "applies_to": [
+        "graphcast_era5_37L",
+        "graphcast_operational_13L",
+        "pangu_weather_1h",
+        "aifs_single_1_0",
+        "aurora",
+        "ocf_gwf_0.25deg"
+      ],
+      "description": "Use a lightweight diffusion model to post-process deterministic forecasts into probabilistic ensembles. Sharpens precipitation and temperature distributions.",
+      "implementation": "Train a conditional diffusion model on 6h forecast errors. Condition on deterministic model output. Generate 50-member ensemble in <1 min.",
+      "expected_gain": "Massive improvement in precipitation ETS and extreme event detection.",
+      "paper": "GenCast (Google DeepMind 2024) / StormCast (arXiv:2408.10958)"
+    },
+    {
+      "name": "MAE Objective + Diverse Data Scaling (Aurora style)",
+      "applies_to": [
+        "aurora"
+      ],
+      "description": "Aurora uses MAE (not MSE) and trains on 1M+ hours of diverse data (ERA5, HRES, GFS, CMIP6, MERRA-2, CAMS). This is its core architectural advantage.",
+      "implementation": "Replace MSE with MAE. Add CMIP6 climate simulations, MERRA-2 reanalysis, and CAMS atmospheric composition data to pretraining. Use dataset weights: gamma_ERA5=2.0, gamma_GFS-T0=1.5.",
+      "expected_gain": "Already realized in Aurora foundation model. Fine-tuning on additional regional data further improves.",
+      "paper": "arXiv:2405.13063"
+    },
+    {
+      "name": "High-Resolution Fine-Tuning (Aurora 0.1\u00b0)",
+      "applies_to": [
+        "aurora"
+      ],
+      "description": "Aurora supports 0.1\u00b0 high-resolution fine-tuning from 0.25\u00b0 pretraining. At 0.1\u00b0 it outperforms IFS HRES on 92% of target variables.",
+      "implementation": "Fine-tune pretrained Aurora model on HRES-T0 0.1\u00b0 data. Use surface loss weight alpha=1/4, atmosphere beta=1. Increase 2mT weight to 3.0.",
+      "expected_gain": "Beats IFS HRES on 92% of variables. Best for regional temperature and precipitation at convective scales.",
+      "paper": "arXiv:2405.13063 Appendix H"
+    },
+    {
+      "name": "AIFS-Style Shifted-Window Transformer Processor",
+      "applies_to": [
+        "aifs_single_1_0",
+        "graphcast_era5_37L"
+      ],
+      "description": "AIFS uses a shifted-window transformer processor (vs GraphCast's GNN processor). This gives better long-range dependencies and scalability to 2048 GPUs.",
+      "implementation": "Replace GNN processor with pre-norm transformer with shifted-window attention (Child et al. 2019 style), GELU activation. Add sequence/tensor parallelism.",
+      "expected_gain": "Better scaling and long-range correlation capture. Useful for teleconnection patterns (ENSO, NAO).",
+      "paper": "arXiv:2406.01465"
+    }
+  ],
+  "recommended_first_step": "Apply AMSE loss + regional loss weighting for your target region. Highest-ROI improvements with proven results."
+}

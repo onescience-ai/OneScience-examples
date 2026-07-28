@@ -1,0 +1,40 @@
+{
+  "base_model": "csubich/graphcast_amse",
+  "region": "Western_Europe",
+  "region_bounds": [
+    35,
+    70,
+    -15,
+    30
+  ],
+  "improvements": [
+    "regional",
+    "quantile",
+    "polar"
+  ],
+  "hyperparameters": {
+    "polar_latitude_threshold": 60.0,
+    "polar_boost_factor": 3.0,
+    "stratosphere_levels": [
+      50
+    ],
+    "stratosphere_boost_factor": 5.0,
+    "quantile_tau": 0.9,
+    "quantile_weight": 0.3,
+    "mse_weight": 0.7,
+    "region_weight": 0.33,
+    "global_weight": 0.01
+  },
+  "expected_gains": {
+    "regional": "+24h skill for T2M, similar ETS for 6h precipitation in targeted region",
+    "quantile": "Better ETS for heavy precipitation events; reduces drizzle bias",
+    "polar": "Improves T2M and TP skill in Arctic/Antarctica by 10-15%",
+    "stratosphere": "Improves 50hPa geopotential and stratospheric temperature"
+  },
+  "references": {
+    "AMSE": "arXiv:2501.19374",
+    "regional_weighting": "arXiv:2409.02891",
+    "quantile_loss": "StormCast arXiv:2408.10958",
+    "polar_reweighting": "GraphCast supplement Fig S16 arXiv:2212.12794"
+  }
+}

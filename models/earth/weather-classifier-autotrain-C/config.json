@@ -1,0 +1,51 @@
+{
+  "_name_or_path": "AutoTrain",
+  "architectures": [
+    "ResNetForImageClassification"
+  ],
+  "depths": [
+    3,
+    4,
+    6,
+    3
+  ],
+  "downsample_in_first_stage": false,
+  "embedding_size": 64,
+  "hidden_act": "relu",
+  "hidden_sizes": [
+    256,
+    512,
+    1024,
+    2048
+  ],
+  "id2label": {
+    "0": "lightning",
+    "1": "rain",
+    "2": "rainbow",
+    "3": "sandstorm",
+    "4": "snow"
+  },
+  "label2id": {
+    "lightning": "0",
+    "rain": "1",
+    "rainbow": "2",
+    "sandstorm": "3",
+    "snow": "4"
+  },
+  "layer_type": "bottleneck",
+  "max_length": 128,
+  "model_type": "resnet",
+  "num_channels": 3,
+  "out_features": null,
+  "padding": "max_length",
+  "problem_type": "single_label_classification",
+  "stage_names": [
+    "stem",
+    "stage1",
+    "stage2",
+    "stage3",
+    "stage4"
+  ],
+  "torch_dtype": "float32",
+  "transformers_version": "4.25.1"
+}

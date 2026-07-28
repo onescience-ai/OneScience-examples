@@ -1,0 +1,5 @@
+numpy>=1.24
+huggingface-hub>=0.20
+axial-attention==0.6.1
+antialiased-cnns==0.3
+pytorch-msssim==1.0.0

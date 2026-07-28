@@ -1,0 +1,1 @@
+{"image_encoder": "downsampler", "input_channels": 12, "sat_channels": 12, "input_size": 256, "output_channels": 12, "kernel_size": 3, "num_layers": 1, "num_att_layers": 1, "forecast_steps": 48, "temporal_dropout": 0.2, "use_preprocessor": true, "kwargs": {}, "hidden_dim": 64}
