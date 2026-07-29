@@ -1,0 +1,17 @@
+{
+  "created_at": "2026-07-29T00:37:45",
+  "python": "3.10.12 (main, Feb  4 2025, 14:57:36) [GCC 11.4.0]",
+  "platform": "Linux-3.10.0-957.el7.x86_64-x86_64-with-glibc2.39",
+  "numpy": "1.26.3",
+  "torch": "2.4.1",
+  "transformers": "4.46.3",
+  "datasets": "2.21.0",
+  "huggingface_hub": "0.36.0",
+  "pandas": "2.2.2",
+  "matplotlib": "3.9.2",
+  "scikit_learn": "1.5.2",
+  "device": "cuda",
+  "device_name": "K100_AI",
+  "attention_implementation": "eager",
+  "seed": 42
+}

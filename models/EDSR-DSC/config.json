@@ -1,0 +1,10 @@
+{
+  "model_type": "EDSR",
+  "n_colors": 2,
+  "n_feats": 64,
+  "n_resblocks": 32,
+  "no_upsampling": false,
+  "res_scale": 1,
+  "rgb_range": 255,
+  "scale": 4
+}

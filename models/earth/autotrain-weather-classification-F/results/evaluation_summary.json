@@ -1,0 +1,13 @@
+{
+  "model_id": "dazzle-nu/autotrain-weather-classification-3739699407",
+  "dataset_id": "dazzle-nu/autotrain-data-weather-classification",
+  "device": "cuda",
+  "attention_implementation": "eager",
+  "num_samples": 1378,
+  "accuracy": 0.9150943396226415,
+  "macro_f1": 0.9237535336178877,
+  "weighted_f1": 0.9146696068250427,
+  "published_accuracy": 0.952,
+  "published_macro_f1": 0.957,
+  "published_weighted_f1": 0.952
+}

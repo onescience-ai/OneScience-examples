@@ -1,0 +1,35 @@
+{
+  "citation": "",
+  "description": "AutoTrain generated dataset",
+  "features": {
+    "image": {
+      "_type": "Image"
+    },
+    "target": {
+      "names": [
+        "dew",
+        "fogsmog",
+        "frost",
+        "glaze",
+        "hail",
+        "lightning",
+        "rain",
+        "rainbow",
+        "rime",
+        "sandstorm",
+        "snow"
+      ],
+      "_type": "ClassLabel"
+    }
+  },
+  "homepage": "",
+  "license": "",
+  "splits": {
+    "valid": {
+      "name": "valid",
+      "num_bytes": 140641424,
+      "num_examples": 1378,
+      "dataset_name": null
+    }
+  }
+}

@@ -1,0 +1,15 @@
+# WandB Configuration
+wandb:
+  project: "VGB-DM"
+  entity: null
+  mode: "offline"
+  name: null
+  tags: []
+  notes: null
+  group: null
+  job_type: null
+  config: null
+  resume: false
+  id: null
+  log_model: false
+  settings: null
