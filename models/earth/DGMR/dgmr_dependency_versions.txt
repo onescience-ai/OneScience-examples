@@ -1,0 +1,5 @@
+torch: 2.4.1+das.opt2.dtk2504
+torchvision: 0.19.1+das.opt2.dtk2504
+antialiased-cnns: 0.3
+pytorch-msssim: 1.0.0
+auxiliary imports: OK

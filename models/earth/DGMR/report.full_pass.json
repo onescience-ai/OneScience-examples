@@ -1,0 +1,95 @@
+{
+  "model": "openclimatefix-models/dgmr",
+  "status": "PASS",
+  "stage": "complete",
+  "started_at": "2026-07-28T16:16:03.633802+00:00",
+  "command": [
+    "test.py",
+    "--source-dir",
+    "/root/private_data/yx/5/skillful_nowcasting",
+    "--model-dir",
+    "/root/private_data/yx/5/pretrained/dgmr",
+    "--work-dir",
+    "/root/private_data/yx/5/test_results/dgmr_full",
+    "--device",
+    "auto",
+    "--forecast-steps",
+    "18"
+  ],
+  "paths": {
+    "source_dir": "/root/private_data/yx/5/skillful_nowcasting",
+    "model_dir": "/root/private_data/yx/5/pretrained/dgmr",
+    "work_dir": "/root/private_data/yx/5/test_results/dgmr_full"
+  },
+  "files": {
+    "checkpoint_bytes": 394355081,
+    "config_bytes": 263
+  },
+  "environment": {
+    "python": "3.10.12 (main, Feb  4 2025, 14:57:36) [GCC 11.4.0]",
+    "python_executable": "/usr/bin/python",
+    "platform": "Linux-3.10.0-957.el7.x86_64-x86_64-with-glibc2.39",
+    "packages": {
+      "torch": "2.4.1+das.opt2.dtk2504",
+      "torchvision": "0.19.1+das.opt2.dtk2504",
+      "pytorch-lightning": "2.6.5",
+      "torchmetrics": "1.9.0",
+      "einops": "0.8.1",
+      "antialiased-cnns": "0.3",
+      "pytorch-msssim": "1.0.0",
+      "huggingface-hub": "0.36.0",
+      "safetensors": "0.5.3",
+      "numpy": "1.26.3"
+    },
+    "accelerator": {
+      "cuda_available": true,
+      "cuda_version": null,
+      "hip_version": "6.1.25065",
+      "device_count": 1,
+      "devices": [
+        "K100_AI"
+      ]
+    }
+  },
+  "checkpoint_config": {
+    "forecast_steps": 18,
+    "input_channels": 1,
+    "output_shape": 256,
+    "gen_lr": 5e-05,
+    "disc_lr": 0.0002,
+    "visualize": false,
+    "conv_type": "standard",
+    "num_samples": 6,
+    "grid_lambda": 20.0,
+    "beta1": 0.0,
+    "beta2": 0.999,
+    "latent_channels": 768,
+    "context_channels": 384
+  },
+  "device": "cuda",
+  "finished_at": "2026-07-28T16:16:30.152253+00:00",
+  "inference": {
+    "parameter_count": 98271567,
+    "input_shape": [
+      1,
+      4,
+      1,
+      256,
+      256
+    ],
+    "output_shape": [
+      1,
+      18,
+      1,
+      256,
+      256
+    ],
+    "elapsed_seconds": 12.858006032183766,
+    "output_min": -0.17676864564418793,
+    "output_max": 3.6963083744049072,
+    "output_mean": 0.5235300064086914,
+    "output_is_finite": true,
+    "peak_accelerator_memory_bytes": 340020736,
+    "prediction_file": "/root/private_data/yx/5/test_results/dgmr_full/prediction.pt"
+  }
+}

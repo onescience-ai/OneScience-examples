@@ -1,0 +1,54 @@
+# 模型权重和运行数据
+weights/
+sample-data/
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.h5
+*.hdf5
+*.npz
+*.npy
+*.zarr
+*.zarr/
+
+# 日志与运行输出
+gems_debug.log
+*.log
+*.out
+*.err
+logs/
+outputs/
+results/
+runs/
+wandb/
+tensorboard/
+
+# 临时文件和压缩包
+*.part
+*.tmp
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+
+# Python 和 Notebook 缓存
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+
+# 虚拟环境
+venv/
+.venv/
+env/
+.env
+
+# 编辑器和系统文件
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

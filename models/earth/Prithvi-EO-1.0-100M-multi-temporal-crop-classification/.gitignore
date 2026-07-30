@@ -1,0 +1,12 @@
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.tif
+*.tiff
+*.npy
+*.npz
+validation_results/
+*pycache*/
+*.py[cod]
+.ipynb_checkpoints/

@@ -1,0 +1,12 @@
+# Downloaded DGMR assets
+/pretrained/
+/skillful_nowcasting/
+
+# Test outputs and logs
+/test_results/
+*.log
+prediction.pt
+
+# Python cache
+__pycache__/
+*.pyc

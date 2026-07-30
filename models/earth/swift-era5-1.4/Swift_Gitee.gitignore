@@ -1,0 +1,73 @@
+# Swift / FlagGems Gitee 提交过滤
+
+# 权重和样例数据：由 download_assets.sh 下载
+weights/
+sample-data/
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.h5
+*.hdf5
+*.npz
+*.npy
+*.zarr
+*.zarr/
+
+# 日志和运行输出
+*.log
+*.out
+*.err
+logs/
+log/
+outputs/
+output/
+results/
+result/
+runs/
+wandb/
+tensorboard/
+gems_debug.log
+
+# 临时文件和压缩包
+*.part
+*.tmp
+*.temp
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+
+# Python / Notebook 缓存
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# 虚拟环境和本地配置
+venv/
+.venv/
+env/
+.env
+.env.*
+conda-env/
+pip-wheel-metadata/
+
+# 编辑器和系统文件
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 构建产物
+build/
+dist/
+*.egg-info/
