@@ -1,0 +1,135 @@
+{
+  "repository": "thingnario/Diffusion_SolRad",
+  "repository_revision": "f11f15efba55638bf839e205e34d1f8e75a4e5b1",
+  "basetime": "202504161200",
+  "random_seed": 42,
+  "prediction_horizon": "1hr",
+  "sampling_mode": "DDIM",
+  "ddim_steps": 100,
+  "device": "cuda",
+  "device_name": "K500SM_AI",
+  "torch_version": "2.4.1",
+  "hip_version": "6.1.25065",
+  "model_parameter_count": 57729326,
+  "model_config": {
+    "input_frame": 12,
+    "output_frame": 6,
+    "cond_nc": 5,
+    "time_emb_dim": 128,
+    "base_chs": 32,
+    "chs_mult": [
+      1,
+      2,
+      4,
+      8,
+      8
+    ],
+    "use_attn_list": [
+      0,
+      0,
+      1,
+      1,
+      1
+    ],
+    "n_res_blocks": 2,
+    "n_steps": 1000,
+    "dropout": 0.1
+  },
+  "input_statistics": {
+    "Himawari": {
+      "shape": [
+        1,
+        4,
+        1,
+        512,
+        512
+      ],
+      "dtype": "torch.float32",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "mean": 0.9501844644546509,
+      "standard_deviation": 0.12392588704824448,
+      "nan_count": 0,
+      "inf_count": 0
+    },
+    "WRF": {
+      "shape": [
+        1,
+        36,
+        1,
+        128,
+        128
+      ],
+      "dtype": "torch.float32",
+      "minimum": 0.06862995773553848,
+      "maximum": 1.0,
+      "mean": 0.9375540614128113,
+      "standard_deviation": 0.1228543370962143,
+      "nan_count": 0,
+      "inf_count": 0
+    },
+    "topo": {
+      "shape": [
+        1,
+        1,
+        512,
+        512
+      ],
+      "dtype": "torch.float32",
+      "minimum": -0.45296239852905273,
+      "maximum": 8.961238861083984,
+      "mean": -1.30385160446167e-08,
+      "standard_deviation": 1.0000019073486328,
+      "nan_count": 0,
+      "inf_count": 0
+    },
+    "time_feat": {
+      "shape": [
+        1,
+        36,
+        4
+      ],
+      "dtype": "torch.float32",
+      "minimum": -1.0,
+      "maximum": 0.9732643961906433,
+      "mean": -0.13059557974338531,
+      "standard_deviation": 0.6973679661750793,
+      "nan_count": 0,
+      "inf_count": 0
+    },
+    "clearsky": {
+      "shape": [
+        1,
+        36,
+        512,
+        512
+      ],
+      "dtype": "torch.float32",
+      "minimum": 0.5416221022605896,
+      "maximum": 1008.4446411132812,
+      "mean": 583.7265625,
+      "standard_deviation": 314.3414001464844,
+      "nan_count": 0,
+      "inf_count": 0
+    }
+  },
+  "output_statistics": {
+    "shape": [
+      1,
+      6,
+      512,
+      512
+    ],
+    "dtype": "torch.float32",
+    "minimum": 0.0,
+    "maximum": 970.6121215820312,
+    "mean": 576.7486572265625,
+    "standard_deviation": 126.54132843017578,
+    "nan_count": 0,
+    "inf_count": 0
+  },
+  "inference_seconds": 19.934434700757265,
+  "output_file": "/root/private_data/Diffusion_SolRad/results/predictions/pred_202504161200_1hr_ddim_100steps.npy",
+  "peak_allocated_memory_gib": 0.8756375312805176,
+  "peak_reserved_memory_gib": 0.98828125
+}

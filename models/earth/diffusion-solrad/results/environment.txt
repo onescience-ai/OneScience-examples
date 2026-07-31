@@ -1,0 +1,12 @@
+======================================================================
+Python executable: /root/private_data/Diffusion_SolRad/.venv/bin/python
+Python version: 3.10.12 (main, Feb  4 2025, 14:57:36) [GCC 11.4.0]
+Platform: Linux-3.10.0-957.el7.x86_64-x86_64-with-glibc2.35
+NumPy version: 1.26.4
+Torch version: 2.4.1
+torch.cuda.is_available(): True
+torch.version.cuda: None
+torch.version.hip: 6.1.25065
+Device count: 1
+Device 0: K500SM_AI
+======================================================================
