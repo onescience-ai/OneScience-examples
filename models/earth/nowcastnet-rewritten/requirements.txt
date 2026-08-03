@@ -1,0 +1,18 @@
+# NowcastNet-Rewritten runtime dependencies
+# Python requirement: >=3.10,<3.11
+#
+# IMPORTANT:
+# Do not add or install the public PyPI torch package in the OneScience/FlagOS
+# environment. Use the platform-provided hardware-adapted PyTorch instead.
+#
+# The upstream project declares opencv-python. For a headless Jupyter/server
+# environment, this reproduction uses opencv-python-headless, which provides
+# the same `cv2` import without GUI libraries.
+
+setuptools==80.9.0
+numpy>=2.2.2
+matplotlib>=3.10.1
+opencv-python-headless>=4.11.0.86
+scikit-learn>=1.6.1
+tomlkit>=0.13.2
+pysteps>=1.14.0,<=1.18.0

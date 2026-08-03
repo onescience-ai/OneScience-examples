@@ -1,0 +1,29 @@
+# Python and Notebook caches
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Hugging Face cache and downloaded model weights
+hf_cache/
+.huggingface/
+*.bin
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+
+# Generated DGMR outputs
+dgmr_outputs/
+gems_debug.log
+*.log
+*.npy
+*.npz
+*.gif
+
+# Local environments and editor files
+.venv/
+venv/
+env/
+.vscode/
+.idea/
+.DS_Store

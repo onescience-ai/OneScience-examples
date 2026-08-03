@@ -1,0 +1,46 @@
+# DGMR target environment and acceptance criteria
+#
+# This file records the platform environment used for DGMR testing.
+# The exact Hugging Face repository must be confirmed by the console output:
+#   Hugging Face 模型： openclimatefix/dgmr
+
+[system]
+Operating-System = Linux
+Runtime = JupyterLab Terminal / Notebook
+Python = 3.10.12
+Python-Executable = /usr/bin/python
+Device = K500SM_AI
+
+[accelerator-stack]
+PyTorch = 2.4.1
+CUDA-Compatible-Device-Available = True
+Device-Interface = cuda:0
+FlagGems = 5.0.0
+
+[python-packages]
+dgmr = 1.4.4
+pytorch-lightning = 2.4.0
+torchmetrics = 1.4.3
+numpy = 2.2.6
+matplotlib = 3.10.9
+antialiased-cnns = 0.3
+
+[model]
+Required-Hugging-Face-Model-ID = openclimatefix/dgmr
+Hugging-Face-Revision = main
+Input-Shape = 1 x 4 x 1 x 256 x 256
+Output-Shape = 1 x 18 x 1 x 256 x 256
+Input-DType = float32
+Output-DType = float32
+Synthetic-Seed = 42
+
+[test-acceptance]
+Required-Console-Model-ID = openclimatefix/dgmr
+Required-Prediction-Shape = 1 x 18 x 1 x 256 x 256
+Required-NaN = False
+Required-Inf = False
+
+[installation]
+Step-1 = python -m pip install -r requirements.txt
+Step-2 = python -m pip install --no-deps dgmr==1.4.4
+Warning = Do not replace the platform-provided PyTorch, TorchVision or FlagGems packages.

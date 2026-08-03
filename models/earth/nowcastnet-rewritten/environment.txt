@@ -1,0 +1,36 @@
+# Verified OneScience / FlagOS environment for NowcastNet-Rewritten
+#
+# This file records the tested environment. It is not intended to be installed
+# directly with pip. Install Python dependencies from requirements.txt, while
+# retaining the platform-provided PyTorch and FlagGems builds.
+
+[system]
+Operating-System = Linux
+Runtime = Jupyter Notebook / JupyterLab
+Python = 3.10.12
+Python-Executable = /usr/bin/python3
+Device = K500SM_AI
+
+[accelerator-stack]
+PyTorch = 2.4.1+das.opt2.dtk2504
+FlagGems = 5.0.0
+Device-Interface = cuda:0
+CUDA-Available = True
+
+[python-packages-tested]
+setuptools = 83.0.0
+numpy = 2.2.6
+matplotlib = 3.10.9
+opencv-python-headless = 5.0.0.93
+scikit-learn = 1.7.2
+tomlkit = 0.15.1
+pysteps = 1.18.0
+
+[model]
+Model = NowcastNet-Rewritten
+Source-Repository = VioletsOleander/nowcastnet-rewritten
+Source-Version = 0.1.1
+Weight-File = rewritten_model.pt
+Weight-SHA256 = cc2fe0f5d5769e370659ae09bec07fca232ddda3249f546868a324b347ed329e
+Input = 9 x 512 x 512 radar frames
+Output = 20 forecast frames

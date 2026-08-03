@@ -1,0 +1,35 @@
+# Python cache
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Downloaded upstream source and archives
+nowcastnet-rewritten/
+nowcastnet-rewritten-main.zip
+
+# Large model weights
+rewritten_model.pt
+rewritten_model.pt.part
+*.pt
+*.pth
+*.ckpt
+*.onnx
+
+# Generated input, configuration, outputs and reports
+runtime_data/
+nowcastnet_results/
+inference.auto.toml
+inference_nowcastnet.log
+nowcastnet_metrics.json
+synthetic_manifest.json
+
+# FlagGems and other logs
+gems_debug.log
+*.log
+
+# Temporary and local files
+*.tmp
+*.bak
+.DS_Store
+.vscode/
+.idea/

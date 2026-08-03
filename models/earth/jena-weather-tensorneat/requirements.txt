@@ -1,0 +1,5 @@
+numpy==1.26.4
+pandas==2.2.2
+jax==0.6.2
+jaxlib==0.6.2
+tensorneat @ git+https://github.com/EMI-Group/tensorneat.git@ee204900e8e55ffe0ed756651ea871c70230dd34

@@ -1,0 +1,8 @@
+Python executable: /root/private_data/jena-weather-tensorneat/.venv/bin/python
+Python version: 3.10.12 (main, Feb  4 2025, 14:57:36) [GCC 11.4.0]
+Platform: Linux-3.10.0-957.el7.x86_64-x86_64-with-glibc2.39
+JAX version: 0.6.2
+JAX devices: [CpuDevice(id=0)]
+NumPy version: 1.26.4
+Pandas version: 2.2.2
+TensorNEAT path: /root/private_data/jena-weather-tensorneat/third_party/tensorneat/src/tensorneat/__init__.py

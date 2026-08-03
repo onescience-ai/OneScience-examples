@@ -1,0 +1,9 @@
+Generation: 50, Cost time: 270.01ms
+  RMSE (°C):         3.518
+  MAE  (°C):         2.797
+  RMSE (°C):         4.318
+  MAE  (°C):         3.243
+Improvement over baseline: +13.8% MAE reduction
+Best training fitness: -0.194984
+Test RMSE: 3.518 °C
+Test MAE:  2.797 °C

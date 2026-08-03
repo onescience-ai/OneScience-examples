@@ -1,0 +1,18 @@
+# DGMR inference dependencies for OneScience / FlagOS
+#
+# Keep the platform-provided PyTorch, TorchVision and FlagGems builds.
+# Do not add torch, torchvision, triton or flag-gems to this file.
+#
+# Install the DGMR package separately without dependency resolution:
+#   python -m pip install --no-deps dgmr==1.4.4
+
+numpy>=1.26.3,<2.3
+matplotlib>=3.10.1,<3.11
+Pillow>=10,<12
+pytorch-lightning==2.4.0
+torchmetrics==1.4.3
+antialiased-cnns==0.3
+pytorch-msssim>=1.0.0,<2
+einops>=0.8.0,<1
+huggingface_hub>=0.23.3,<1
+safetensors>=0.4.5,<1
