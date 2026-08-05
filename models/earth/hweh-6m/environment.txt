@@ -1,0 +1,53 @@
+# Verified Hweh-6M reproduction environment
+#
+# This file documents the environment used for the successful compatibility
+# test. It is not a pip requirements file.
+
+[system]
+Operating-System = Linux
+Runtime = JupyterLab Terminal / Notebook
+Python = 3.10.12
+Python-Executable = /usr/bin/python
+Device = K500SM_AI
+
+[accelerator-stack]
+PyTorch = 2.4.1
+FlagGems = 5.0.0
+CUDA-Compatible-Device-Available = True
+Device-Interface = cuda:0
+
+[python-packages]
+transformers = 4.45.0
+tokenizers = 0.20.3
+huggingface-hub = 0.25.2
+safetensors = 0.4.5
+numpy = 1.26.3
+pandas = 2.2.3
+matplotlib = 3.10.1
+requests = 2.33.1
+urllib3 = 1.26.20
+
+[model]
+Hugging-Face-Model-ID = Harley-ml/Hweh-6M
+Pinned-Revision = 710d8df83c41ed4555cd94871f8b64382f514bb8
+Architecture = multitask LSTM
+Parameter-Count-Observed = 6793560
+Input-Shape = 1 x 72 x 22
+Forecast-Hours = 12
+Location-Index-Tested = 0
+Synthetic-Seed = 42
+
+[compatibility]
+Configuration-Fix = Read distill_teacher_head_dim from kwargs and use hidden_dim as the default.
+Dynamic-Module-Cache = Project-local cache is cleared before loading custom code.
+Checkpoint-Warning = distill_proj.weight may be newly initialized because it is absent from the checkpoint.
+
+[test-result]
+Native-PyTorch-Inference-Seconds = 10.862953
+FlagGems-First-Inference-Seconds = 35.590946
+Forecast-Rows = 12
+Finite-Outputs = True
+
+[installation-rule]
+Command = python -m pip install -r requirements.txt
+Warning = Do not replace the platform-provided PyTorch or FlagGems packages.

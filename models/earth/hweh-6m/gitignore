@@ -1,0 +1,27 @@
+# Python and Notebook caches
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Downloaded Hugging Face model and dynamic custom-code cache
+model_files/
+hf_cache/
+hf_modules_cache/
+.huggingface/
+
+# Generated input/output files
+hweh_outputs/
+*.npy
+*.npz
+*.csv
+*.json
+*.png
+*.log
+
+# Local environments and editor files
+.venv/
+venv/
+env/
+.vscode/
+.idea/
+.DS_Store

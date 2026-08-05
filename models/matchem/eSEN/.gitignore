@@ -1,0 +1,8 @@
+weight/
+datasets/
+resources/
+outputs/
+checkpoints/
+*.log
+*.traj
+relaxed.cif

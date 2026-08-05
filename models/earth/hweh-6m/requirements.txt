@@ -1,0 +1,14 @@
+# Hweh-6M inference dependencies for OneScience / FlagOS
+#
+# Keep the platform-provided PyTorch and FlagGems builds.
+# Do not add torch, torchvision, triton or flag-gems to this file.
+
+transformers==4.45.0
+tokenizers==0.20.3
+huggingface_hub==0.25.2
+safetensors==0.4.5
+numpy==1.26.3
+pandas==2.2.3
+matplotlib==3.10.1
+requests==2.33.1
+urllib3==1.26.20
