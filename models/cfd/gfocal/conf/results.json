@@ -1,0 +1,7 @@
+{
+  "model": "gfocal",
+  "best_val_loss": 0.5713259804993868,
+  "test_loss": 0.8649826437979936,
+  "params": 166532,
+  "epochs": 20
+}

@@ -1,0 +1,16 @@
+{
+  "framework": "PyTorch",
+  "task": "cfd-flow-field-prediction",
+  "allow_remote": true,
+  "model": {"type": "custom", "repo_id": "OneScience/GeoANF"},
+  "pipeline": {"type": "custom"},
+  "preprocessor": {},
+  "train": {},
+  "tags": [
+    "geometric-attention",
+    "neural-field",
+    "airfoil-flow-prediction",
+    "implicit-neural-representation",
+    "aerodynamics-surrogate"
+  ]
+}

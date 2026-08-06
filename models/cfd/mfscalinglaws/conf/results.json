@@ -1,0 +1,7 @@
+{
+  "model": "mfscalinglaws",
+  "best_val_loss": 0.4592514934949577,
+  "test_loss": 0.44332006976008415,
+  "params": 135305,
+  "epochs": 20
+}

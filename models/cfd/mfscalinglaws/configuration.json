@@ -1,0 +1,16 @@
+{
+  "framework": "PyTorch",
+  "task": "cfd-flow-field-prediction",
+  "allow_remote": true,
+  "model": {"type": "custom", "repo_id": "OneScience/MfScalingLaws"},
+  "pipeline": {"type": "custom"},
+  "preprocessor": {},
+  "train": {},
+  "tags": [
+    "scaling-laws",
+    "multi-fidelity-cfd",
+    "neural-surrogate",
+    "fidelity-mixing",
+    "data-efficiency-analysis"
+  ]
+}

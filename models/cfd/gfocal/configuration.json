@@ -1,0 +1,16 @@
+{
+  "framework": "PyTorch",
+  "task": "cfd-flow-field-prediction",
+  "allow_remote": true,
+  "model": {"type": "custom", "repo_id": "OneScience/GFocal"},
+  "pipeline": {"type": "custom"},
+  "preprocessor": {},
+  "train": {},
+  "tags": [
+    "neural-operator",
+    "global-focal-attention",
+    "pde-on-arbitrary-geometry",
+    "nystrom-approximation",
+    "operator-learning"
+  ]
+}

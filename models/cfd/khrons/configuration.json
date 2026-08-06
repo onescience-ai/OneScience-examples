@@ -1,0 +1,16 @@
+{
+  "framework": "PyTorch",
+  "task": "cfd-flow-field-prediction",
+  "allow_remote": true,
+  "model": {"type": "custom", "repo_id": "OneScience/KHRONOS"},
+  "pipeline": {"type": "custom"},
+  "preprocessor": {},
+  "train": {},
+  "tags": [
+    "kernel-method",
+    "multi-fidelity-prediction",
+    "aerodynamic-surrogate",
+    "resource-efficient-neural-network",
+    "tensor-decomposition"
+  ]
+}

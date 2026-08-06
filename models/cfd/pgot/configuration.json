@@ -1,0 +1,16 @@
+{
+  "framework": "PyTorch",
+  "task": "cfd-flow-field-prediction",
+  "allow_remote": true,
+  "model": {"type": "custom", "repo_id": "OneScience/PGOT"},
+  "pipeline": {"type": "custom"},
+  "preprocessor": {},
+  "train": {},
+  "tags": [
+    "physics-geometry-operator",
+    "operator-transformer",
+    "pde-solver",
+    "specgeo-attention",
+    "physics-informed-learning"
+  ]
+}

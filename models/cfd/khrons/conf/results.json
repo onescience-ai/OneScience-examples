@@ -1,0 +1,7 @@
+{
+  "model": "khrons",
+  "best_val_loss": 0.7360149808228016,
+  "test_loss": 0.7390330900624394,
+  "params": 22781,
+  "epochs": 20
+}
