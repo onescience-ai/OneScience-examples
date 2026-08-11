@@ -1,0 +1,14 @@
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.npy
+*.npz
+*.csv
+*.docx
+validation_results/
+*pycache*/
+*.py[cod]
+.ipynb_checkpoints/
+*.part

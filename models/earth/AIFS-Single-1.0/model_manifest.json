@@ -1,0 +1,23 @@
+{
+  "model_id": "ecmwf/aifs-single-1.0",
+  "model_page": "https://huggingface.co/ecmwf/aifs-single-1.0",
+  "repository_revision": "f0bb02c077e65a516dadc018c31bc5ddf65ff829",
+  "checkpoint": {
+    "filename": "aifs-single-mse-1.0.ckpt",
+    "bytes": 994084883,
+    "sha256": "1fed399c097c0127d5bbe074f4f8bbc123759736145d990699c215ff07543ccd",
+    "xet_hash": "8e22499e1e32d7586db3d344fdb0f2adcaa3bc85b4afa6a4f0e54a0a58ba340d",
+    "format": "PyTorch pickle checkpoint",
+    "security_note": "Only load after the exact size and SHA256 have been verified."
+  },
+  "official_inference_stack": {
+    "anemoi-inference": "0.4.9",
+    "anemoi-models": "0.3.1",
+    "torch_in_official_notebook": "2.4.0",
+    "torch_in_onescience_environment": "2.4.1"
+  },
+  "download_verification": {
+    "verified": true,
+    "verified_sha256": "1fed399c097c0127d5bbe074f4f8bbc123759736145d990699c215ff07543ccd"
+  }
+}

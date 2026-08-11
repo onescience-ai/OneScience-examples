@@ -1,0 +1,33 @@
+{
+  "model_id": "extreme-weather-impacts/Qwen2.5-7B-Instruct-impact",
+  "model_page": "https://huggingface.co/extreme-weather-impacts/Qwen2.5-7B-Instruct-impact",
+  "repository_revision": "4aa57015775cd4feac38a2c9b564430d5dbff53e",
+  "license": "apache-2.0",
+  "task": "binary extreme-weather impact detection from company disclosures",
+  "official_inference_backend": "vLLM",
+  "weight_format": "safetensors",
+  "weight_total_bytes": 15231271528,
+  "weight_shards": [
+    {
+      "filename": "model-00001-of-00004.safetensors",
+      "bytes": 4877660672,
+      "sha256": "57d0f67fd5f05652f97c51057a46d2cb4217d50615f6b1b2304c740ceb240d76"
+    },
+    {
+      "filename": "model-00002-of-00004.safetensors",
+      "bytes": 4932750888,
+      "sha256": "10e6d1e753d4fa4d729125b7235b0e307c24c62351aa89e7e6ede831898de989"
+    },
+    {
+      "filename": "model-00003-of-00004.safetensors",
+      "bytes": 4330865088,
+      "sha256": "b5f4e515d6b12510d85d11d60c436922b5d3f70bc8e1283fac098db7fc753a6b"
+    },
+    {
+      "filename": "model-00004-of-00004.safetensors",
+      "bytes": 1089994880,
+      "sha256": "053d06aa9a6579967b3653c789151a7edf361899e7804c10a756b53286f602e8"
+    }
+  ],
+  "download_note": "File sizes and SHA256 values were read from the Hugging Face model API with blobs=true."
+}

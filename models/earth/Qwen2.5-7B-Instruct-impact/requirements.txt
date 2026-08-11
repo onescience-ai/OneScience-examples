@@ -1,0 +1,16 @@
+# Environment record for OneScience; do not run this file with pip blindly.
+#
+# Deep-learning runtime already supplied by the container:
+# torch==2.4.1
+# vllm==0.6.2+das.opt3.dtk2504
+#
+# Required Python packages:
+transformers>=4.48.2
+safetensors
+#
+# Optional, only for validation_preview.png:
+matplotlib
+#
+# The official model card mentions unsloth only to install the Qwen 2.5 chat
+# template. This downloaded repository already contains its chat template in
+# tokenizer_config.json, so train.py does not require unsloth.

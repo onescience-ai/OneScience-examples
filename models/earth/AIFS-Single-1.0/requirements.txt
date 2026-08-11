@@ -1,0 +1,9 @@
+anemoi-utils[provenance,text]==0.4.9
+anemoi-transform>=0.1
+aniso8601
+anytree
+earthkit-data>=0.11.2
+eccodes>=2.38.3
+semantic-version
+omegaconf
+matplotlib

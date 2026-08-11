@@ -1,0 +1,32 @@
+{
+  "architectures": [
+    "ConvBaseline"
+  ],
+  "image_size": [
+    32,
+    48
+  ],
+  "input_shape": [
+    44,
+    60
+  ],
+  "interpolation_method": "bicubic",
+  "model_type": "convbilinear",
+  "num_channels": 1,
+  "sample_size": [
+    160,
+    240
+  ],
+  "torch_dtype": "float32",
+  "transformers_version": "4.30.2",
+  "upblock_channels": [
+    32,
+    16
+  ],
+  "upblock_kernel_size": [
+    5,
+    3
+  ],
+  "upscale": 5,
+  "upscale_power2": 3
+}

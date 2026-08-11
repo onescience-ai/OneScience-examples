@@ -1,0 +1,14 @@
+*.ckpt
+*.pt
+*.pth
+*.safetensors
+*.npz
+*.npy
+*.grib
+*.grib2
+validation_results/
+pip_before_*.txt
+pip_after_*.txt
+*pycache*/
+*.py[cod]
+.ipynb_checkpoints/
