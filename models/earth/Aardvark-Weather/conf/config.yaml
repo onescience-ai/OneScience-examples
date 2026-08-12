@@ -1,0 +1,14 @@
+training:
+  data: weights/sample_data/sample_data_final.pkl
+  output_dir: weight/training
+  epochs: 10
+  train_steps: 8
+  validation_steps: 2
+  validation_fraction: 0.2
+  batch_size: 1
+  learning_rate: 1.0e-5
+  weight_decay: 1.0e-6
+  gradient_clip: 1.0
+  patience: 3
+  seed: 2026
+  train_modules: decoder

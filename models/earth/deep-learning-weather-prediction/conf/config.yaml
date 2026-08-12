@@ -1,0 +1,11 @@
+training:
+  epochs: 10
+  batch_size: 4
+  train_samples: 64
+  validation_samples: 16
+  learning_rate: 0.001
+  weight_decay: 0.0
+  patience: 3
+  seed: 2026
+  device: cpu
+  checkpoint_dir: weight/training

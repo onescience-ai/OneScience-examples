@@ -1,0 +1,15 @@
+{
+  "nlat": 17,
+  "nlon": 32,
+  "channels": 2,
+  "timesteps": 6,
+  "batch_size": 2,
+  "embed_dim": 8,
+  "num_layers": 2,
+  "scale_factor": 2,
+  "rollout_steps": 3,
+  "learning_rate": 0.001,
+  "seed": 2026,
+  "grid": "equiangular",
+  "grid_internal": "legendre-gauss"
+}

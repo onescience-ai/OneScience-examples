@@ -1,0 +1,185 @@
+model:
+
+    start_epoch: 0
+    max_epoch: 10
+    lr: 5e-4
+    beta_1: 0.9
+    beta_2: 0.99
+    weight_decay: 1e-5
+    warmup_epochs: 10000
+    warmup_start_lr: 1e-8
+    eta_min: 1e-8
+
+    # ClimaX architecture params (from official config)
+    img_size: [32, 64]               # 5.625° resolution (lat, lon)
+    patch_size: 2
+    embed_dim: 1024
+    depth: 8
+    decoder_depth: 2
+    num_heads: 16
+    mlp_ratio: 4.0
+    drop_path: 0.1
+    drop_rate: 0.1
+
+    # Forecasting settings
+    # NOTE: ERA5 data has 6-hour time steps (time_step=6 in HDF5 files).
+    # The lead_time passed to the model is (predict_range * hrs_each_step) / 100.
+    # For 6-hour forecast: predict_range=6, hrs_each_step=1 → lead_time=0.06
+    # For 72-hour forecast: predict_range=72, hrs_each_step=1 → lead_time=0.72
+    # The model conditions on lead_time; it must match the actual data gap.
+    predict_range: 6                  # forecast lead time in hours
+    hrs_each_step: 1                  # hours per data step factor for lead_time computation
+
+    checkpoint_dir: "./data/checkpoints"
+    patience: 50
+
+# 整个数据读取流程
+datapipe:
+  name: "ERA5"
+  task: "weather_forecasting"
+
+  # dataset设定
+  dataset:
+    type: "hdf5"
+    data_dir: './data/' # "$ONESCIENCE_DATASETS_DIR/ERA5/newh5/"
+
+    train_time: [2000, 2001]
+    val_time: [2002]
+    test_time: [2003]
+    img_size: [32, 64]
+    verbose: true
+    cache: false
+
+    # ClimaX 48 input variables: 3 constants + 3 surface + 42 pressure-level
+    channels:
+      # Static constants (3)
+      - "land_sea_mask"
+      - "orography"
+      - "lattitude"
+
+      # Surface variables (3)
+      - "2m_temperature"
+      - "10m_u_component_of_wind"
+      - "10m_v_component_of_wind"
+
+      # Geopotential at 7 pressure levels
+      - "geopotential_50"
+      - "geopotential_250"
+      - "geopotential_500"
+      - "geopotential_600"
+      - "geopotential_700"
+      - "geopotential_850"
+      - "geopotential_925"
+
+      # U component of wind at 7 pressure levels
+      - "u_component_of_wind_50"
+      - "u_component_of_wind_250"
+      - "u_component_of_wind_500"
+      - "u_component_of_wind_600"
+      - "u_component_of_wind_700"
+      - "u_component_of_wind_850"
+      - "u_component_of_wind_925"
+
+      # V component of wind at 7 pressure levels
+      - "v_component_of_wind_50"
+      - "v_component_of_wind_250"
+      - "v_component_of_wind_500"
+      - "v_component_of_wind_600"
+      - "v_component_of_wind_700"
+      - "v_component_of_wind_850"
+      - "v_component_of_wind_925"
+
+      # Temperature at 7 pressure levels
+      - "temperature_50"
+      - "temperature_250"
+      - "temperature_500"
+      - "temperature_600"
+      - "temperature_700"
+      - "temperature_850"
+      - "temperature_925"
+
+      # Relative humidity at 7 pressure levels
+      - "relative_humidity_50"
+      - "relative_humidity_250"
+      - "relative_humidity_500"
+      - "relative_humidity_600"
+      - "relative_humidity_700"
+      - "relative_humidity_850"
+      - "relative_humidity_925"
+
+      # Specific humidity at 7 pressure levels
+      - "specific_humidity_50"
+      - "specific_humidity_250"
+      - "specific_humidity_500"
+      - "specific_humidity_600"
+      - "specific_humidity_700"
+      - "specific_humidity_850"
+      - "specific_humidity_925"
+
+    # ClimaX output variables (5)
+    out_variables:
+      - "geopotential_500"
+      - "temperature_850"
+      - "2m_temperature"
+      - "10m_u_component_of_wind"
+      - "10m_v_component_of_wind"
+
+    # Short names for evaluation
+    variables:
+      - "z500"
+      - "t850"
+      - "t2m"
+      - "u10"
+      - "v10"
+
+    # 时间配置
+    time_range: ["2000-01-01", "2020-12-31"]
+    time_steps: 1
+    time_res: 6
+
+    # 空间配置
+    spatial_resolution: [5.625, 5.625]
+
+    # 采样配置
+    num_samples: -1  # -1 表示使用全部数据
+    shuffle: true
+    random_seed: 42
+
+    # 领域特定配置
+    extra:
+      levels: [500, 850]
+      lat_range: [-90, 90]
+      lon_range: [0, 360]
+
+  # 数据转换配置
+  transforms:
+    - type: "Normalize"
+      params:
+        mean: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        std: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+        keys: ["input", "target"]
+
+    - type: "ToTensor"
+      params:
+        keys: null  # null表示转换所有numpy数组
+
+  # DataLoader配置
+  dataloader:
+    mask_dtype: "float32"
+    batch_size: 1
+    num_workers: 1
+    pin_memory: true
+    drop_last: true
+    shuffle: false  # 使用sampler时设为false
+    prefetch_factor: 2
+    persistent_workers: true
+
+  # 分布式配置
+  distributed:
+    enabled: true
+    sampler: "DistributedSampler"
+    rank: 0
+    world_size: 4
+    shuffle: true
+    seed: 42
+    drop_last: true

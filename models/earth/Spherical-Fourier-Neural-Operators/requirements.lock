@@ -1,0 +1,3 @@
+# Official NVIDIA package. PyPI 0.8.0 corresponds to upstream tag v0.8.0.
+# Upstream tag commit: c7afb5461e6c4c9298ce5afd3ada1f8436cdc15d
+torch-harmonics==0.8.0
