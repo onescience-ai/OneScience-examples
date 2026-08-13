@@ -1,0 +1,114 @@
+experiment:
+  name: E3
+  model: MP-PDE
+  paper: https://arxiv.org/abs/2202.03376
+  evidence_priority: paper_then_official_repo_for_missing_details
+  ambiguity_policy: paper_strict  # paper_strict: omega=[-0.4,-0.4]; official_consistency: [-0.4,0.4]
+
+paths:
+  data: data/e3.h5
+  checkpoint: weight/best_model.pth
+  results: results
+  train_history: results/train_history.json
+  predictions: results/predictions.npz
+  metrics: results/metrics.json
+
+data:
+  domain_length: 16.0
+  final_time: 4.0
+  num_time_points: 250  # E3 Table 1; nearby prose says 200
+  high_resolution_nx: 200
+  resolution: 100
+  supported_resolutions: [100, 50, 40]
+  sample_fraction: 0.3333333333333333  # user-authorized reduced run, 784/2352 trajectories exactly
+  full_experiment_samples:
+    train: 2096  # paper; official README says 2048
+    valid: 128   # paper missing; official README reference
+    test: 128    # paper missing; official README reference
+  train_samples: 698
+  valid_samples: 43
+  test_samples: 43
+  seed: 0
+  equation:
+    alpha_range: [0.0, 3.0]
+    beta_range: [0.0, 0.4]
+    gamma_range: [0.0, 1.0]
+  forcing:
+    terms: 5
+    amplitude_range: [-0.5, 0.5]
+    paper_omega_range: [-0.4, -0.4]
+    official_consistency_omega_range: [-0.4, 0.4]
+    modes: [1, 2, 3]
+    phase_range: [0.0, 6.283185307179586]
+  generation:
+    cfl: 0.2
+    min_dt: 1.0e-8
+    max_substeps: 10000
+    weno_epsilon: 1.0e-6
+    compression: gzip
+    compression_level: 4
+  parallel_generation:
+    workers: 8
+    max_in_flight: 16
+    flush_every: 8
+    resume_partial: true
+
+model:
+  time_window: 25  # paper missing; official training command reference
+  hidden_dim: 164
+  message_passing_layers: 6
+  neighbor_offsets: [-3, -2, -1, 1, 2, 3]
+  aggregation: sum
+  instance_norm_affine: false
+  decoder:
+    middle_channels: 8
+    kernel_sizes: [16, 26]
+    strides: [3, 1]
+  scaling:
+    coordinates: true
+    parameters: true
+    solution: none
+
+training:
+  epochs: 20
+  batch_size: 16
+  num_workers: 0
+  optimizer: AdamW
+  learning_rate: 1.0e-4
+  weight_decay: 1.0e-8
+  loss: rmse
+  loss_epsilon: 1.0e-12
+  max_no_grad_pushes: 1
+  scheduler:
+    enabled: true
+    milestones: [1, 5, 10, 15]
+    gamma: 0.4
+  precision: float32
+  amp: false
+  gradient_clip: null
+  seed: 0
+  deterministic: true
+  device: auto
+  print_interval: 10
+  validation_rollout_samples: null
+  test_rollout_samples: null
+
+inference:
+  batch_size: 16
+  split: test
+  max_samples: null
+  device: auto
+  forecast_start_index: 25
+
+visualization:
+  sample_index: 0
+  time_indices: [25, 75, 150, 249]
+  dpi: 160
+
+paper_reference:
+  metric: forecast_accumulated_mse
+  values:
+    100: 4.26
+    50: 3.74
+    40: 3.70
+  note: provenance_only_not_an_assertion

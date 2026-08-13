@@ -1,0 +1,202 @@
+project:
+  name: DeepONet
+  paper: "DeepONet: Learning nonlinear operators for identifying differential equations based on the universal approximation theorem of operators"
+  arxiv: "1910.03193v3"
+  paper_url: "https://arxiv.org/abs/1910.03193"
+  implementation_policy: "paper_first_independent_reimplementation"
+  paper_scale: true
+
+paths:
+  checkpoint: weight/best_model.pth
+  results: results
+  cache: results/cache
+
+runtime:
+  seed: 0                    # ASSUMPTION: the paper does not report seeds.
+  device: auto
+  dtype: float32             # ASSUMPTION: precision is not reported.
+  num_workers: 0
+
+function_space:
+  type: grf
+  length_scale: 0.2          # PAPER: default RBF-GRF length scale.
+  grf_grid_size: 1000        # OFFICIAL_REPO_REFERENCE: paper omits this discretization.
+  jitter: 1.0e-13            # OFFICIAL_REPO_REFERENCE: numerical Cholesky stabilizer.
+  interpolation: cubic       # OFFICIAL_REPO_REFERENCE.
+  generation_chunk_size: 128
+  chebyshev:
+    degree: 10
+    coefficient_bound: 1.0
+
+model_defaults:
+  architecture: deeponet
+  activation: relu           # OFFICIAL_REPO_REFERENCE: paper does not state activation.
+  initializer: xavier_normal # OFFICIAL_REPO_REFERENCE: PyTorch equivalent of Glorot normal.
+  dense_bias: true
+  branch_depth: 2            # ASSUMPTION: number of Dense layers after the input.
+  trunk_depth: 3             # ASSUMPTION: number of Dense layers after the input.
+  width: 40
+  latent_dim: 40
+
+variants:
+  unstacked_bias:
+    architecture: deeponet
+    stacked: false
+    branch_output_bias: true
+    global_bias: true
+  unstacked_no_bias:
+    architecture: deeponet
+    stacked: false
+    branch_output_bias: false
+    global_bias: false
+  stacked_bias:
+    architecture: deeponet
+    stacked: true
+    branch_output_bias: true
+    global_bias: true
+  stacked_no_bias:
+    architecture: deeponet
+    stacked: true
+    branch_output_bias: false
+    global_bias: false
+  fnn:
+    architecture: fnn
+    depth: 3
+    width: 40
+    output_bias: true
+
+training_defaults:
+  optimizer: adam
+  learning_rate: 1.0e-3      # PAPER.
+  batch_size: null           # OFFICIAL_REPO_REFERENCE: null means full batch.
+  evaluation_batch_size: 8192
+  weight_decay: 0.0          # No paper evidence; disabled.
+  print_every: 1000
+  evaluate_every: 1000
+  checkpoint_metric: test_mse
+  resume: false
+
+solver_defaults:
+  method: RK45               # PAPER: Runge-Kutta (4,5); method name from official reference.
+  rtol: 1.0e-7               # ASSUMPTION: solver tolerances are not reported.
+  atol: 1.0e-9
+  pde_newton_tolerance: 1.0e-10
+  pde_newton_max_iterations: 20
+
+experiments:
+  antiderivative:
+    equation: "ds/dx = u(x), s(0) = 0"
+    sensor_points: 100
+    trunk_dim: 1
+    domain_end: 1.0
+    train_size: 10000
+    test_size: 100000
+    iterations: 50000
+    default_variant: unstacked_bias
+    sweeps:
+      architectures: [fnn, unstacked_no_bias, unstacked_bias, stacked_no_bias, stacked_bias]
+      fnn_depths: [2, 3, 4]
+      fnn_widths: [20, 40, 100]
+      learning_rates: [0.0001, 0.001, 0.01]
+
+  nonlinear_ode:
+    equation: "ds/dx = -s^2 + u(x), s(0) = 0"
+    sensor_points: 100
+    trunk_dim: 1
+    domain_end: 1.0
+    train_size: 10000
+    test_size: 100000
+    iterations: 100000
+    default_variant: unstacked_bias
+    trim_fraction: 0.001
+    ood_functions: [linear, sin_pi, sin_2pi]
+    sweeps:
+      architectures: [stacked_no_bias, stacked_bias, unstacked_no_bias, unstacked_bias]
+
+  pendulum:
+    equation: "ds1/dt = s2; ds2/dt = -k*sin(s1) + u(t); s(0) = (0,0)"
+    sensor_points: 100
+    trunk_dim: 1
+    domain_end: 1.0
+    k: 1.0
+    train_size: 10000
+    test_size: 100000
+    iterations: 100000
+    default_variant: unstacked_bias
+    convergence_iterations: 500000
+    convergence_test_size: 1000000
+    sweeps:
+      sensor_points: [10, 20, 50, 100, 200]
+      domain_end: [1.0, 2.0, 3.0, 4.0]
+      length_scale: [0.1, 0.2, 0.5, 1.0]
+      k: [0.5, 1.0, 2.0]
+      width: [20, 40, 100]
+      train_size: [1000, 5000, 10000]
+      chebyshev_degree: [5, 10, 20]
+
+  diffusion_reaction:
+    equation: "s_t = D*s_xx + k*s^2 + u(x)"
+    sensor_points: 100
+    trunk_dim: 2
+    domain_end: 1.0
+    train_functions: 100
+    points_per_function: 1000
+    test_functions: 1000
+    test_points_per_function: 1000
+    test_size: 1000000
+    iterations: 500000
+    default_variant: unstacked_bias
+    diffusion: 0.01
+    reaction: 0.01
+    space_points: 100
+    time_points: 100
+    branch_depth: 2
+    trunk_depth: 3
+    width: 100
+    latent_dim: 100
+    sweeps:
+      train_functions: [50, 100, 200, 400]
+      points_per_function: [10, 100, 1000, 10000]
+
+inference:
+  batch_size: 8192
+  ood_query_points: 100
+  save_inputs: true
+
+smoke_test:
+  project:
+    paper_scale: false
+  function_space:
+    grf_grid_size: 32
+    generation_chunk_size: 16
+  training_defaults:
+    batch_size: 16
+    evaluation_batch_size: 32
+    print_every: 1
+    evaluate_every: 1
+  experiments:
+    antiderivative:
+      sensor_points: 16
+      train_size: 32
+      test_size: 24
+      iterations: 2
+    nonlinear_ode:
+      sensor_points: 16
+      train_size: 24
+      test_size: 16
+      iterations: 2
+    pendulum:
+      sensor_points: 16
+      train_size: 24
+      test_size: 16
+      iterations: 2
+    diffusion_reaction:
+      sensor_points: 16
+      train_functions: 4
+      points_per_function: 8
+      test_functions: 2
+      test_points_per_function: 8
+      test_size: 16
+      space_points: 12
+      time_points: 12
+      iterations: 2

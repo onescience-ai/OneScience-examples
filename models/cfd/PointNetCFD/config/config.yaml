@@ -1,0 +1,56 @@
+# PointCFD main experiment from arXiv:2010.09469.
+experiment:
+  name: pointcfd_main
+  paper: https://arxiv.org/pdf/2010.09469
+
+paths:
+  data_dir: /public/share/sugonhpcapp01/onestore/onedatasets/PointNetCFD_data
+  data_file: CFDdata.npy
+  train_indices: training_idx.npy
+  validation_indices: validation_idx.npy
+  test_indices: test_idx.npy
+  checkpoint: weight/best_model.pth
+  results_dir: results
+
+data:
+  num_points: 1024
+  source_channels: [x, y, p, u, v]
+  input_indices: [0, 1]
+  target_indices: [3, 4, 2]
+  input_names: [x, y]
+  target_names: [u, v, p]
+  coordinate_normalization: none
+  target_normalization: train_minmax
+
+model:
+  input_dim: 2
+  output_dim: 3
+  global_feature_dim: 1024
+  expected_paper_parameters: 3552588
+
+training:
+  # The paper does not report a random seed; zero is the reproducible default.
+  seed: 0
+  epochs: 4000
+  batch_size: 256
+  num_workers: 0
+  optimizer: adam
+  learning_rate: 0.0005
+  beta1: 0.9
+  beta2: 0.999
+  epsilon: 0.000001
+  weight_decay: 0.0
+  scheduler: none
+  precision: float32
+  validation_interval: 1
+  log_every_batches: 1
+  # The paper validates each epoch but does not define checkpoint selection.
+  best_metric: val_mse
+
+evaluation:
+  relative_l2_epsilon: 1.0e-12
+  visualization_cases: 3
+  paper_reference_mean_relative_l2:
+    u: 0.0449666
+    v: 0.0370540
+    p: 0.0271661

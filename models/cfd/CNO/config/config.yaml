@@ -1,0 +1,81 @@
+# Paper-faithful configuration for arXiv:2302.01178, Table 12 and Appendix C.
+experiment:
+  name: cno_navier_stokes_2d
+  paper: https://arxiv.org/pdf/2302.01178
+  seed: 0                    # Paper-unspecified, explicit reproducibility choice.
+  deterministic: true
+
+paths:
+  data_dir: /public/share/sugonhpcapp01/onestore/onedatasets/RPB_CNO/data
+  train_file: NavierStokes_64x64_IN.h5
+  id_test_file: NavierStokes_64x64_IN.h5
+  ood_test_file: NavierStokes_128x128_OUT.h5
+  checkpoint: weight/best_model.pth
+  results_dir: results
+
+data:
+  input_key: input
+  output_key: output
+  train:
+    start: 0
+    stop: 750
+  validation:
+    start: 768
+    stop: 896
+  test_id:
+    start: 896
+    stop: 1024
+  test_ood:
+    start: 0
+    stop: 128
+
+# The paper requires [0,1] training normalization and reuse at test time but
+# does not publish its constants. These extrema were measured once from the
+# supplied 64x64 ID benchmark and are fixed for every split, including OOD.
+normalization:
+  source: supplied_64x64_id_benchmark
+  input_min: -1.4294605255126953
+  input_max: 1.4294605255126953
+  output_min: -2.0383081436157227
+  output_max: 2.0602376461029053
+  epsilon: 1.0e-12
+
+model:
+  in_channels: 1
+  out_channels: 1
+  base_width: 32             # d_e in Table 12.
+  levels: 3                  # M in Table 12.
+  bottleneck_residual_blocks: 8
+  intermediate_residual_blocks: 1
+  kernel_size: 3
+  latent_channels: 64        # Paper-unspecified lift/project internal width.
+  activation_upsampling_factor: 2  # N_sigma.
+  filter_taps: 12            # N_tap.
+  filter_half_width: 0.8     # c_h.
+  cutoff_denominator: 2.0001
+  leaky_relu_slope: 0.2      # Paper-unspecified, official supplemental fact.
+
+training:
+  epochs: 1000
+  batch_size: 32
+  num_workers: 4
+  optimizer: Adam
+  learning_rate: 0.001
+  weight_decay: 1.0e-10
+  scheduler: StepLR
+  scheduler_step_size: 1
+  scheduler_gamma: 0.98
+  early_stopping_patience: 50
+  log_interval: 5
+  device: auto
+
+inference:
+  batch_size: 16
+  num_workers: 2
+  device: auto
+  metric_epsilon: 1.0e-12
+
+paper_reference:
+  metric: relative_median_l1_percent
+  id: 2.76
+  ood: 7.04

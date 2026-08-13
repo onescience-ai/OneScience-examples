@@ -1,0 +1,99 @@
+paper:
+  title: "Fourier Neural Operator for Parametric Partial Differential Equations"
+  arxiv: "2010.08895"
+  experiment: "FNO-2D Navier-Stokes, nu=1e-5, T=20"
+  viscosity: 1.0e-5
+  reference_relative_l2: 0.1556
+  reference_parameter_count: 414517
+  reference_epoch_seconds_v100: 127.80
+
+data:
+  root: "/public/share/sugonhpcapp01/onestore/onedatasets/FNO_data"
+  file: "NavierStokes_V1e-5_N1200_T20.mat"
+  key: "u"
+  layout: "N,H,W,T"
+  dtype: "float32"
+  expected_shape: [1200, 64, 64, 20]
+  resolution: [64, 64]
+  ntrain: 1000
+  ntest: 200
+  train_start: 0
+  test_start: 1000
+  history: 10
+  horizon: 10
+  recording_interval: 1.0
+  future_times: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+  normalization: "none"
+
+model:
+  name: "FNO2d"
+  input_channels: 10
+  output_channels: 1
+  use_grid: true
+  grid_channels: 2
+  grid_include_endpoint: false
+  width: 32
+  modes1: 12
+  modes2: 12
+  num_layers: 4
+  projection_width: 128
+  activation: "relu"
+  normalization: "batch_norm"
+  block_order: "relu(batch_norm(spectral_plus_pointwise))"
+  fft_norm: "backward"
+  spectral_init: "scaled_uniform_complex"
+
+training:
+  epochs: 500
+  batch_size: 20
+  optimizer: "adam"
+  learning_rate: 0.001
+  weight_decay: 0.0
+  scheduler: "step_lr"
+  scheduler_step_size: 100
+  scheduler_gamma: 0.5
+  seed: 0
+  dtype: "float32"
+  amp: false
+  gradient_clipping: null
+  ema: false
+  distributed: "single"
+  num_workers: 0
+  pin_memory: true
+  deterministic: true
+  relative_l2_epsilon: 1.0e-12
+  train_rollout_steps: 10
+  evaluation_rollout_steps: 10
+  checkpoint_monitor: "train_full_relative_l2"
+  checkpoint_mode: "min"
+  evaluate_test_every_epoch: true
+
+inference:
+  batch_size: 20
+  seed: 0
+  dtype: "float32"
+  rollout_steps: 10
+
+paths:
+  checkpoint: "weight/best_model.pth"
+  results_dir: "results"
+  train_history: "results/train_history.json"
+  predictions: "results/predictions.npz"
+  metrics: "results/metrics.json"
+  per_sample_metrics: "results/per_sample_metrics.csv"
+  training_curves: "results/training_curves.png"
+  rollout_figure: "results/sample_000_rollout.png"
+  run_metadata: "results/run_metadata.json"
+  summary: "results/summary.md"
+
+assumptions:
+  - "The paper does not specify a validation split; the best checkpoint is selected using train full-trajectory relative L2, never test error."
+  - "The paper does not specify batch size or seed; batch_size=20 and seed=0 are explicit engineering assumptions."
+  - "The paper does not define the exact relative-L2 reduction; ratios are computed per sample and then averaged with epsilon=1e-12."
+  - "The paper does not specify the projection hidden width; projection_width=128 is configurable."
+  - "Coordinate-grid input is configurable and enabled; the periodic grid excludes the duplicated endpoint."
+  - "The block ordering is ReLU(BatchNorm(spectral + pointwise)); the paper states ReLU and batch normalization but not their exact order."
+  - "Adam uses weight_decay=0.0 because the paper does not state an additional weight-decay regularizer."
+
+conflicts:
+  - "The paper states d_v=32 but reports 414,517 parameters without enough connection details to reproduce both uniquely. Width 32 takes precedence and the actual parameter count must be reported."
