@@ -1,0 +1,17 @@
+{
+  "framework": "PyTorch",
+  "task": "CFD surrogate modeling (Darcy flow)",
+  "allow_remote": true,
+  "model": {
+    "type": "DSMPNN-S-MPNN",
+    "repo_id": "OneScience/DSMPNN-DarcyFlow"
+  },
+  "pipeline": {
+    "type": "graph-neural-network-surrogate"
+  },
+  "preprocessor": {},
+  "train": {
+    "entry": "scripts/train.py",
+    "config": "conf/darcy_tier1.yaml"
+  }
+}

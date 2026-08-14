@@ -1,0 +1,8 @@
+{
+  "forward_pass": "pass",
+  "backward_pass": "pass",
+  "train_loop_dry_run": "pass",
+  "validation_loop_dry_run": "pass",
+  "rmse_dry_run": "pass",
+  "config_consistency": "pass"
+}

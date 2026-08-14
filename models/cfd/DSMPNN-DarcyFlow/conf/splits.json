@@ -1,0 +1,5 @@
+{
+  "train": 8,
+  "test": 4,
+  "format": "pyg_graph (.pt)"
+}

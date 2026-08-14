@@ -1,0 +1,7 @@
+{
+  "metric": "mean_l2_relative_error",
+  "value": 0.389791197922765,
+  "split": "test",
+  "n_samples": 195,
+  "paper_reference": 0.0188
+}

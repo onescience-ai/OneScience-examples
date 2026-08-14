@@ -1,0 +1,25 @@
+{
+  "framework": "PyTorch",
+  "task": "neural-field-pde-surrogate",
+  "allow_remote": true,
+  "model": {
+    "type": "EquivariantNeuralField",
+    "repo_id": "OneScience/enf2enf"
+  },
+  "pipeline": {
+    "type": "field-regression"
+  },
+  "preprocessor": {
+    "normalization": "min-max coords to [-1,1]; z-score output field; stats from train split",
+    "geometry_descriptor": "displacement field XY - mean(XY_train)"
+  },
+  "train": {
+    "phases": ["encoder(L_a, CAVIA inner loop K=3)", "decoder(L_u, latent self-attention + equivariant decode)"],
+    "optimizer": "Adam lr=1e-4",
+    "n_lat": 9,
+    "l_dim": 8,
+    "heads": 2,
+    "sigma_window": 0.1,
+    "rff": {"encoder": [128, 2], "decoder": [256, 10]}
+  }
+}

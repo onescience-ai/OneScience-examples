@@ -1,0 +1,27 @@
+{
+  "schema_version": "onescience-trainer-run-v1",
+  "run_id": "smpnn_darcy_v1",
+  "code_save_dir": "dsmpnn",
+  "trainer_workdir": ".trainer_work/smpnn_darcy_v1",
+  "workdir": ".trainer_work/smpnn_darcy_v1",
+  "phase_status": {
+    "0_input_acquisition": "success",
+    "1_training_knowledge": "success",
+    "2_data_and_split": "success",
+    "3_training_strategy": "success",
+    "4_codegen": "success",
+    "5_execution": "running",
+    "6_validation": "pending"
+  },
+  "artifacts": {},
+  "handoffs": {},
+  "blockers": [],
+  "assumptions": [
+    "\u8fb9\u5c5e\u6027\u66f4\u65b0\u7ef4\u5ea6\u6295\u5f71\u5230 edge_channels"
+  ],
+  "sources": [
+    "arXiv:2402.15106",
+    "reproduction_spec.md",
+    "coder_task_description.md"
+  ]
+}

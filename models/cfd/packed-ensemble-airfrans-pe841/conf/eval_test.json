@@ -1,0 +1,14 @@
+{
+  "mse": {
+    "mse_x_velocity": 320.8262519836426,
+    "mse_y_velocity": 561.6516208648682,
+    "mse_pressure": 2014042.98828125,
+    "mse_turbulent_viscosity": 5.128811793042587e-06
+  },
+  "mean_relative_drag": 2.937894688132242,
+  "mean_relative_lift": 1.264807261435705,
+  "spearman_drag": 0.1666666666666667,
+  "spearman_lift": 0.6428571428571429,
+  "split": "test",
+  "n_sims": 8
+}

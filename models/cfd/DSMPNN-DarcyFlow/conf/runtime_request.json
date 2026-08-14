@@ -1,0 +1,38 @@
+{
+  "task": "run training",
+  "code_save_dir": "dsmpnn",
+  "trainer_workdir": ".trainer_work/smpnn_darcy_v1",
+  "entrypoint": "python3 -m dsmpnn.train --config configs/darcy.yaml --model smpnn",
+  "command": "cd /public/home/wangqi_scnet/auto_run_test/v5_01/dsmpnn && export PYTHONPATH=$PWD && python3 -m dsmpnn.train --config configs/darcy.yaml --model smpnn",
+  "execution_mode": "local_slurm",
+  "hardware": "dcu",
+  "package_requirements": [],
+  "environment_requirements": {
+    "python": "3.12.6",
+    "frameworks": [
+      "torch",
+      "torch_geometric"
+    ],
+    "accelerator": "dcu"
+  },
+  "knowledge_inputs": {
+    "source_capture_path": "",
+    "training_knowledge_path": "",
+    "data_manifest_path": "",
+    "training_plan_path": ".trainer_work/smpnn_darcy_v1/training_plan.md"
+  },
+  "preflight_checks": [],
+  "expected_outputs": [
+    "checkpoints/smpnn_final.pt",
+    "logs/"
+  ],
+  "train_command": "python3 -m dsmpnn.train --config configs/darcy.yaml --model smpnn",
+  "expected_checkpoints": [
+    "checkpoints/smpnn_final.pt"
+  ],
+  "expected_metrics": [
+    "test_rmse"
+  ],
+  "log_dir": "logs",
+  "manifest_path": ".trainer_work/smpnn_darcy_v1/trainer_run_manifest.json"
+}

@@ -1,0 +1,47 @@
+{
+  "name": "darcy_flow_smoke",
+  "version": "0.1.0",
+  "created_at": "2026-08-13T09:55:18.812843",
+  "description": "2-D Darcy flow 合成数据（冒烟规模）：-nabla(a nabla u)=f, u|dOmega=0, 映射 a->u (论文 App B)",
+  "domain": "cfd",
+  "format": "pyg_graph",
+  "statistics": {
+    "total_samples": 12,
+    "splits": {
+      "train": 8,
+      "test": 4
+    },
+    "node_attr": {
+      "channels": 3,
+      "mean": [
+        0.5111607313156128,
+        0.5082821846008301,
+        -0.032281823456287384
+      ],
+      "std": [
+        0.29273274540901184,
+        0.2885459065437317,
+        0.9598015546798706
+      ]
+    },
+    "target": {
+      "channels": 1,
+      "mean": 0.035983163863420486,
+      "std": 0.023811843246221542
+    },
+    "finite": true,
+    "edge_attr_channels": 3,
+    "edge_index_rows": 2
+  },
+  "splits": {
+    "train": 8,
+    "test": 4
+  },
+  "source": {
+    "synthetic": true,
+    "script": "dsmpnn/dsmpnn/data/darcy.py"
+  },
+  "usage": {
+    "loader_example": "load_dataset.py"
+  }
+}

@@ -1,0 +1,53 @@
+# DS-MPNN Tier1 复现配置 - Darcy flow（小规模端到端，CPU/DCU 兼容）
+data:
+  dataset: darcy_flow
+  train_samples: 128
+  test_samples: 30
+  grid_size: 128
+  sampled_nodes_s: 421
+  radius_r: 0.2
+  max_edges_ne: 64
+  data_dir: ./data/darcy_tier1
+  normalize: true
+  nproc: 16
+
+model:
+  latent_dim: 32
+  encoder_layers: 3
+  decoder_layers: 3
+  encoder_hidden: 256
+  decoder_hidden: 256
+  kernel_hidden: 512
+  kernel_layers: 2
+  hops_h: 4
+  node_in_channels: 3
+  node_out_channels: 1
+  edge_channels: 3
+
+gcn:
+  hidden: 378
+  layers: 6
+
+training:
+  epochs: 15
+  loss: MSE
+  metric: RMSE
+  optimizer: Adam
+  lr: 0.0005
+  weight_decay: 0.0001
+  scheduler: OneCycleLR
+  seed: 42
+  precision: float32
+  checkpoint_dir: ./checkpoints
+  log_dir: ./logs
+
+distributed:
+  nproc: 1
+  overlap_l: 0.2
+  backend: gloo
+  master_addr: localhost
+  master_port: "29500"
+
+inference:
+  samples: 10
+  output_dir: ./outputs

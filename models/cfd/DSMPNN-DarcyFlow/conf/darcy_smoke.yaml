@@ -1,0 +1,52 @@
+# DS-MPNN 冒烟测试配置（小规模）
+data:
+  dataset: darcy_flow
+  train_samples: 8
+  test_samples: 4
+  grid_size: 64
+  sampled_nodes_s: 64
+  radius_r: 0.2
+  max_edges_ne: 16
+  data_dir: ./data/darcy_smoke
+  normalize: true
+  nproc: 4
+
+model:
+  latent_dim: 32
+  encoder_layers: 3
+  decoder_layers: 3
+  encoder_hidden: 256
+  decoder_hidden: 256
+  kernel_hidden: 512
+  kernel_layers: 2
+  hops_h: 2
+  node_in_channels: 3
+  node_out_channels: 1
+  edge_channels: 3
+
+gcn:
+  hidden: 378
+  layers: 6
+
+training:
+  epochs: 5
+  loss: MSE
+  metric: RMSE
+  optimizer: Adam
+  lr: 0.001
+  scheduler: OneCycleLR
+  seed: 42
+  precision: float32
+  checkpoint_dir: ./checkpoints_smoke
+  log_dir: ./logs_smoke
+
+distributed:
+  nproc: 1
+  overlap_l: 0.2
+  backend: gloo
+  master_addr: localhost
+  master_port: "29500"
+
+inference:
+  samples: 2
+  output_dir: ./outputs_smoke

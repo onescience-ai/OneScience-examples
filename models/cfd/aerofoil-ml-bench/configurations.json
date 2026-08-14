@@ -1,0 +1,14 @@
+{
+  "framework": "PyTorch",
+  "task": "flow-field-regression",
+  "allow_remote": true,
+  "model": {
+    "type": "graph-neural-network",
+    "repo_id": "OneScience/aerofoil-ml-bench"
+  },
+  "pipeline": {
+    "type": "point-cloud-graph-regression"
+  },
+  "preprocessor": {},
+  "train": {}
+}

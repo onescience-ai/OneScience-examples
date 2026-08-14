@@ -32,8 +32,12 @@ OneScience Examples 是 OneScience 官方维护的模型示例仓库，旨在为
 | 模型 | 描述 |
 |------|------|
 | [DeepMD](./models/matchem/DeepMD/README.md) | 深度势能分子动力学 |
+| [eSEN](./models/matchem/eSEN/README.md) | 等变平滑能量原子间势 |
+| [Equiformer V3](./models/matchem/Equiformer_v3/README.md) | SE(3) 等变图注意力原子间势 |
 | [MACE](./models/matchem/MACE/README.md) | 原子间势能模型 |
 | [MatRIS](./models/matchem/MatRIS/README.md) | 材料发现与结构预测 |
+| [Mattergen](./models/matchem/Mattergen/README.md) | 材料结构生成模型 |
+| [MatterSim](./models/matchem/MatterSim/README.md) | 通用材料模拟模型 |
 | [NEP](./models/matchem/NEP/README.md) | 神经网络原子势能 |
 | [UMA](./models/matchem/UMA/README.md) | 统一分子架构 |
 

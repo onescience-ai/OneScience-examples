@@ -33,8 +33,12 @@ This repository currently supports the following model categories:
 |-------|-------------|
 | [BENO](./models/BENO/README.md) | Molecular dynamics model |
 | [DeepMD](./models/DeepMD/README.md) | Deep potential molecular dynamics |
+| [eSEN](./models/matchem/eSEN/README.md) | Equivariant smooth energy interatomic potential |
+| [Equiformer V3](./models/matchem/Equiformer_v3/README.md) | SE(3)-equivariant graph attention interatomic potential |
 | [MACE](./models/MACE/README.md) | Interatomic potential model |
 | [NEP](./models/NEP/README.md) | Neural network atomic potential |
+| [Mattergen](./models/matchem/Mattergen/README.md) | Materials structure generation model |
+| [MatterSim](./models/matchem/MatterSim/README.md) | General-purpose materials simulation model |
 
 ### 🌤️ Weather Forecasting and Climate
 

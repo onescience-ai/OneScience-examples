@@ -1,0 +1,39 @@
+{
+  "schema_version": "onescience-trainer-request-v1",
+  "step": {
+    "step_id": "step-5",
+    "step_goal": "Darcy flow \u5c0f\u89c4\u6a21\u590d\u73b0\u8bad\u7ec3 S-MPNN + DS-MPNN"
+  },
+  "instruction_source": {
+    "source_type": "paper",
+    "text": "arXiv:2402.15106 Sec 4.1"
+  },
+  "model": {
+    "code_path": "dsmpnn",
+    "training_entrypoint": "python -m dsmpnn.train",
+    "source_type": "local",
+    "task_type": "regression"
+  },
+  "task": {
+    "domain": "cfd",
+    "objective": "\u590d\u73b0 DS-MPNN Darcy flow \u6d4b\u8bd5 RMSE\uff08\u8bba\u6587 7.44e-6 / 7.60e-6 \u91cf\u7ea7\uff09"
+  },
+  "data": {
+    "train_source": "darcy synthetic (1024)",
+    "test_source": "30",
+    "split_hint": "s=421, r=0.2, ne=64, h=8"
+  },
+  "training": {
+    "optimizer": "Adam",
+    "scheduler": "OneCycleLR",
+    "epochs": 200,
+    "precision": "float32"
+  },
+  "runtime": {
+    "execution_intent": "run_remote",
+    "execution_mode": "local_slurm",
+    "hardware": "dcu",
+    "code_save_dir": "dsmpnn",
+    "trainer_workdir": ".trainer_work/smpnn_darcy_v1"
+  }
+}

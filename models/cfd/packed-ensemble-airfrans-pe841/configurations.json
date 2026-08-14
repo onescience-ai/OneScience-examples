@@ -1,0 +1,29 @@
+{
+  "framework": "PyTorch",
+  "task": "flow-field-regression",
+  "allow_remote": true,
+  "model": {
+    "type": "PackedEnsembleMLP",
+    "repo_id": "OneScience/packed-ensemble-airfrans-pe841"
+  },
+  "pipeline": {
+    "type": "cfd-surrogate-regression"
+  },
+  "preprocessor": {
+    "input_features": ["pos_x", "pos_y", "u_inf_x", "u_inf_y", "dist", "normal_x", "normal_y"],
+    "output_features": ["v_x", "v_y", "p", "nut"],
+    "normalization": "StandardScaler"
+  },
+  "train": {
+    "model_type": "pe_mlp",
+    "layers": "64,64,8,64,64,64,8,64,64",
+    "num_estimators": 8,
+    "alpha": 4.0,
+    "gamma": 1,
+    "optimizer": "Adam",
+    "learning_rate": 0.01,
+    "weight_decay": 1e-5,
+    "loss": "MSE",
+    "dataset": "AirfRANS"
+  }
+}
