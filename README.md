@@ -25,6 +25,7 @@ OneScience Examples 是 OneScience 官方维护的模型示例仓库，旨在为
 | [Protenix](./models/biosciences/protenix/README.md) | 蛋白质结构预测模型 |
 | [ProteinMPNN](./models/biosciences/ProteinMPNN/README.md) | 蛋白质序列设计 |
 | [RFdiffusion](./models/biosciences/RFdiffusion/README.md) | 蛋白质反向折叠扩散模型 |
+| [scGPT](./models/biosciences/scGPT/README.md) | 单细胞转录组基础模型 |
 | [SimpleFold](./models/biosciences/SimpleFold/README.md) | 轻量级蛋白质结构预测 |
 
 ### 🧪 材料化学

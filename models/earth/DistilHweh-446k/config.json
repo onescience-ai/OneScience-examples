@@ -1,0 +1,86 @@
+{
+  "model_type": "mwm",
+  "architectures": [
+    "WeatherForcastModel"
+  ],
+  "auto_map": {
+    "AutoConfig": "configuration.WeatherModelConfig",
+    "AutoModel": "modeling.WeatherForcastModel"
+  },
+  "distill_teacher_head_dim": 416,
+  "dropout": 0.1,
+  "dtype": "float32",
+  "encoder_type": "lstm",
+  "hidden_dim": 128,
+  "input_dim": 22,
+  "location_emb_dim": 32,
+  "num_layers": 3,
+  "num_locations": 82,
+  "num_predict": 12,
+  "num_weather_classes": 7,
+  "rain_pos_weight": 6.547722074664306,
+  "seq_len": 72,
+  "target_norms": {
+    "apparent": {
+      "mean": 16.420160986060196,
+      "std": 12.332221212388726,
+      "transform": "raw"
+    },
+    "cloud_cover": {
+      "mean": 51.71581237675868,
+      "std": 42.028595137718646,
+      "transform": "raw"
+    },
+    "humidity": {
+      "mean": 69.18635597409919,
+      "std": 21.524024234467674,
+      "transform": "raw"
+    },
+    "precip": {
+      "mean": 0.05684371705656333,
+      "std": 0.22550783339649325,
+      "transform": "log1p"
+    },
+    "sea_level_pressure": {
+      "mean": 1014.5679196119568,
+      "std": 7.459071118489876,
+      "transform": "raw"
+    },
+    "surface_pressure": {
+      "mean": 963.4371186423618,
+      "std": 86.39541603431283,
+      "transform": "raw"
+    },
+    "temp": {
+      "mean": 16.863813962719767,
+      "std": 9.92933797011761,
+      "transform": "raw"
+    },
+    "wind": {
+      "mean": 9.952284635073887,
+      "std": 6.676419945197847,
+      "transform": "raw"
+    },
+    "wind_dir_cos": {
+      "mean": -0.03349104536155545,
+      "std": 0.70513783656826,
+      "transform": "raw"
+    },
+    "wind_dir_sin": {
+      "mean": -0.002100160488024665,
+      "std": 0.7082757736110976,
+      "transform": "raw"
+    }
+  },
+  "transformers_version": "5.5.0",
+  "use_cache": false,
+  "weather_class_weights": [
+    0.23165243864059448,
+    0.1921183317899704,
+    1.7011765241622925,
+    0.4377932548522949,
+    0.8518651723861694,
+    1.6312177181243896,
+    1.9541765451431274
+  ]
+}

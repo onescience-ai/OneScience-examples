@@ -1,0 +1,43 @@
+DistilHweh-446k helper package
+
+Place these helper files in the SAME directory as the original Hugging Face model files.
+
+Expected original repository files:
+  .gitattributes
+  README.md
+  __init__.py
+  config.json
+  configuration.py
+  model.safetensors
+  modeling.py
+
+Minimal runtime-critical original files:
+  __init__.py
+  config.json
+  configuration.py
+  model.safetensors
+  modeling.py
+
+Recommended Linux directory:
+  /root/private_data/DistilHweh446k
+
+Typical commands:
+  cd /root/private_data/DistilHweh446k
+  python3 --version
+  python3 00_check_environment.py
+
+If packages are missing:
+  python3 -m pip install -U pip
+  python3 -m pip install -r requirements_runtime.txt
+
+If the original HF model files are NOT already uploaded and the platform can access Hugging Face:
+  python3 01_download_model.py
+
+Then:
+  python3 02_smoke_test.py
+
+Success criterion:
+  The last lines include:
+    SMOKE TEST PASSED
+  and the script prints the loaded model class, parameter count,
+  forward signature, and output tensor/dictionary shapes.

@@ -1,0 +1,34 @@
+# scGPT 模型工程默认配置（声明式，供 OneCode 与用户参考）。
+#
+# 实际运行参数由 scripts/ 下的 shell 入口与 Python 脚本解析：
+#   - 路径类配置可用同名环境变量覆盖（SCGPT_MODEL_DIR、SCGPT_DATASET_ROOT、
+#     SCGPT_INFERENCE_DATA、SCGPT_FINETUNE_DATA、SCGPT_OUTPUT_ROOT、SCGPT_DEVICE）。
+#   - 训练/推理超参通过 scripts/embed.py、scripts/finetune.py 的命令行参数设置，
+#     也可在 bash scripts/infer.sh / bash scripts/finetune.sh 后追加参数覆盖。
+#
+# 所有相对路径均相对项目根目录解析。
+
+paths:
+  model_dir: weight/scGPT_human        # 模型目录，需包含 args.json / best_model.pt / vocab.json
+  dataset_root: data                   # 数据集根目录
+  inference_data: data/annotation_pancreas/demo_test.h5ad   # 细胞嵌入推理输入
+  finetune_data: data/annotation_pancreas/demo_train.h5ad   # 细胞类型微调输入
+  output_root: outputs                 # 输出根目录
+
+runtime:
+  device: cuda                         # 计算设备：cuda（GPU/DCU）或 cpu
+
+embed:
+  batch_size: 32
+  max_length: 1200
+
+finetune:
+  label_column: Celltype               # 标签列（细胞类型）
+  epochs: 5
+  batch_size: 32
+  learning_rate: 0.0001
+  weight_decay: 0.01
+  n_hvg: 1200                          # 高变基因数
+  max_length: 1201
+  validation_fraction: 0.1
+  seed: 42
