@@ -37,6 +37,7 @@ This repository currently supports the following model categories:
 | [Equiformer V3](./models/matchem/Equiformer_v3/README.md) | SE(3)-equivariant graph attention interatomic potential |
 | [MACE](./models/MACE/README.md) | Interatomic potential model |
 | [NEP](./models/NEP/README.md) | Neural network atomic potential |
+| [NequIP](./models/matchem/NequIP/README.md) | E(3)-equivariant graph neural network interatomic potential |
 | [Mattergen](./models/matchem/Mattergen/README.md) | Materials structure generation model |
 | [MatterSim](./models/matchem/MatterSim/README.md) | General-purpose materials simulation model |
 

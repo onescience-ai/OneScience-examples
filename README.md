@@ -40,6 +40,7 @@ OneScience Examples 是 OneScience 官方维护的模型示例仓库，旨在为
 | [Mattergen](./models/matchem/Mattergen/README.md) | 材料结构生成模型 |
 | [MatterSim](./models/matchem/MatterSim/README.md) | 通用材料模拟模型 |
 | [NEP](./models/matchem/NEP/README.md) | 神经网络原子势能 |
+| [NequIP](./models/matchem/NequIP/README.md) | E(3) 等变图神经网络原子间势 |
 | [UMA](./models/matchem/UMA/README.md) | 统一分子架构 |
 
 ### 🌤️ 天气预报与气候
