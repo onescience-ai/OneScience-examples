@@ -1,0 +1,268 @@
+project:
+  name: AURORA
+  task: earth_system_forecasting
+  seed: 20260724
+  license: MIT
+
+paths:
+  project_root: .
+  real_era5_dir: /work2/share/sugonhpcapp01/ERA5/new-data
+  virtual_era5_dir: data
+  static_dir: data/static
+  checkpoint_dir: data/checkpoint
+  result_dir: results
+  official_source_dir: model/aurora_network.py
+
+model:
+  variant: small
+  official_class: AuroraSmallPretrained
+  default_profile: small
+  profiles:
+    small:
+      class_name: AuroraSmallPretrained
+      purpose: smoke_test
+      checkpoint:
+      embed_dim: 256
+      encoder_depths: [2, 6, 2]
+      encoder_num_heads: [4, 8, 16]
+      decoder_depths: [2, 6, 2]
+      decoder_num_heads: [16, 8, 4]
+    base:
+      class_name: AuroraPretrained
+      purpose: official_reproduction
+      checkpoint:
+      embed_dim: 512
+      encoder_depths: [6, 10, 8]
+      encoder_num_heads: [8, 16, 32]
+      decoder_depths: [8, 10, 6]
+      decoder_num_heads: [32, 16, 8]
+  patch_size: 4
+  checkpoint:
+    local_small:
+  window_size: [2, 6, 12]
+  latent_levels: 4
+  max_history_size: 2
+  timestep_hours: 6
+  use_lora: false
+  autocast: true
+  autocast_dtype: bfloat16
+  surface_variables: [2t, 10u, 10v, msl]
+  static_variables: [lsm, z, slt]
+  atmospheric_variables: [z, u, v, t, q]
+  pressure_levels_hpa: [50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000]
+  # Compatibility keys consumed by model/aurora.py and inference metadata.
+  surface_vars: [2t, 10u, 10v, msl]
+  static_vars: [lsm, z, slt]
+  atmos_vars: [z, u, v, t, q]
+  atmos_levels: [50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000]
+  full_grid: [721, 1440]
+  smoke_grid: [17, 32]
+
+data:
+  dataset_class: onescience.datapipes.climate.ERA5Dataset
+  format: hdf5
+  field_key: fields
+  virtual_dir: data
+  static_file: data/static/static_vars.npz
+  time_step_hours: 6
+  input_steps: 2
+  output_steps: 1
+  batch_size: 1
+  num_workers: 0
+  normalize_in_onescience: false
+  normalize_in_dataset: false
+  channel_layout: surface_then_atmosphere_variable_major
+  train_years: [2000]
+  val_years: [2001]
+  test_years: [2002]
+  virtual_timesteps: 5
+  grid:
+    virtual_height: 721
+    virtual_width: 1440
+  split_years:
+    train: [2000]
+    valid: [2001]
+    test: [2002]
+  surface_mapping:
+    2t: 2m_temperature
+    10u: 10m_u_component_of_wind
+    10v: 10m_v_component_of_wind
+    msl: mean_sea_level_pressure
+  atmosphere_mapping:
+    z: geopotential
+    u: u_component_of_wind
+    v: v_component_of_wind
+    t: temperature
+    q: specific_humidity
+  channel_order: &aurora_channels
+    - 2m_temperature
+    - 10m_u_component_of_wind
+    - 10m_v_component_of_wind
+    - mean_sea_level_pressure
+    - geopotential_50
+    - geopotential_100
+    - geopotential_150
+    - geopotential_200
+    - geopotential_250
+    - geopotential_300
+    - geopotential_400
+    - geopotential_500
+    - geopotential_600
+    - geopotential_700
+    - geopotential_850
+    - geopotential_925
+    - geopotential_1000
+    - u_component_of_wind_50
+    - u_component_of_wind_100
+    - u_component_of_wind_150
+    - u_component_of_wind_200
+    - u_component_of_wind_250
+    - u_component_of_wind_300
+    - u_component_of_wind_400
+    - u_component_of_wind_500
+    - u_component_of_wind_600
+    - u_component_of_wind_700
+    - u_component_of_wind_850
+    - u_component_of_wind_925
+    - u_component_of_wind_1000
+    - v_component_of_wind_50
+    - v_component_of_wind_100
+    - v_component_of_wind_150
+    - v_component_of_wind_200
+    - v_component_of_wind_250
+    - v_component_of_wind_300
+    - v_component_of_wind_400
+    - v_component_of_wind_500
+    - v_component_of_wind_600
+    - v_component_of_wind_700
+    - v_component_of_wind_850
+    - v_component_of_wind_925
+    - v_component_of_wind_1000
+    - temperature_50
+    - temperature_100
+    - temperature_150
+    - temperature_200
+    - temperature_250
+    - temperature_300
+    - temperature_400
+    - temperature_500
+    - temperature_600
+    - temperature_700
+    - temperature_850
+    - temperature_925
+    - temperature_1000
+    - specific_humidity_50
+    - specific_humidity_100
+    - specific_humidity_150
+    - specific_humidity_200
+    - specific_humidity_250
+    - specific_humidity_300
+    - specific_humidity_400
+    - specific_humidity_500
+    - specific_humidity_600
+    - specific_humidity_700
+    - specific_humidity_850
+    - specific_humidity_925
+    - specific_humidity_1000
+  channels: *aurora_channels
+  virtual:
+    seed: 20260724
+    timesteps_per_year: 20
+    dtype: float32
+
+training:
+  mode: train_from_scratch
+  seed: 20260724
+  epochs: 10
+  max_steps: 10
+  batch_size: 1
+  num_workers: 0
+  learning_rate: 0.0001
+  weight_decay: 0.0
+  scheduler: none
+  gradient_checkpointing: true
+  validation_interval: 1
+  checkpoint_interval: 1
+  checkpoint_dir: data/checkpoint
+  log_dir: outputs/train/logs
+  precision: float32
+  loss_note: >-
+    The public Aurora repository does not specify the complete pretraining objective;
+    this reproducibility path uses per-channel-standard-deviation-normalized MSE over
+    the 69 predicted ERA5 channels and also logs physical-space MSE for diagnostics.
+  optimizer:
+    name: AdamW
+    learning_rate: 0.0001
+    weight_decay: 0.0
+  scheduler_config:
+    name: none
+  loss:
+    name: channel_std_normalized_mse_assumption
+    scale_by_channel_std: true
+    scale_epsilon: 0.000001
+    surface_weight: 1.0
+    atmosphere_weight: 1.0
+  gradient_clip_norm: 1.0
+  activation_checkpointing: true
+  save_every_steps: 1
+  scratch:
+    load_model_weights: false
+    load_optimizer_state: false
+    checkpoint: null
+    checkpoint_type: official
+  finetune:
+    load_model_weights: true
+    load_optimizer_state: false
+    strict_checkpoint: true
+    checkpoint_type: training
+    checkpoint: data/checkpoint/model_bak.pt
+    learning_rate: 0.00001
+
+distributed:
+  strategy: ddp
+  launcher: torchrun
+  backend: nccl
+  nodes: 1
+  processes_per_node: 2
+  master_addr: 127.0.0.1
+  master_port: 29500
+
+inference:
+  profile: small
+  checkpoint_source: finetune
+  checkpoint: data/checkpoint/model_finetune.pt
+  checkpoint_type: training
+  output_dir: outputs/inference/aurora
+  years: [2002]
+  forecast_steps: 1
+  rollout_steps: 1
+  batch_size: 1
+  num_workers: 0
+  max_samples: 1
+  device: auto
+  dtype: float32
+  save_format: numpy_memmap
+  selected_variables: [2m_temperature, mean_sea_level_pressure, geopotential_500, temperature_850]
+
+visualization:
+  output_dir: outputs/figures
+  default_variable: 2m_temperature
+  format: png
+  dpi: 200
+  colormap: coolwarm
+  difference_colormap: RdBu_r
+
+runtime:
+  accelerator: dcu
+  device: auto
+  conda_environment: aurora_develop
+  modules:
+    - sghpc-mpi-gcc/26.3
+  allocator_config: expandable_segments:True
+  slurm:
+    partition: hpctest01
+    nodes: 1
+    devices_per_node: 2
+    cpus_per_task: 8
+    memory: 64GB
+    time_limit: 02:00:00

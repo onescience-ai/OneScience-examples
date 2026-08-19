@@ -1,0 +1,141 @@
+model:
+  name: OneForecast
+  input_channels: 69
+  output_channels: 69
+  # Native ERA5 721x1440 is sampled every sixth point to 121x240, then cropped to 120x240.
+  grid_height: 120
+  grid_width: 240
+  dt_hours: 6
+  mesh_level: 5
+  processor_layers: 16
+  hidden_layers: 1
+  hidden_dim: 512
+  num_heads_edge: 4
+  num_heads_node: 4
+  weight_init: scratch
+  official_checkpoint_path: /root/private_data/workspaces/yangzt01/OneForecast/best_ckpt.tar
+
+runtime:
+  seed: 42
+  device: dcu
+  output_dir: ./outputs
+  distributed_backend: nccl
+
+training:
+  start_epoch: 0
+  max_epoch: 5
+  learning_rate: 0.00025
+  weight_decay: 0.0
+  checkpoint_dir: ./data/checkpoint
+  model_name: model_bak
+  save_every_epoch: 1
+  max_batches: 1
+
+finetuning:
+  steps: 2
+  max_epoch: 2
+  learning_rate: 0.00025
+  max_batches: 1
+  model_source: trained
+  trained_model_path: ./data/checkpoint/model_bak.tar
+  official_checkpoint_path: /root/private_data/workspaces/yangzt01/OneForecast/best_ckpt.tar
+  output_path: ./data/checkpoint/model_finetuned.tar
+
+datapipe:
+  name: ERA5
+  task: global_weather_forecasting
+  dataset_dir: ./data
+  train_years: [2000]
+  valid_years: [2001]
+  test_years: [2002]
+  input_steps: 1
+  output_steps: 1
+  normalize: true
+  batch_size: 1
+  num_workers: 0
+  # Runtime distribution is enabled automatically when launched with torchrun.
+  distributed: false
+
+# This exact order matches the official OneForecast global dataset.
+  variables:
+    - Z50
+    - Z100
+    - Z150
+    - Z200
+    - Z250
+    - Z300
+    - Z400
+    - Z500
+    - Z600
+    - Z700
+    - Z850
+    - Z925
+    - Z1000
+    - Q50
+    - Q100
+    - Q150
+    - Q200
+    - Q250
+    - Q300
+    - Q400
+    - Q500
+    - Q600
+    - Q700
+    - Q850
+    - Q925
+    - Q1000
+    - T50
+    - T100
+    - T150
+    - T200
+    - T250
+    - T300
+    - T400
+    - T500
+    - T600
+    - T700
+    - T850
+    - T925
+    - T1000
+    - U50
+    - U100
+    - U150
+    - U200
+    - U250
+    - U300
+    - U400
+    - U500
+    - U600
+    - U700
+    - U850
+    - U925
+    - U1000
+    - V50
+    - V100
+    - V150
+    - V200
+    - V250
+    - V300
+    - V400
+    - V500
+    - V600
+    - V700
+    - V850
+    - V925
+    - V1000
+    - U10M
+    - V10M
+    - T2M
+    - MSLP
+
+inference:
+  model_source: trained
+  trained_model_path: ./data/checkpoint/model_bak.tar
+  official_checkpoint_path: /root/private_data/workspaces/yangzt01/OneForecast/best_ckpt.tar
+  output_dir: ./outputs/predictions
+  max_batches: 1
+
+visualization:
+  input_dir: ./outputs/predictions
+  output_dir: ./outputs/visualizations
+  channels: [0, 18, 36, 54, 67, 68]
