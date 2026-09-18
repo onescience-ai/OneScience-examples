@@ -6,39 +6,14 @@
 
 # 模型介绍
 
-GP_for_TO（Physics-informed GP-TO）是用于同步无网格拓扑优化的物理信息高斯过程方法。该方法使用共享神经网络均值函数和多个高斯过程输出联合表示速度 `u`、速度 `v`、压力 `p` 和材料密度 `ro`，并通过 PDE 残差、耗散功率和体积约束共同优化二维流体拓扑设计。   
+GP_for_TO（Physics-informed GP-TO）是美国西北大学相关团队提出的物理信息高斯过程拓扑优化框架，可在无须显式网格离散的情况下，对复杂设计域中的材料分布与物理状态变量进行协同优化。  
 
-# 仓库说明
+论文：Simultaneous and Meshfree Topology Optimization with Physics-informed Gaussian Processes
+https://arxiv.org/abs/2408.03490
 
-本仓库是 OneScience 整理后的 GP_for_TO 标准运行包，面向 OneCode 自动化运行和本地快速验证场景。
+# 模型描述
 
-当前支持能力：
-
-- 生成最小假数据用于流程连通性验证
-- 训练 GP_for_TO 拓扑优化模型
-- 从 checkpoint 推理 `x/u/v/p/ro` 场变量
-- 汇总推理结果并可选生成二维场图
-
-当前不支持能力：
-
-- 不内置预训练权重
-- 不自动下载外部数据集
-- 不提供分布式训练入口
-
-# 文件说明
-
-| 路径 | 功能 | 备注 |
-| :--- | :--- | :--- |
-| `README.md` | 工程使用说明文档 | 中文为主 |
-| `configuration.json` | OneCode 元信息 | 最小配置 |
-| `conf/config.yaml` | 问题、模型、训练、推理和假数据配置 | 已适配本仓库相对路径 |
-| `model/` | GPPLUS 相关模型文件 | 从 `onescience.models.GPs` 复制必要文件，本地相对导入 |
-| `scripts/fake_data.py` | 假数据生成脚本 | 生成 `data/fake/<problem>_samples.npz` 和 metadata |
-| `scripts/train.py` | 训练脚本 | 默认读取 `conf/config.yaml`，支持命令行覆盖 |
-| `scripts/inference.py` | 推理脚本 | 默认读取 `weight/gp_for_to.pt` |
-| `scripts/result.py` | 推理结果摘要脚本 | 读取 `result/inference/predictions.npz` |
-| `scripts/topology_optimization.py` | 拓扑优化损失和训练循环 | 由 `scripts/train.py` 调用 |
-| `weight/` | 权重目录 | 默认 checkpoint 为 `weight/gp_for_to.pt` |
+GP_for_TO 基于深度神经网络参数化均值函数的高斯过程架构，面向 Stokes 流耗散功最小化等流体拓扑优化问题开展无网格求解。
 
 # 使用说明
 
@@ -53,55 +28,52 @@ GP_for_TO（Physics-informed GP-TO）是用于同步无网格拓扑优化的物�
 **硬件要求**
 
 - 推荐使用 GPU 或 DCU 运行。
+- CPU 可以用于导入和小配置连通性验证，完整训练和推理速度较慢。
 - DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
 
-# 快速开始
+
+### 下载模型包
+
+```bash
+modelscope download --model OneScience/GP_for_TO --local_dir ./GP_for_TO
+cd GP_for_TO
+```
 
 ### 安装运行环境
 
+
+**DCU环境**
+
 ```bash
-# 激活DTK及CONDA
+# 请首先激活DTK及CONDA
 conda create -n onescience311 python=3.11 -y
 conda activate onescience311
-pip install onescience[cfd] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
+# 支持uv安装
+pip install onescience[cfd-dcu] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
-
-## 生成假数据
-如需先验证脚本、模型、checkpoint 和结果文件是否能够完整跑通，可使用仓库内置脚本生成最小数据
-
+**GPU环境**
 ```bash
-python scripts/fake_data.py
+# 请首先激活CONDA
+conda create -n onescience311 python=3.11 -y libstdcxx-ng=12 libgcc-ng=12 gcc_linux-64=12 gxx_linux-64=12
+conda activate onescience311
+# 支持uv安装
+pip install onescience[cfd-gpu] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
-默认会按 `conf/config.yaml` 生成 `doublepipe` 的运行时样本，输出到：
 
-```text
-data/fake/doublepipe_samples.npz
-data/fake/doublepipe_metadata.json
-```
+### 训练数据介绍
+该方法不依赖预生成的拓扑结构或物理场标签，而是在设计域内采样空间点，利用 Stokes 流控制方程、边界条件、耗散功目标及材料体积分数约束构造物理信息训练信号；论文选取 Rugby、Pipe Bend、Diffuser 和 Double Pipe 四类流体拓扑优化算例进行测试，并使用 COMSOL 的 SIMP 求解结果进行对比验证。
 
-## 训练
+### 训练
 
 默认训练配置保留原始设置：`N_col_domain=10000`、`N_train_per_BC=25`、`num_iter=50000`、`diff_method=Numerical`。
 
 ```bash
 python scripts/train.py
 ```
-
-训练输出：
-
-```text
-weight/gp_for_to.pt
-result/training/loss_history.npy
-result/training/training_summary.json
-```
-
-如需低成本检查流程，可运行最小 smoke test：
-
-```bash
-python scripts/train.py --device cpu --num-iter 0 --n-col-domain 16 --n-train-per-bc 25 --diff-method Autograd --no-plot
-```
+### 训练权重
+本仓库在weights/文件夹内提供GP_for_TO模型权重，该权重即将上传。
 
 ## 推理
 
@@ -124,11 +96,6 @@ result/inference/inference_summary.json
 python scripts/result.py
 ```
 
-该脚本会打印预测数组的 shape、dtype、最小值、最大值和均值，并默认生成：
-
-```text
-result/inference/field_summary.png
-```
 
 # OneScience 官方信息
 

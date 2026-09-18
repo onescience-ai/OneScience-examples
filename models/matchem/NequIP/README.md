@@ -12,9 +12,14 @@ NequIP 是面向分子和材料体系的机器学习原子间势（MLIP）模型
 
 # 模型描述
 
-本目录提供 OneScience 集成的 NequIP 示例代码、模型包源码镜像以及可直接运行的训练、微调和推理示例。`model/` 目录仅对应 OneScience 主仓库中的 `src/onescience/models/nequip/`；训练工具、数据处理工具和其他共享模块由已安装的 OneScience 软件包提供。
+本仓库提供 OneScience 集成的 NequIP 模型代码、OAM-L 模型权重以及可直接运行的训练、微调和推理示例。`model/` 目录仅对应 OneScience 主仓库中的 `src/onescience/models/nequip/`；训练工具、数据处理工具和其他共享模块由已安装的 OneScience 软件包提供。
 
-本 examples 仓库不包含模型权重、训练数据、输出、缓存或 Slurm 日志。模型权重和数据集分别通过 ModelScope 下载。
+仓库中的 OAM-L 权重包括：
+
+| 文件 | 用途 |
+| --- | --- |
+| `weight/NequIP-OAM-L-0.1.nequip.pth` | 编译模型，用于 ASE 单点能量、原子力和应力推理 |
+| `weight/NequIP-OAM-L-0.1.nequip.zip` | NequIP package，用于 OAM-L 微调和 checkpoint 推理 |
 
 # 适用场景
 
@@ -47,6 +52,7 @@ NequIP 是面向分子和材料体系的机器学习原子间势（MLIP）模型
 
 ```bash
 modelscope download --model OneScience/nequip --local_dir ./nequip
+cd nequip
 ```
 
 ### 安装运行环境
@@ -73,7 +79,7 @@ pip install onescience[matchem-gpu] -i http://mirrors.onescience.ai:3141/pypi/si
 
 ### 训练数据介绍
 
-本目录不内置训练数据。以 FCC Cu 入门数据集为例，从 ModelScope 下载并放到当前示例目录的 `data/` 下：
+本仓库不内置训练数据。以 FCC Cu 入门数据集为例，从 ModelScope 下载并放到仓库根目录的 `data/` 下：
 
 ```bash
 modelscope download --dataset OneScience/FCC_Cu --local_dir ./data
@@ -86,12 +92,15 @@ modelscope download --dataset OneScience/FCC_Cu --local_dir ./data
 ```bash
 export ONESCIENCE_MODELS_DIR=/path/to/onescience-models
 export ONESCIENCE_DATASETS_DIR=/path/to/onescience-datasets
-mkdir -p "$ONESCIENCE_MODELS_DIR/NequIP"
-cp nequip/weight/NequIP-OAM-L-0.1.nequip.pth "$ONESCIENCE_MODELS_DIR/NequIP/"
-cp nequip/weight/NequIP-OAM-L-0.1.nequip.zip "$ONESCIENCE_MODELS_DIR/NequIP/"
 ```
 
-FCC Cu 数据集单独发布于 [OneScience/FCC_Cu](https://modelscope.cn/datasets/OneScience/FCC_Cu)。
+如果使用本仓库中提供的 OAM-L 权重，可将权重放入共享模型目录：
+
+```bash
+mkdir -p "$ONESCIENCE_MODELS_DIR/NequIP"
+cp weight/NequIP-OAM-L-0.1.nequip.pth "$ONESCIENCE_MODELS_DIR/NequIP/"
+cp weight/NequIP-OAM-L-0.1.nequip.zip "$ONESCIENCE_MODELS_DIR/NequIP/"
+```
 
 ### 训练
 
@@ -120,11 +129,11 @@ bash demo/run.sh --config configs/tutorial_fcu_8dcu.yaml
 
 ### 训练权重
 
-本目录不包含权重。请先下载 ModelScope 模型包，并使用其中的：
+本仓库内置 OAM-L 训练权重：
 
 ```text
-nequip/weight/NequIP-OAM-L-0.1.nequip.pth
-nequip/weight/NequIP-OAM-L-0.1.nequip.zip
+e83a1d656f8b19b55d2f05708c83e054612f713e9a1b06266aa010db58e56517  weight/NequIP-OAM-L-0.1.nequip.pth
+5d01a4fab228abb3cdb6ace0033f93993729956bca6a42234a2a8816825b9a0f  weight/NequIP-OAM-L-0.1.nequip.zip
 ```
 
 ### 微调
@@ -146,12 +155,12 @@ bash demo/run.sh --config configs/oam_l_finetune.yaml --submit
 
 ### 推理
 
-使用从 ModelScope 下载的编译模型进行单点能量、原子力和应力预测：
+使用编译模型进行单点能量、原子力和应力预测：
 
 ```bash
-python single_point.py --compiled-model nequip/weight/NequIP-OAM-L-0.1.nequip.pth
+python single_point.py --compiled-model weight/NequIP-OAM-L-0.1.nequip.pth
 python single_point.py \
-  --compiled-model nequip/weight/NequIP-OAM-L-0.1.nequip.pth \
+  --compiled-model weight/NequIP-OAM-L-0.1.nequip.pth \
   --input structure.cif \
   --output outputs/single_point.json
 ```
@@ -168,7 +177,7 @@ python structure_relaxation.py --fmax 0.05 --steps 100 --output-dir outputs/oam_
 ```bash
 python single_point.py \
   --checkpoint outputs/<run>/checkpoints/best.ckpt \
-  --package nequip/weight/NequIP-OAM-L-0.1.nequip.zip \
+  --package weight/NequIP-OAM-L-0.1.nequip.zip \
   --output outputs/<run>/single_point.json
 ```
 
@@ -183,5 +192,5 @@ python single_point.py \
 
 - NequIP 相关代码来自 OneScience 项目中的 MatChem 集成，并参考了上游 NequIP 项目（https://github.com/mir-group/nequip）。OneScience 集成代码遵循主仓库中的 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)。
 - 如果在科研工作中使用 NequIP 或 OAM-L 训练结果，建议引用 NequIP 原始论文、OneScience 相关项目信息和实际使用的数据集来源。
-- OAM-L 模型权重不随本 examples 仓库发布，其再分发权限应以 OneScience/OAM-L 的原始发布条款为准。
+- OAM-L 模型权重的再分发权限应以 OneScience/OAM-L 的原始发布条款为准；在使用前请确认相应权利和限制。
 - FCC Cu 数据集单独发布于 [OneScience/FCC_Cu](https://modelscope.cn/datasets/OneScience/FCC_Cu)，其许可和来源信息以数据集卡片及上游来源说明为准。

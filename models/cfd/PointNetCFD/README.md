@@ -101,7 +101,7 @@ python scripts/train.py --smoke-test
 
 ### 训练权重
 
-运行download.sh脚本，可下载复现训练得到的最优权重`weight/best_model.pth`，可直接用于推理微调；
+本仓库在`weight/`文件夹内提供基于 PointNetCFD 数据预训练的权重，可直接加载推理。
 
 ### 推理
 
@@ -144,3 +144,4 @@ python scripts/result.py \
 - 论文：[A Point-Cloud Deep Learning Framework for Prediction of Fluid Flow Fields on Irregular Geometries](https://arxiv.org/abs/2010.09469)，[DOI: 10.1063/5.0033376](https://doi.org/10.1063/5.0033376)
 
 - 本仓库保留原始论文及官方实现的来源与版权信息，其中官方代码采用 MIT License；论文、数据集及其他相关资源仍分别受其各自版权声明与使用条款约束。
+

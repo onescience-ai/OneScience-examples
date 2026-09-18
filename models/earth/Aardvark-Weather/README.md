@@ -1,5 +1,3 @@
-
-
 <p align="center">
   <strong><span style="font-size: 30px;">Aardvark Weather</span></strong>
 </p>
@@ -32,22 +30,6 @@ https://www.nature.com/articles/s41586-025-08897-0
 | 全球天气预报 | 输出 24 个变量的全球 1.5° 格点状态。 |
 | 站点温度预报 | 输出 8,719 个站点的 2 米温度。 |
 
-# 文件说明
-
-| 路径 | 功能 | 备注 |
-| :--- | :--- | :--- |
-| `README.md` | 工程使用说明文档 | 中文为主 |
-| `download.sh` | ModelScope 资源下载脚本 | 恢复官方样例、归一化资源和已发布 checkpoint |
-| `conf/config.yaml` | 训练配置 | 定义数据路径、训练轮数、优化器参数和可训练模块 |
-| `scripts/train.py` | 训练入口 | 支持 Decoder 微调、联合微调和断点续训 |
-| `scripts/inference.py` | 一天预报推理入口 | 加载官方资源或本地微调 checkpoint |
-| `scripts/result.py` | 结果评估与可视化入口 | 输出归一化 RMSE、MAE 和站点温度对比图 |
-| `model/aardvark_adapter.py` | 官方模型适配层 | 校验样例与 checkpoint，并组装一天预报链路 |
-| `model/sample_dataset.py` | 样例数据集适配 | 负责样例发现、训练/验证划分和 batch 拼接 |
-| `official-src/` | Aardvark 官方代码快照 | 包含模型实现、notebook 和官方训练脚本 |
-| `weights/` | 官方样例与预训练资源目录 | 资源由 `download.sh` 下载到既定相对路径 |
-| `weight/` | 本地训练权重目录 | 保存训练产生的 checkpoint |
-
 # 使用说明
 
 ## 1. OneCode 使用
@@ -58,10 +40,16 @@ https://www.nature.com/articles/s41586-025-08897-0
 
 **硬件要求**
 
-- 当前官方权重推理需要 NVIDIA GPU。
+- 当前官方权重推理需要 GPU/DCU。
 - CPU 可用于资源和 checkpoint 检查，不建议运行完整推理。
 
-## 3. 快速开始
+### 下载模型包
+
+```bash
+modelscope download --model OneScience/Aardvark-Weather --local_dir ./Aardvark-Weather
+cd Aardvark-Weather
+```
+
 ### 安装运行环境
 
 **DCU 环境**
@@ -199,3 +187,4 @@ station_tas:     [1, 8719]
 - 官方代码：https://github.com/anna-allen/aardvark-weather-public
 - 本目录为官方 Aardvark Weather 模型的独立适配。
 - 代码、权重和数据分别遵循其官方许可证与数据条款。
+

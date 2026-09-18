@@ -5,7 +5,9 @@
 </p>
 
 # 模型介绍
-CNO（Convolutional Neural Operator，卷积神经算子）是 **Bogdan Raonić 等人**提出的一种面向 **偏微分方程（PDE）算子学习**的神经算子模型，并发表于 **NeurIPS 2023**。CNO 将卷积神经网络与连续函数空间中的算子学习相结合，通过抗混叠激活、滤波升降采样等设计降低离散化和分辨率变化带来的误差，可用于从 PDE 的初始条件、源项或参数场直接预测对应的 PDE 解。本项目基于 OneScience 技能，独立复现了 CNO 论文中二维不可压缩 Navier–Stokes 方程水平速度分量从 \(t=0\) 到 \(T=1\) 的预测实验。
+CNO（Convolutional Neural Operator，卷积神经算子）是 **Bogdan Raonić 等人**提出的一种面向 **偏微分方程（PDE）算子学习**的神经算子模型，并发表于 **NeurIPS 2023**。CNO 将卷积神经网络与连续函数空间中的算子学习相结合，通过抗混叠激活、滤波升降采样等设计降低离散化和分辨率变化带来的误差，可用于从 PDE 的初始条件、源项或参数场直接预测对应的 PDE 解。
+
+本项目基于 OneScience 技能，独立复现了 CNO 论文中二维不可压缩 Navier–Stokes 方程水平速度分量从 \(t=0\) 到 \(T=1\) 的预测实验。
 
 论文：[Convolutional Neural Operators for Robust and Accurate Learning of PDEs](https://arxiv.org/abs/2302.01178)
 
@@ -111,7 +113,7 @@ python scripts/train.py --config config/config.yaml --device auto
 
 ### 训练权重
 
-运行download.sh脚本，可下载复现训练得到的最优权重`weight/best_model.pth`，可直接用于推理微调；
+`weight/best_model.pth` 为正式训练得到的最优权重，可直接用于推理；
 
 ### 推理
 
@@ -142,3 +144,4 @@ python scripts/result.py --config config/config.yaml --sample-index 0
 
 - 原论文链接：[Convolutional Neural Operators for Robust and Accurate Learning of PDEs](https://arxiv.org/abs/2302.01178)
 - 本项目为 CNO 论文的独立复现。官方实现代码采用 MIT License；本项目代码、模型权重、训练数据及第三方依赖分别适用其各自的许可条款
+

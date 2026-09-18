@@ -1,18 +1,3 @@
----
-datasets:
-- OneScience/airfrans
-language:
-- en
-- zh
-license: Apache License 2.0
-tags:
-- OneScience
-- aerofoil
-- cfd
-- point-cloud
-- graph-neural-network
-tasks: []
----
 <p align="center">
   <strong>
     <span style="font-size: 30px;">aerofoil-ml-bench</span>

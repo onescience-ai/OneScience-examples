@@ -5,7 +5,7 @@
 </p>
 
 # 模型介绍
-FNO（Fourier Neural Operator，傅里叶神经算子）是一类面向参数化偏微分方程的神经算子，通过在 Fourier 空间参数化积分核，直接学习输入函数到解函数的映射。本项目依据Onescience 技能独立复现 FNO-2D 的二维不可压 Navier–Stokes 涡量预测实验。
+FNO（Fourier Neural Operator，傅里叶神经算子）是一类面向参数化偏微分方程的神经算子，通过在 Fourier 空间参数化积分核，直接学习输入函数到解函数的映射。本项目依据O nescience 技能独立复现 FNO-2D 的二维不可压 Navier–Stokes 涡量预测实验。
 
 论文：[Fourier Neural Operator for Parametric Partial Differential Equations](https://arxiv.org/abs/2010.08895)
 
@@ -95,7 +95,7 @@ python scripts/train.py --config config/config.yaml --device auto
 
 ### 训练权重
 
-运行download.sh脚本，可下载复现训练得到的最优权重`weight/best_model.pth`，可直接用于推理微调；
+`weight/best_model.pth` 为正式训练得到的最优权重，可直接用于推理；
 
 ### 推理
 
@@ -138,3 +138,4 @@ python scripts/result.py --config config/config.yaml --sample-index 0
 
 - 论文链接：[Fourier Neural Operator for Parametric Partial Differential Equations](https://arxiv.org/abs/2010.08895)
 - 本模型包代码采用 MIT License。使用模型权重时还应遵守训练数据及第三方依赖的许可与适用条款。
+

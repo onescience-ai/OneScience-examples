@@ -1,115 +1,73 @@
-<h1 align="center">ProteinMPNN</h1>
+<p align="center">
+  <strong>
+    <span style="font-size: 30px;">ProteinMPNN</span>
+  </strong>
+</p>
 
-## 模型介绍
+# 模型介绍
 
-ProteinMPNN 是用于蛋白质序列设计的图神经网络模型，可根据蛋白质骨架结构设计氨基酸序列。本目录是 OneScience 中 ProteinMPNN 的轻量调用包，包含模型源码、推理脚本、训练脚本、辅助脚本、示例输入、示例训练数据和权重目录。
+ProteinMPNN 是一种基于消息传递神经网络（Message Passing Neural Network）的蛋白质序列设计模型，能够根据给定的蛋白质骨架结构高效生成高表达、可折叠的氨基酸序列。
 
-## 仓库说明
+# 模型描述
 
-本仓库不是完整 standalone 版本。`model/proteinmpnn/` 包含 ProteinMPNN 模型相关源码，`scripts/` 包含推理、训练和辅助处理脚本；其余环境和公共依赖继续由 OneScience 基座提供。
-
-当前支持：
-
-- 根据单链或多链 PDB 骨架生成候选氨基酸序列。
-- 对结构/序列组合进行 score-only 打分。
-- 输出 conditional probability 或 unconditional probability。
-- 使用固定链、固定残基、tied positions、PSSM、氨基酸 bias 等约束进行设计。
-- 使用 `data/pdb_2021aug02_sample/` 中的 ProteinMPNN 预处理样例数据验证训练流程。
-
-当前不直接支持：
-
-- 结构预测、分子动力学模拟或湿实验验证。
-- 直接用普通 PDB 文件训练；训练入口需要 ProteinMPNN 预处理后的 `.pt` 数据集结构。
+ProteinMPNN 采用编码器-解码器架构，编码器通过图神经网络提取骨架结构的几何与拓扑特征，解码器以自回归方式逐位生成氨基酸序列。
 
 
-## 文件说明
+# 使用说明
 
-| 路径 | 类型 | 作用 | 备注 |
-|---|---|---|---|
-| `README.md` | 文档 | 人类用户和大模型入口 | 中文使用说明 |
-| `configuration.json` | 元信息 | 声明模型名、任务、入口、源码包、配置和权重目录 | ModelScope/OneScience 资源描述 |
-| `config/config.yaml` | 配置 | 记录模型包路径、推理/训练入口、默认数据和权重目录 | 可供自动化系统读取 |
-| `model/proteinmpnn/` | Python 包 | ProteinMPNN 模型、特征、数据加载和训练工具 | 本地源码 |
-| `scripts/inference.py` | 推理脚本 | 序列设计、打分和概率输出入口 | 支持 PDB 或 JSONL 输入 |
-| `scripts/training.py` | 训练脚本 | ProteinMPNN 训练入口 | 需要预处理训练数据 |
-| `scripts/test_inference.sh` | 验证脚本 | 单 PDB 最小推理示例 | 依赖 `data/inputs` 和 `weight/vanilla_model_weights` |
-| `scripts/test_train.sh` | 验证脚本 | 最小训练示例 | 依赖 `data/pdb_2021aug02_sample` |
-| `scripts/helper_scripts/` | 辅助脚本 | 解析 PDB、指定设计链、固定位置、PSSM、bias、tied positions 等 | 供复杂推理示例调用 |
-| `scripts/infer_examples/` | 示例脚本 | 12 个推理场景示例 | 
-| `data/` | 数据目录 | 放置推理示例输入和训练样例数据 | 当前目录为空，需下载后运行 |
-| `weight/` | 权重目录 | 放置 vanilla、soluble、CA-only 模型权重 | 当前目录为空，需下载后运行 |
-| `outputs/` | 输出目录 | 推理、训练日志和 checkpoint 输出 | 运行时自动生成 |
+## 1. OneCode 使用
 
-## 环境安装
+可通过 OneCode 在线环境体验智能化一键式 AI4S 编程：
 
-推荐在 GPU 或 DCU 环境运行。CPU 可用于导入检查、小规模连通性验证和查看脚本帮助，完整推理和训练速度较慢。DCU 用户需预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
+[点击体验智能化一键式 AI4S 编程](https://web-2069360198568017922-iaaj.ksai.scnet.cn:58043/home)
 
-安装 OneScience 生物方向环境：
+## 2. 手动安装使用
+
+**硬件要求**
+
+- 推荐使用 GPU 或 DCU 运行。
+- CPU 可以用于导入和小配置连通性验证，完整训练和推理速度较慢。
+- DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
+
+
+## 3. 快速开始
+
+### 下载模型包
 
 ```bash
-git clone https://gitee.com/onescience-ai/onescience.git
-cd onescience
-bash install.sh bio
+modelscope download --model OneScience/ProteinMPNN --local_dir ./ProteinMPNN 
+cd ProteinMPNN 
 ```
 
-进入 ProteinMPNN 运行包目录后，如果 OneScience 主仓库不在默认相对位置，可显式设置：
+### 安装运行环境
+#### DCU环境
+
+```bash
+# 请首先激活DTK及CONDA
+conda create -n onescience311 python=3.11 -y
+conda activate onescience311
+# 支持uv安装
+pip install onescience[bio] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
+```
+
+如果运行环境显式需要指向 OneScience 主目录，可设置：
 
 ```bash
 export ONESCIENCE_ROOT=/path/to/onescience
-export PYTHONPATH=$(pwd)/model:${ONESCIENCE_ROOT}/src:${PYTHONPATH:-}
 ```
-
-如果只需要使用本目录中的 ProteinMPNN 源码，也可以设置：
-
-```bash
-export PYTHONPATH=$(pwd)/model:${PYTHONPATH:-}
-```
-
-## 文件下载
-
-权重下载：
-
-```bash
-modelscope download \
-  --model OneScience/ProteinMPNN \
-  --include 'weight/**' \
-  --local_dir /path/to/ProteinMPNN
-```
-
-数据下载：
-
-```bash
-modelscope download \
-  --model OneScience/ProteinMPNN \
-  --include 'data/**' \
-  --local_dir /path/to/ProteinMPNN
-```
-
-下载后建议确认以下目录存在：
-
-```text
-data/inputs/
-data/pdb_2021aug02_sample/
-weight/vanilla_model_weights/
-weight/soluble_model_weights/
-weight/ca_model_weights/
-```
-
-普通模型权重文件通常包括 `v_48_002.pt`、`v_48_010.pt`、`v_48_020.pt`、`v_48_030.pt`。`scripts/inference.py` 默认使用 `v_48_020`。
 
 ## 快速验证
 
-先检查 Python 包和脚本是否可导入：
-
 ```bash
-python -c "from proteinmpnn.protein_mpnn_utils import ProteinMPNN; print('proteinmpnn import ok')"
+export PYTHONPATH=$(pwd)/model:${ONESCIENCE_ROOT}/src:${PYTHONPATH:-}
+python -c "from proteinmpnn.protein_mpnn_utils import ProteinMPNN; print('proteinmpnn wrapper ok')"
 python scripts/inference.py --help
 python scripts/training.py --help
 ```
 
 ## 推理
 
-普通 ProteinMPNN 使用 `weight/vanilla_model_weights/`；如果不显式传 `--path_to_model_weights`，`scripts/inference.py` 默认会使用该目录。
+当前权重已放在 `weight/` 的子目录中。普通 ProteinMPNN 使用 `weight/vanilla_model_weights/`；如果不显式传 `--path_to_model_weights`，`scripts/inference.py` 默认会使用该目录。
 
 ### 使用脚本运行最小推理
 
@@ -152,7 +110,7 @@ python scripts/inference.py \
 
 - 普通模型：`--path_to_model_weights ./weight/vanilla_model_weights`
 - 可溶蛋白模型：`--path_to_model_weights ./weight/soluble_model_weights` 或加 `--use_soluble_model`
-- CA-only 模型：`--path_to_model_weights ./weight/ca_model_weights --ca_only`
+- CA-only 模型：`--path_to_model_weights ./weight/ca_model_weights` 或加`--ca_only`
 
 ## 推理示例脚本
 
@@ -277,4 +235,9 @@ python scripts/training.py \
 
 ## 引用与许可证
 
-ProteinMPNN 原始方法来自蛋白质序列设计相关论文和开源实现。本目录按 OneScience 标准运行包整理代码、权重、示例和运行元数据；具体许可证以仓库内原始文件和 ModelScope 页面声明为准。
+- ProteinMPNN 原始论文：[Robust deep learning–based protein sequence design using ProteinMPNN](https://www.biorxiv.org/content/10.1101/2022.06.03.494563v1)。
+
+- ProteinMPNN 相关源码使用 MIT License，详见仓库根目录 `LICENSE`。模型权重和数据的具体使用条款请以对应发布方说明为准。
+
+- 如果在科研工作中使用 ProteinMPNN，建议引用对应ProteinMPNN原始论文和OneScience相关项目信息，并根据实际任务补充下游分析工具或数据集引用。
+

@@ -1,12 +1,3 @@
----
-# 用户自定义标签
-tags:
-  - airfoil flow prediction
-  - geometric attention
-  - neural field
-  - aerodynamics
----
-
 <h1 align="center">GeoANF</h1>
 
 ## 模型介绍
@@ -59,10 +50,6 @@ model.load_state_dict(torch.load('weight/best_model.pt'))
 model.eval()
 ```
 
-## 自定义标签
-
-`geometric-attention` `neural-field` `airfoil-flow-prediction` `implicit-neural-representation` `aerodynamics-surrogate`
-
 ## OneScience 官方信息
 
 本项目由 **OneScience** 团队维护，致力于推动科学计算与人工智能的交叉研究。
@@ -72,3 +59,4 @@ model.eval()
 ## 许可证
 
 本项目代码遵循 MIT 许可证。
+

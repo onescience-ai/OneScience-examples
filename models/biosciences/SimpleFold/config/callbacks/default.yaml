@@ -1,5 +1,0 @@
-defaults:
-  - model_checkpoint
-  - model_summary
-  - _self_
-

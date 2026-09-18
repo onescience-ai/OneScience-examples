@@ -1,4 +1,3 @@
-
 <p align="center">
   <strong>
     <span style="font-size: 30px;">TargetDiff</span>
@@ -7,29 +6,15 @@
 
 # 模型介绍
 
-TargetDiff 是用于靶点感知分子生成与蛋白-配体亲和力预测的生物信息模型。模型基于三维等变扩散网络，在给定蛋白结合口袋的条件下生成候选小分子，并可使用 EGNN 属性预测分支对蛋白-配体复合物进行亲和力预测。
+TargetDiff 是用于靶点感知分子生成与蛋白-配体亲和力预测的生物信息模型。
 
 原始论文为 _3D Equivariant Diffusion for Target-Aware Molecule Generation and Affinity Prediction_（ICLR 2023）。
 
-# 仓库说明
+# 模型描述
 
-本仓库是 OneScience 整理的 TargetDiff 最小可运行模型仓库，面向 ModelScope 下载、OneCode 自动化运行和本地快速验证场景。
+TargetDiff 模型基于三维等变扩散网络，在给定蛋白结合口袋的条件下生成候选小分子，并可使用 EGNN 属性预测分支对蛋白-配体复合物进行亲和力预测。
 
-当前包已将 TargetDiff 示例脚本、模型实现快照、样例输入和预训练权重整理到同一个目录。用户在已安装 OneScience 的环境中下载本目录后，可直接在 `targetdiff` 目录下运行 Python 入口脚本。
-
-当前支持能力：
-
-- 使用包内 `3ug2` 蛋白-配体样例和 `egnn_pdbbind_v2016.pt` 权重进行亲和力预测。
-- 使用包内 `pretrained_diffusion.pt` 权重对自定义 PDB 口袋进行分子采样。
-- 接入 CrossDocked2020 数据后训练 TargetDiff 扩散生成模型。
-- 接入 PDBbind 数据后训练、评估蛋白-配体亲和力预测模型。
-- 对采样结果进行分子有效性、稳定性和可选 docking 评估。
-
-当前不支持能力：
-
-- 本包不自动安装 OneScience、PyTorch、PyTorch Geometric、RDKit、OpenBabel 等运行依赖。
-- 本包不内置 CrossDocked2020、PDBbind 等训练/评估数据集。
-- `scripts/*.sh` 中部分脚本保留 OneScience 源仓库路径假设；独立下载本包后，推荐优先使用下文给出的 `python -m scripts...` 命令。
+当前包已将 TargetDiff 示例脚本、模型实现快照、样例输入和预训练权重整理到同一个目录，数据集后续上传。
 
 # 适用场景
 
@@ -40,27 +25,6 @@ TargetDiff 是用于靶点感知分子生成与蛋白-配体亲和力预测的�
 | 扩散模型训练 | 使用 CrossDocked2020 口袋数据训练 TargetDiff 分子生成模型 |
 | 属性预测训练 | 使用 PDBbind 数据训练 EGNN 亲和力预测模型 |
 | 生成结果评估 | 对采样结果计算稳定性、重建成功率、QED、SA 和可选 Vina docking 指标 |
-
-# 文件说明
-
-| 路径 | 功能 | 备注 |
-| :---: | :---: | :---: |
-| `README.md` | 工程使用说明文档 | 中文为主 |
-| `examples/3ug2_protein.pdb` | 亲和力预测示例蛋白 | 可直接用于快速推理 |
-| `examples/3ug2_ligand.sdf` | 亲和力预测示例配体 | 可直接用于快速推理 |
-| `weight/pretrained_diffusion.pt` | TargetDiff 扩散生成模型权重 | 用于分子采样 |
-| `weight/egnn_pdbbind_v2016.pt` | EGNN 亲和力预测权重 | 用于亲和力推理 |
-| `weight/pk_reg_para.pkl` | 亲和力相关辅助参数文件 | 保留自原始资源 |
-| `configs/sampling.yml` | 分子采样配置 | 默认读取环境变量路径，需要按下文建立权重路径映射 |
-| `configs/training.yml` | 扩散模型训练配置 | 需要 CrossDocked2020 数据 |
-| `configs/prop/*.yml` | 亲和力预测训练配置 | 需要 PDBbind 数据 |
-| `scripts/property_prediction/fixed_inference.py` | 亲和力预测推理脚本 | 独立包推荐入口 |
-| `scripts/sample_for_pocket.py` | 自定义 PDB 口袋分子采样脚本 | 独立包推荐入口 |
-| `scripts/sample_diffusion.py` | 测试集口袋分子采样脚本 | 需要 CrossDocked2020 测试划分 |
-| `scripts/evaluate_diffusion.py` | 生成分子评估脚本 | docking 评估需额外安装 Vina/QVina |
-| `scripts/train_diffusion.py` | 扩散模型训练脚本 | 需要 CrossDocked2020 数据 |
-| `scripts/property_prediction/train_prop.py` | 亲和力预测训练脚本 | 需要 PDBbind 数据 |
-| `models/` | TargetDiff 模型实现 | 脚本优先从本目录导入模型；训练日志会复制该目录用于溯源 |
 
 # 使用说明
 
@@ -113,11 +77,16 @@ export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$LD_LIBRARY_PATH"
 export LD_LIBRARY_PATH="$CONDA_PREFIX/lib/python3.11/site-packages/fastpt/torch/lib:$LD_LIBRARY_PATH"
 ```
 
-### 2. 下载权重、案例包
+### 2. 下载模型
 
 ```bash
-bash download_assets.sh
+modelscope download --model OneScience/targetdiff --local_dir ./targetdiff
+cd targetdiff
 ```
+### 训练权重&数据集
+
+训练权重已在weights文件夹内，可下载模型包后直接使用；
+数据集近期上传至魔搭平台，后续可通过指令下载；
 
 ### 3. 亲和力预测
 
@@ -400,3 +369,4 @@ python scripts/property_prediction/pdbbind_split.py \
   year={2023}
 }
 ```
+

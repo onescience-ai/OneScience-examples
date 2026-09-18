@@ -1,4 +1,3 @@
-
 <p align="center">
   <strong>
     <span style="font-size: 30px;">La-Proteina</span>
@@ -7,33 +6,15 @@
 
 # 模型介绍
 
-La-Proteina 是一种基于**部分隐变量流匹配（Partially Latent Flow Matching）**的蛋白质结构生成模型，能够直接生成全原子蛋白质结构及其对应的氨基酸序列。模型将蛋白质的骨架（backbone CA）显式建模，而序列和原子级细节则通过每个残基的固定维度隐变量来捕捉，从而有效避免显式侧链表示带来的挑战。
+La-Proteina 是一种基于**部分隐变量流匹配（Partially Latent Flow Matching）**的蛋白质结构生成模型，能够直接生成全原子蛋白质结构及其对应的氨基酸序列。
 
 论文：_La-Proteina: Atomistic Protein Generation via Partially Latent Flow Matching_（arXiv 2025）。
 
 - [论文链接](https://arxiv.org/abs/2507.09466)
-- [项目主页](https://research.nvidia.com/labs/genair/la-proteina/)
-- [Model Card++](./modelcard/model_card_overview.md)
 
-La-Proteina 在多个生成基准上取得了 state-of-the-art 性能，包括全原子协同可设计性（co-designability）、多样性、结构有效性以及原子级 motif 支架（motif scaffolding）。模型可生成最长约 800 个残基的蛋白质结构。
+# 模型描述
 
-# 仓库说明
-
-本示例将 La-Proteina 集成到 OneScience 生物信息（AI for Biology）组件中，提供训练、蛋白质结构生成、生成结果评估与自编码器推理的统一入口。
-
-当前支持能力：
-
-- **蛋白质结构生成**：基于流匹配生成蛋白质主链（backbone CA）与局部隐变量（local latents）。
-- **Motif 约束生成**：支持 motif 位置与序列约束，实现功能 motif 的骨架设计。
-- **训练扩散模型**：在 PDB 数据集上训练 La-Proteina 主模型。
-- **训练自编码器**：训练局部隐变量自编码器（local-latent autoencoder）。
-- **评估生成结果**：计算生成结构的 RMSD、序列恢复率、(co-)designability 等指标。
-- **自编码器推理**：对 PDB 结构进行编码-解码重建并评估重建质量。
-
-当前不支持能力：
-
-- 当前仓库快照未打包 `dataset=genie2` 与 `dataset=pdb_multimer`，运行会显式报错。
-- 当前仓库不内置proteinMPNN，使用La-Proteina进行评估时需要自行下载；
+La-Proteina 将蛋白质的骨架（backbone CA）显式建模，而序列和原子级细节则通过每个残基的固定维度隐变量来捕捉，从而有效避免显式侧链表示带来的挑战。
 
 # 适用场景
 
@@ -44,38 +25,6 @@ La-Proteina 在多个生成基准上取得了 state-of-the-art 性能，包括�
 | 扩散模型训练 | 在 PDB 数据集上训练 La-Proteina 主模型。 |
 | 自编码器训练与推理 | 训练局部隐变量自编码器，并对 PDB 结构执行编码、解码与重建评估。 |
 | 生成结果评估 | 计算 RMSD、序列恢复率和 (co-)designability 等指标。 |
-
-# 文件说明
-
-| 路径 | 功能 | 备注 |
-| :---: | :---: | :---: |
-| `README.md` | 工程使用说明文档 | 中文为主 |
-| `scripts/run_train.sh` | 训练 La-Proteina 主模型 | 输出至 `./store/<run_name>/` |
-| `scripts/run_generate.sh` | 蛋白质结构生成 | 支持无条件与 motif 约束生成 |
-| `scripts/run_evaluate.sh` | 生成结构评估 | (co-)designability 需要 ProteinMPNN 权重 |
-| `scripts/run_ae_infer.sh` | 自编码器编码、解码与重建 | 输出至 `./inference_ae/` |
-| `train_laproteina.py` | 主模型训练入口 | 使用 Hydra 配置 |
-| `infer_laproteina.py` | 蛋白质结构生成入口 | - |
-| `evaluate_laproteina.py` | 评估入口 | - |
-| `train_laproteina_ae.py` | 自编码器训练入口 | - |
-| `infer_laproteina_ae.py` | 自编码器推理入口 | - |
-
-```
-/laproteina/
-├── configs/                          # 配置文件
-├── models/                          # 源码模块
-├── scripts/                          # 可执行脚本（已提供）
-    ├── run_train.sh                  # 训练 La-Proteina 主模型
-    ├── run_generate.sh               # 蛋白质结构生成
-    ├── run_evaluate.sh               # 生成结果评估
-    └── run_ae_infer.sh               # 自编码器推理/重建
-    ├── train_laproteina.py               # 训练入口（Hydra 配置）
-    ├── infer_laproteina.py               # 生成入口
-    ├── evaluate_laproteina.py            # 评估入口
-    ├── train_laproteina_ae.py            # 自编码器训练入口
-    ├── infer_laproteina_ae.py            # 自编码器推理入口
-└── README.md                         # 本文档
-```
 
 # 使用说明
 
@@ -138,13 +87,17 @@ source ${ROCM_PATH}/cuda/env.sh
 export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$LD_LIBRARY_PATH"
 export LD_LIBRARY_PATH="$CONDA_PREFIX/lib/python3.11/site-packages/fastpt/torch/lib:$LD_LIBRARY_PATH"
 ```
-
-### 2. 下载数据库(含权重)
+### 2. 下载模型包
 
 ```bash
-modelscope download --dataset OneScience/La-Proteina --local_dir ./dataset
+# 默认下载到当前路径下 model 文件夹；如需修改，请调整 local_dir 后的路径
+modelscope download --model OneScience/La-Proteina --local_dir ./model
 cd model
 ```
+
+### 训练权重&数据集
+
+近期上传魔搭，后续支持指令下载
 
 ### 3. 使用方式
 
@@ -153,7 +106,6 @@ cd model
 #### 1. 训练 La-Proteina 主模型（`run_train.sh`）
 
 ```bash
-cd examples/biosciences/laproteina
 bash scripts/run_train.sh
 ```
 
@@ -178,7 +130,6 @@ bash scripts/run_train.sh dataset=pdb/pdb_train_motif_aa nn=local_latents_score_
 #### 2. 蛋白质结构生成（`run_generate.sh`）
 
 ```bash
-cd examples/biosciences/laproteina
 bash scripts/run_generate.sh
 ```
 
@@ -215,7 +166,6 @@ bash scripts/run_generate.sh --config_name inference_motif_uidx_tip
 #### 3. 生成结果评估（`run_evaluate.sh`）
 
 ```bash
-cd examples/biosciences/laproteina
 bash scripts/run_evaluate.sh
 ```
 
@@ -238,7 +188,6 @@ modelscope download --model OneScience/ProteinMPNN --local_dir ./weight
 #### 4. 自编码器推理（`run_ae_infer.sh`）
 
 ```bash
-cd examples/biosciences/laproteina
 bash scripts/run_ae_infer.sh
 ```
 
@@ -296,3 +245,4 @@ python infer_laproteina_ae.py "$@"
   year={2025}
 }
 ```
+

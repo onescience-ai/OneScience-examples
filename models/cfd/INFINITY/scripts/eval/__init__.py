@@ -1,1 +1,0 @@
-# INFINITY evaluation package

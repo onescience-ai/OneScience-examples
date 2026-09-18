@@ -22,23 +22,6 @@ https://doi.org/10.1029/2020MS002109
 | 本地快速验证 | 使用 fake 数据完成训练和 rollout。 |
 | ERA5 全球天气预报 | 后续可接入 Tempest-Remap 处理后的 ERA5。 |
 
-# 文件说明
-
-| 路径 | 功能 | 备注 |
-| :--- | :--- | :--- |
-| `README.md` | 工程使用说明文档 | 中文为主 |
-| `download.sh` | ModelScope 资源下载脚本 | 下载官方源码使用的 GRIB 参数映射表 |
-| `conf/config.yaml` | 训练配置 | 定义样本规模、优化器参数、设备和 checkpoint 路径 |
-| `model/model.py` | Compact DLWP-CS 模型 | 实现 cubed-sphere U-Net、激活函数、loss 和 rollout |
-| `model/topology.py` | Cubed-sphere 拓扑算子 | 实现跨面 padding 和分面卷积 |
-| `model/dataset.py` | 训练数据集封装 | 组织合成 cubed-sphere 输入与目标 |
-| `model/fake_data.py` | 合成数据生成模块 | 为结构验证生成六面球测试数据 |
-| `scripts/train.py` | 训练入口 | 执行多 epoch 训练、验证和断点续训 |
-| `scripts/inference.py` | 自回归推理入口 | 加载 checkpoint 并执行多步 rollout |
-| `scripts/result.py` | 评估与可视化入口 | 输出 RMSE、ACC 和分面结果图 |
-| `official-source/` | DLWP-CS 官方代码快照 | 包含官方数据处理、重映射、模型和教程 |
-| `weight/` | 本地训练权重目录 | 保存训练产生的 checkpoint |
-
 # 使用说明
 
 ## 1. OneCode 使用
@@ -50,9 +33,15 @@ https://doi.org/10.1029/2020MS002109
 **硬件要求**
 
 - CPU 可运行当前最小配置。
-- 真实数据训练推荐使用 GPU。
+- 真实数据训练推荐使用 GPU/DCU。
 
-## 3. 快速开始
+### 下载模型包
+
+```bash
+modelscope download --model OneScience/deep-learning-weather-prediction --local_dir ./DLWP-CS
+cd DLWP-CS
+```
+
 ### 安装运行环境
 
 **DCU 环境**
@@ -153,3 +142,4 @@ python scripts/result.py
 
 - 官方代码：https://github.com/jweyn/DLWP-CS
 - 本目录依据论文和官方结构进行独立适配，遵循 GPL-3.0。
+

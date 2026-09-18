@@ -1,6 +1,6 @@
 # INFINITY — AirfRANS 论文复现
 
-对论文 **INFINITY: Neural Field Modeling for Reynolds-Averaged Navier-Stokes Equations**（arXiv:2307.13538）的复现实现。代码完全基于论文正文（Figure 1、Algorithm 1、Table 1）及 AirfRANS 公开数据构建，未参考任何官方或第三方代码。
+INFINITY：基于神经场的流场物理量高效预测模型。
 
 ## 模型架构
 
@@ -125,17 +125,9 @@ python scripts/evaluate.py config/infinity.yaml
 
 3. **二阶 CAVIA 贡献有限增量**。Large 配置相比 Medium 配置的 vx/vy 提升约 25–30%，但增益幅度明显小于 Tiny → Medium 的提升量级。
 
-## 引用
-
-```bibtex
-@article{infinity2023,
-  title={INFINITY: Neural Field Modeling for Reynolds-Averaged Navier-Stokes Equations},
-  author={...},
-  journal={arXiv:2307.13538},
-  year={2023}
-}
-```
-
 ## 致谢
 
 本复现仅使用论文提供的数据和文本描述，未使用官方或第三方代码。预训练权重托管于 [ModelScope](https://modelscope.cn/models/OneScience/INFINITY)。
+
+
+

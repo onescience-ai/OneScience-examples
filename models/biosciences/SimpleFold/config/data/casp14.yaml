@@ -1,3 +1,0 @@
-_target_: onescience.datapipes.simplefold.test_datamodule.SimpleFoldInferenceDataModule
-target_dir: data/casp14/
-num_workers: 1

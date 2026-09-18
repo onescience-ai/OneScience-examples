@@ -14,7 +14,7 @@ eSEN（equivariant Smooth Energy Network）是 FAIR Chemistry 提出的等变图
 
 eSEN 以周期原子结构图为输入，通过旋转等变表示学习平滑的势能面，并由能量梯度获得守恒力。不同预训练 checkpoint 对应不同材料数据域，使用时应选择与目标元素体系及 DFT 标注设置接近的权重。
 
-本示例包含 eSEN 模型代码、推理脚本、oxide PBE 微调示例和多卡启动配置。受限的 eSEN 预训练 checkpoint 不随仓库发布。
+本仓库包含 eSEN 模型代码、推理脚本、oxide PBE 微调示例和多卡启动配置。受限的 eSEN 预训练 checkpoint 不随仓库发布。
 
 # 适用场景
 
@@ -44,15 +44,11 @@ eSEN 以周期原子结构图为输入，通过旋转等变表示学习平滑的
 - CPU 可用于导入和配置检查，不建议用于正式计算。
 - DCU 需要加载与 PyTorch 构建匹配的 DTK 运行时。
 
-### 获取运行资源
-
-示例代码已位于当前目录。下载 ModelScope 模型包以获取旋转基文件 `Jd.pt`：
+### 下载模型包
 
 ```bash
-cd models/matchem/eSEN
-modelscope download --model OneScience/eSEN --local_dir ./resources/eSEN
-mkdir -p weight
-cp resources/eSEN/weight/Jd.pt weight/Jd.pt
+modelscope download --model OneScience/eSEN --local_dir ./eSEN
+cd eSEN
 ```
 
 ### 安装运行环境
@@ -84,7 +80,7 @@ eSEN 预训练 checkpoint 需要在 FAIR Chemistry 官方模型发布页申请�
 
 ```text
 weight/
-├── Jd.pt                       # 从 OneScience/eSEN 模型包下载的旋转基文件
+├── Jd.pt                       # 本仓库提供的旋转基文件
 ├── esen_30m_mptrj.pt            # 用户申请后自行放置
 ├── esen_30m_omat.pt             # 用户申请后自行放置
 └── esen_30m_oam.pt              # 用户申请后自行放置
@@ -103,11 +99,11 @@ weight/
 - FAIR Chemistry 模型主页：https://huggingface.co/fairchem
 - FAIR Chemistry 官方仓库：https://github.com/FAIR-Chem/fairchem
 
-`Jd.pt` 随 [OneScience/eSEN](https://modelscope.cn/models/OneScience/eSEN) 模型包发布。放入本目录的 `weight/` 后，推理和微调脚本会自动使用，不需要依赖 UMA。
+`Jd.pt` 已随本仓库放在 `weight/`，推理和微调脚本会自动使用，不需要下载或依赖 UMA。
 
 ### 微调数据集
 
-本示例不内置数据。oxide PBE 示例数据单独发布在 ModelScope：
+本仓库不内置数据。oxide PBE 示例数据单独发布在 ModelScope：
 
 ```bash
 modelscope download --dataset OneScience/oxides \
@@ -213,6 +209,7 @@ python evaluate.py \
 
 # 引用与许可证
 
-- eSEN 模型代码改编自 FairChem Core，遵循上游 FairChem 的 MIT License。`Jd.pt` 请按 OneScience/eSEN 模型包和上游模型协议使用。
+- eSEN 模型代码改编自 FairChem Core，遵循上游 FairChem 的 MIT License。模型代码和随仓库提供的 `Jd.pt` 均按该模型协议使用。
 - eSEN checkpoint 不随本仓库发布，使用时应遵循 FAIR Chemistry 模型页面给出的访问条件和许可证。
 - 使用 OMat24、MPTrj、OAM 或 oxide 数据时，请分别引用实际使用的数据集和对应模型工作。
+

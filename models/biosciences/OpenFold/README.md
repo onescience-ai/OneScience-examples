@@ -1,38 +1,21 @@
-﻿<h1 align="center">OpenFold</h1>
+<p align="center">
+  <strong>
+    <span style="font-size: 30px;">OpenFold</span>
+  </strong>
+</p>
 
-## 模型介绍
+# 模型介绍
 
-OpenFold 是 AlphaFold2 的 PyTorch 实现，用于根据蛋白质序列、MSA 和模板信息预测蛋白质三维结构。该模型包含 Evoformer、Structure Module、模板模块、MSA 模块等核心网络结构，可用于训练、推理、权重转换和蛋白质结构预测相关实验。
+OpenFold 是一个基于蛋白质序列、多序列比对（MSA）和模板信息来预测蛋白质三维结构的开源框架。作为 AlphaFold2 的可训练复现，其核心网络结构包括 Evoformer、Structure Module、模板模块和 MSA 模块等，支持训练、推理及权重转换等完整的结构预测实验流程。
 
-## 仓库说明
+论文: OpenFold: Retraining AlphaFold2 yields new insights into its learning mechanisms and capacity for generalization
+https://www.biorxiv.org/content/10.1101/2022.11.20.517210v2
 
-本仓库是 OneScience 整理的 OpenFold 轻量调用仓库，面向 ModelScope 下载、OneCode 自动化运行和本地快速验证场景。
+# 模型描述
 
-当前目录只抽取并暴露 OpenFold 用户直接需要调用的部分：
+OpenFold 基于 Evoformer + Structure Module 架构，使用 PDB 与 UniRef 数据进行训练，面向蛋白质三维结构预测、模型微调及架构改进研究。核心网络包含 48 层 Evoformer Block 与 8 层 Structure Module，通过三角注意力与不变点注意力机制实现进化信息与空间几何的双向融合；相比原版 AlphaFold2，新增内存高效注意力、混合精度训练支持及权重无缝转换能力，显著降低显存占用并修复可训练性缺陷。
 
-- `scripts/`：训练、推理、数据下载、预处理、权重转换等脚本。
-- `model/openfold/`：OpenFold 模型层 Python 包。
-- `config/`：OpenFold 模型配置、运行配置和 DeepSpeed 配置。
-- `data/`：示例数据目录，需下载。
-- `weight/`：用户放置预训练、微调或发布权重的位置。
-- `configuration.json`：ModelScope/OneCode 元信息。
-
-本仓库不是完整 standalone 版本。数据管线、特征处理、loss、几何工具、np 常量、relax 等公共能力继续依赖 OneScience 基座包提供。使用前需要安装 OneScience，或通过 `ONESCIENCE_ROOT` 指向 OneScience 源码根目录。
-
-当前支持能力：
-
-- 训练：提供 `scripts/train.py`，使用本地 OpenFold 模型层，数据管线等能力来自 OneScience 基座。
-- 推理：提供 `scripts/inference.py`，可加载 OpenFold checkpoint 或 AlphaFold JAX 参数进行结构预测。
-- 序列 threading：提供 `scripts/thread_sequence.py`，用于自定义模板相关推理场景。
-- 工具脚本：`scripts/` 下包含数据库下载、alignment 预计算、mmCIF 缓存生成、权重转换等工具。
-
-当前不支持能力：
-
-- 不脱离 OneScience 基座单独运行完整 OpenFold 数据管线和工具库。
-- 不内置完整训练数据集、序列数据库、模板数据库和预训练权重。
-- 不保证 CPU 上完成完整训练或大规模推理，CPU 仅建议用于连通性验证。
-
-## 适用场景
+# 适用场景
 
 | 场景 | 说明 |
 | --- | --- |
@@ -41,22 +24,6 @@ OpenFold 是 AlphaFold2 的 PyTorch 实现，用于根据蛋白质序列、MSA �
 | ModelScope/OneCode 发布 | 只暴露脚本、模型、配置和权重目录，减少发布包体积。 |
 | 权重转换和数据准备 | 使用 `scripts/` 下工具下载数据库、预处理 alignment、转换权重。 |
 
-## 文件说明
-
-| 路径 | 功能 | 备注 |
-| --- | --- | --- |
-| `README.md` | 工程使用说明文档 | 中文为主。 |
-| `configuration.json` | ModelScope/OneCode 元信息 | 声明入口脚本、模型包、配置、权重目录和 OneScience 基座依赖。 |
-| `config/config.py` | OpenFold 模型配置 | 从 OneScience OpenFold 配置抽取。 |
-| `config/config.yaml` | 训练、推理和数据路径配置 | 已适配本仓库相对路径，并声明基座依赖。 |
-| `config/deepspeed_config.json` | DeepSpeed 配置 | 用于分布式训练或 ZeRO 相关场景。 |
-| `scripts/train.py` | 训练脚本 | 本地模型层 + OneScience 数据管线。 |
-| `scripts/inference.py` | 推理脚本 | 需提供 FASTA、模板路径、alignment 或数据库路径，以及权重。 |
-| `scripts/thread_sequence.py` | 序列 threading 脚本 | 用于自定义模板相关推理场景。 |
-| `scripts/` | 工具脚本目录 | 下载、预处理、权重转换、alignment 等脚本。 |
-| `model/openfold/` | OpenFold 模型 Python 包 | 只包含 model 层源码；不包含 OneScience datapipes/utils。 |
-| `data/` | 示例数据和用户数据放置目录 | 需下载。 |
-| `weight/` | 权重目录 | 可放置 `.pt`、`.ckpt`、`.npz` 等权重文件。 |
 
 # 使用说明
 
@@ -77,21 +44,22 @@ OpenFold 是 AlphaFold2 的 PyTorch 实现，用于根据蛋白质序列、MSA �
 
 ## 3. 快速开始
 
-### 下载data
+### 下载模型包
 
 ```bash
-modelscope download \
-   --model OneScience/OpenFold \
-   --include 'data/**' \
-   --local_dir ./
+modelscope download --model OneScience/OpenFold --local_dir ./OpenFold
+cd OpenFold
 ```
 
 ### 安装运行环境
 
+#### DCU环境
 ```bash
-git clone https://gitee.com/onescience-ai/onescience.git
-cd onescience
-bash install.sh bio
+# 请首先激活DTK及CONDA
+conda create -n onescience311 python=3.11 -y
+conda activate onescience311
+# 支持uv安装
+pip install onescience[bio] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
 ## 快速验证
@@ -179,13 +147,13 @@ python scripts/train.py \
 OpenFold 权重：
 
 ```bash
-bash scripts/download_openfold_params.sh ./weight
+bash scripts/download_openfold_params.sh ./weights
 ```
 
 HuggingFace 权重：
 
 ```bash
-bash scripts/download_openfold_params_huggingface.sh ./weight
+bash scripts/download_openfold_params_huggingface.sh ./weights
 ```
 
 PDB mmCIF 模板库：
@@ -209,6 +177,16 @@ bash scripts/download_alphafold_dbs.sh /path/to/database_dir full_dbs
 
 ## 引用与许可证
 
-OpenFold 原始代码使用 Apache License 2.0。本仓库保留来源说明，并面向 OneScience ModelScope/OneCode 调用场景进行整理。
+- OpenFold 原始论文：[OpenFold: Retraining AlphaFold2 yields new insights into its learning mechanisms and capacity for generalization](https://www.biorxiv.org/content/10.1101/2022.11.20.517210)。
 
-如果在科研工作中使用 OpenFold 结果，建议引用 OpenFold 原始论文、AlphaFold 相关论文和 OneScience 相关项目信息，并根据实际任务补充下游分析工具或数据集引用。
+- AlphaFold2 原始论文：[Highly accurate protein structure prediction with AlphaFold](https://www.nature.com/articles/s41586-021-03819-2)。
+
+- 如果使用 OpenFold 的多聚体预测功能，还应引用 AlphaFold-Multimer 原始论文：[Protein complex prediction with AlphaFold-Multimer](https://www.biorxiv.org/content/10.1101/2021.10.04.463034v1)。
+
+- 如果使用 OpenProteinSet 训练数据，还应引用：[OpenProteinSet: Training data for structural biology at scale](https://arxiv.org/abs/2308.05326)。
+
+- OpenFold 相关源码使用 Apache License 2.0，详见仓库根目录 `LICENSE`。模型权重和数据的使用条款请以对应发布方说明为准。
+
+- OpenProteinSet 数据集使用 CC BY 4.0 License。使用该数据集时，应注明数据来源，并按照数据集页面要求引用 OpenProteinSet 论文。
+
+- 如果在科研工作中使用 OpenFold，建议同时引用 OpenFold 和 AlphaFold2 原始论文以及OneScience相关项目信息；使用多聚体功能时补充引用 AlphaFold-Multimer；使用 OpenProteinSet 或其他下游数据资源时，还应补充相应数据集、数据库和原始论文的引用。

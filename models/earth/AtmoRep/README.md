@@ -22,23 +22,6 @@ https://arxiv.org/abs/2308.13280
 | 本地快速验证 | 使用 tiny 模型完成 masked-token 训练和推理。 |
 | ERA5 大气表示学习 | 后续可接入官方 GRIB 或 Zarr 数据。 |
 
-# 文件说明
-
-| 路径 | 功能 | 备注 |
-| :--- | :--- | :--- |
-| `README.md` | 工程使用说明文档 | 中文为主 |
-| `download.sh` | ModelScope 资源下载脚本 | 下载官方模型权重和 vorticity 归一化文件 |
-| `conf/config.yaml` | Tiny 模型训练配置 | 定义样本规模、优化器参数、设备和 checkpoint 路径 |
-| `scripts/train.py` | Tiny 模型训练入口 | 执行 masked-token ensemble 训练和验证 |
-| `scripts/inference.py` | Tiny 模型推理入口 | 加载本地 checkpoint 并输出 ensemble 预测 |
-| `scripts/result.py` | 结果评估入口 | 汇总训练历史与预测统计指标 |
-| `scripts/download_official_resources.sh` | 官方资源下载脚本 | 从上游仓库和数据站获取源码及模型归档 |
-| `model/tiny_atmorep.py` | Tiny AtmoRep 实现 | 单场 masked-token Transformer 与 ensemble loss |
-| `model/fake_data.py` | 合成数据生成模块 | 为本地训练提供确定性的单场测试数据 |
-| `resources/` | 官方模型资源目录 | 包含模型配置、权重和 vorticity 归一化文件 |
-| `vendor/atmorep-official/` | AtmoRep 官方代码快照 | 用于核对官方配置、模型和数据处理实现 |
-| `weight/` | 本地训练权重目录 | 保存 Tiny 模型 checkpoint 和训练历史 |
-
 # 使用说明
 
 ## 1. OneCode 使用
@@ -50,10 +33,15 @@ https://arxiv.org/abs/2308.13280
 **硬件要求**
 
 - Tiny 模型可在 CPU 上运行。
-- 官方模型和真实数据推理推荐使用 GPU。
+- 官方模型和真实数据推理推荐使用 GPU/DCU。
 
+### 下载模型包
 
-## 3. 快速开始
+```bash
+modelscope download --model OneScience/AtmoRep --local_dir ./AtmoRep
+cd AtmoRep
+```
+
 ### 安装运行环境
 
 **DCU 环境**
@@ -165,3 +153,4 @@ python scripts/result.py
 - 官方代码为 MIT License。
 - 官方模型权重声明为 CC BY 4.0。
 - ERA5 遵循 Copernicus/ECMWF 数据条款。
+

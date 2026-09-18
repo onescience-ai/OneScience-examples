@@ -1,72 +1,66 @@
-<h1 align="center">Evo2</h1>
+<p align="center">
+  <strong><span style="font-size: 30px;">Evo2</span></strong>
+</p>
 
-## 模型介绍
+# 模型介绍
 
-Evo2 是面向基因组序列建模、生成和预测的大规模序列模型，可用于 DNA/RNA 序列生成、FASTA 序列预测、训练和微调流程验证。本目录是按单模型包形式整理的 Evo2 运行目录，包含本地模型源码、训练/推理脚本、示例数据、配置文件和权重放置目录。
+Evo2 是一个面向基因组序列的大规模基础模型，能够对 DNA/RNA 序列进行生成、补全和功能预测。它支持在大规模基因组数据集上预训练，并可快速适配到调控元件预测、变异效应评估等下游任务，为基因组学研究提供了统一的序列建模工具。
 
-当前目录支持的入口：
+# 模型描述
 
-- Prompt 生成推理：`scripts/infer.py`
-- FASTA 序列预测：`scripts/predict.py`
-- 单节点训练或微调：`scripts/train.py`
-- Slurm/集群训练：`scripts/train_slurm.py`
-- FASTA/JSON 数据预处理：`scripts/tools/data_process/`
+Evo2 基于 Hyena 算子与卷积门控混合架构，支持百万级上下文窗口。模型在数万亿碱基对的多物种基因组数据上预训练。输入原始核苷酸序列，支持自回归生成、序列分类与嵌入提取。兼容多 GPU 分布式训练与灵活数据混合，在 GenBench 等基准中性能领先，适用于预训练、微调及下游功能验证。
 
-## 目录结构
+# 适用场景
 
-| 路径 | 说明 |
+| 场景 | 说明 |
 | --- | --- |
-| `README.md` | 当前使用说明 |
-| `configuration.json` | ModelScope/OneCode 元信息，声明训练、推理和预测入口 |
-| `config/config.yaml` | 单模型运行配置，记录模型包路径、默认入口和权重目录 |
-| `config/genome_data_config.yaml` | 训练数据集配置，配合 `--dataset-dir data/data_mini/genome_data` 使用 |
-| `config/genome_preprocess_config.yaml` | genome 数据预处理配置 |
-| `config/opengenome2.yml` | 额外训练配置文件，供平台或扩展训练流程使用 |
-| `model/evo2/` | Evo2 本地 Python 包源码 |
-| `scripts/infer.py` | prompt 生成推理入口 |
-| `scripts/predict.py` | FASTA 预测入口 |
-| `scripts/train.py` | 单节点训练入口 |
-| `scripts/train_slurm.py` | Slurm/集群训练入口 |
-| `scripts/tools/data_process/` | FASTA/JSON 数据预处理脚本 |
-| `scripts/tools/checkpoint_convert/` | checkpoint 转换工具 |
-| `data/predict_example.fa` | FASTA 预测示例输入 |
-| `data/prompts.csv` | prompt 示例数据 |
-| `data/data_mini/genome_data/` | 最小 genome 训练示例数据 |
-| `checkpoints/` | 本地权重目录 |
+| DNA/RNA 序列生成 | 输入 prompt 后生成后续基因组序列片段 |
+| FASTA 序列预测 | 读取 FASTA 输入并输出序列预测结果 |
+| 本地离线推理验证 | 使用仓库内示例输入和本地 checkpoint 跑通推理链路 |
+| mini 训练流程验证 | 使用 `data/data_mini/genome_data/` 验证训练脚本、数据读取和 checkpoint 流程 |
+| 集群训练适配 | 使用 `scripts/train_slurm.py` 在 Slurm/集群环境中运行训练 |
+| 数据预处理 | 对 FASTA/JSON 数据生成 Byte-Level tokenizer 所需的 `.bin/.idx` 数据 |
 
 
+# 使用说明
 
-## 使用说明
-
-### 1. OneCode 使用
+## 1. OneCode 使用
 
 可通过 OneCode 在线环境体验智能化一键式 AI4S 编程：
 
 [点击体验智能化一键式 AI4S 编程](https://gitee.com/link?target=https%3A%2F%2Fweb-2069360198568017922-iaaj.ksai.scnet.cn%3A58043%2Fhome)
 
-### 2. 手动安装使用
+## 2. 手动安装使用
 
-#### 硬件要求
+**硬件要求**
 
 - 推荐使用 GPU 或 DCU 运行。
 - CPU 可以用于导入和小配置连通性验证，完整训练和推理速度较慢。
 - DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
 
-#### 软件环境
-
-建议在 Linux、GPU/DCU 和 OneScience BIO 环境中运行。本项目脚本依赖 `nemo`、`megatron.core`、`torch`、`lightning` 等组件，普通 Python 环境通常只能做源码查看，不能直接完成大模型训练或推理。
-
-示例环境安装方式：
+### 下载模型包
 
 ```bash
-git clone https://gitee.com/onescience-ai/onescience.git
-cd onescience
-bash install.sh bio
+modelscope download --model OneScience/evo2 --local_dir ./evo2
+cd evo2
 ```
 
+### 安装运行环境
+#### DCU环境
 
+```bash
+# 请首先激活DTK及CONDA
+conda create -n onescience311 python=3.11 -y
+conda activate onescience311
+# 支持uv安装
+pip install onescience[bio] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
+```
 
-### 3. 快速开始
+如果脚本需要访问 OneScience 源码，可设置：
+
+```bash
+export ONESCIENCE_ROOT=/path/to/onescience
+```
 
 在本目录运行时，脚本会自动把项目根目录和 `model/` 加入 `sys.path`。也可以手动验证本地包导入：
 
@@ -75,61 +69,9 @@ export PYTHONPATH=$(pwd)/model:${PYTHONPATH:-}
 python -c "import evo2; print('evo2 import ok')"
 ```
 
-#### 权重/数据下载
+## 3. 快速开始
 
-模型训练数据与权重数据需在魔塔社区按需下载。
-确保现在位于evo2文件夹下：
-```bash
-cd onescience-examples/models/biosciences/evo2
-```
-数据放在 `data/` 的子目录中，下载前建议先创建 `data/data_mini`：
-
-```bash
-mkdir -p data/data_mini
-modelscope download \
-  --model OneScience/evo2 \
-  --include 'data/**' \
-  --local_dir .
-```
-
-权重放在 `checkpoints/` 的子目录中。当前 1B 训练默认从头开始，不需要下载 1B checkpoint；运行推理、预测或 7B 微调时再下载对应 checkpoint：
-
-```bash
-mkdir -p checkpoints
-modelscope download \
-  --model OneScience/evo2 \
-  --include 'checkpoints/**' \
-  --local_dir .
-```
-
-下载完成后，常用路径应为：
-
-```text
-data/data_mini/genome_data/
-checkpoints/evo2_nemo_7b/
-```
-
-其中包含：
-
-- `chr20.fa`、`chr21.fa`、`chr22.fa` 及压缩版本
-- 合并 FASTA：`chr20_21_22.fa`
-- 预处理后的训练、验证、测试二进制数据：`preprocessed_data/`
-
-`config/genome_data_config.yaml` 中的 `dataset_prefix` 是相对路径，实际运行时需要配合：
-
-```bash
---dataset-dir data/data_mini/genome_data
-```
-
-
-
-推理和预测入口会默认读取该目录；训练默认不加载 checkpoint。如需从已有权重微调或续训，请在训练命令中显式传入 `--ckpt-dir checkpoints/evo2_nemo_7b`。也可以通过 `EVO2_CKPT_DIR` 或 `--ckpt-dir` 覆盖为其他 checkpoint 路径：
-
-```bash
-export EVO2_CKPT_DIR=/path/to/evo2_nemo_7b
-```
-
-#### 快速检查
+### 快速检查
 
 查看入口参数：
 
@@ -140,7 +82,41 @@ python scripts/train.py --help
 python scripts/train_slurm.py --help
 ```
 
-## Prompt 生成推理
+## 4. 数据与权重
+
+示例训练数据已放在：
+
+```text
+data/data_mini/genome_data/
+```
+
+其中包含：
+
+* `chr20.fa`、`chr21.fa`、`chr22.fa` 及压缩版本
+* 合并 FASTA：`chr20_21_22.fa`
+* 预处理后的训练、验证、测试二进制数据：`preprocessed_data/`
+
+`config/genome_data_config.yaml` 中的 `dataset_prefix` 是相对路径，实际运行时需要配合：
+
+```bash
+--dataset-dir data/data_mini/genome_data
+```
+
+默认 7B NeMo checkpoint 放置在仓库内：
+
+```text
+checkpoints/evo2_nemo_7b/
+```
+
+推理和预测入口会默认读取该目录；训练默认不加载 checkpoint。如需从已有权重微调或续训，请在训练命令中显式传入 `--ckpt-dir checkpoints/evo2_nemo_7b`。也可以通过 `EVO2_CKPT_DIR` 或 `--ckpt-dir` 覆盖为其他 checkpoint 路径：
+
+```bash
+export EVO2_CKPT_DIR=/path/to/evo2_nemo_7b
+```
+
+权重文件在/path/to/evo2/checkpoints/evo2_nemo_7b/weights路径下
+
+## 5. Prompt 生成推理
 
 `infer.py` 会把结果写入 `--output-file`，但不会自动创建父目录。首次运行前先创建输出目录：
 
@@ -169,7 +145,7 @@ python scripts/infer.py \
 | `--tensor-parallel-size` | `1` | 张量并行规模 |
 | `--output-file` | 空 | 指定时写入文件，否则打印日志 |
 
-## FASTA 预测
+## 6. FASTA 预测
 
 目录内置示例 FASTA：
 
@@ -200,11 +176,12 @@ python scripts/predict.py \
 
 `data/data_mini/genome_data/chr20.fa`、`chr21.fa`、`chr22.fa` 是较大的染色体级 FASTA。直接预测可能占用较高显存，建议先切分为较短片段，或使用多卡并行配置。
 
-## 训练
+## 7. 训练
 
 训练入口要求二选一：传入 `-d/--dataset-config`，或使用 `--mock-data`。内置示例数据推荐使用 `config/genome_data_config.yaml` 和 `data/data_mini/genome_data`。
 
 使用 1B 架构从头训练或做训练流程验证示例：
+
 ```bash
 python scripts/train.py \
   -d config/genome_data_config.yaml \
@@ -226,7 +203,6 @@ python scripts/train.py \
 ```
 
 该示例不加载 checkpoint，适合在没有 1B 权重时验证训练链路。如需从 1B NeMo checkpoint 微调，可额外传入 `--ckpt-dir /path/to/evo2_nemo_1b`。
-
 
 使用 7B 长上下文架构从头训练或做训练流程验证示例：
 
@@ -297,7 +273,7 @@ python scripts/train_slurm.py ...
 | `--save-top-k` | `5` | 保存最优 checkpoint 数量 |
 | `--ckpt-async-save` | 关闭 | 启用异步 checkpoint 保存 |
 
-## 数据预处理
+## 8. 数据预处理
 
 当前示例训练数据已预处理。如需处理新的 FASTA 或 JSON 数据，可使用：
 
@@ -313,13 +289,19 @@ config/genome_preprocess_config.yaml
 config/genome_data_config.yaml
 ```
 
-## OneScience 官方信息
+# OneScience 官方信息
 
 | 平台 | OneScience 主仓库 | Skills 仓库 |
 | --- | --- | --- |
 | Gitee | https://gitee.com/onescience-ai/onescience | https://gitee.com/onescience-ai/oneskills |
 | GitHub | https://github.com/onescience-ai/OneScience | https://github.com/onescience-ai/oneskills |
 
-## 引用与许可证
+# 引用与许可证
 
-Evo2 原始实现包含 NVIDIA、Arc Institute、Stanford 等来源声明。本目录保留源码文件中的原始版权与许可证头信息，并面向 OneScience 单模型运行场景做了目录整理与入口适配。科研使用时，请同时引用 Evo2 原始论文、模型来源和 OneScience 项目信息。
+- Evo2 原始论文：[Genome modelling and design across all domains of life with Evo 2](https://doi.org/10.1038/s41586-026-10176-5)。
+- Evo2 原始代码使用 Apache License 2.0，见本仓库 `LICENSE`。原始许可证来源：[ArcInstitute/evo2 LICENSE](https://github.com/ArcInstitute/evo2/blob/main/LICENSE)。
+- Evo2 7B 模型权重来源于 HuggingFace [`arcinstitute/evo2_7b`](https://huggingface.co/arcinstitute/evo2_7b)，本仓库中 `checkpoints/evo2_nemo_7b` 为转换后的 NeMo checkpoint 格式。原始权重许可证为 Apache-2.0。
+- 示例数据集 `data/data_mini/genome_data/` 由 UCSC Genome Browser 提供的 hg38 `chr20`、`chr21`、`chr22` chromosome FASTA 下载并预处理得到，仅用于训练和推理流程验证。数据下载目录见：[UCSC hg38 chromosomes](https://hgdownload.soe.ucsc.edu/goldenpath/hg38/chromosomes/)。
+- UCSC hg38 数据的使用请遵守 UCSC Genome Browser 数据使用条款，见：[UCSC 使用条款](https://genome.ucsc.edu/license/)。
+- 如果在科研工作中使用本仓库、模型权重或生成结果，建议引用 Evo2 原始论文、模型权重来源、UCSC hg38 数据来源和 OneScience 相关项目信息，并根据实际任务补充下游分析工具或数据集引用。
+

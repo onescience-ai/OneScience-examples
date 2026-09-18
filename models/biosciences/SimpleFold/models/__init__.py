@@ -1,2 +1,0 @@
-"""Bundled model modules."""
-

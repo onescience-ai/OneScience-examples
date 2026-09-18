@@ -24,23 +24,6 @@ https://arxiv.org/abs/2306.06079
 | 本地快速验证 | 使用 fake 数据完成训练、checkpoint 和推理。 |
 | 真实区域预报 | 后续可接入真实 MRMS、OMO、HRRR 和 GOES。 |
 
-# 文件说明
-
-| 路径 | 功能 | 备注 |
-| :--- | :--- | :--- |
-| `README.md` | 工程使用说明文档 | 中文为主 |
-| `download.sh` | ModelScope 资源下载脚本 | 当前无额外模型或数据文件需要下载 |
-| `model/metnet3.py` | Compact MetNet-3 主模型 | 组织多源编码、lead-time conditioning 和多任务输出 |
-| `model/metnet3_blocks.py` | 主干网络模块 | 实现条件卷积块和 compact long-range MaxViT |
-| `model/metnet3_heads.py` | 多任务输出头 | 提供降水、地面变量分类和 HRRR 回归头 |
-| `model/metnet3_losses.py` | 训练损失 | 汇总概率分类与辅助回归目标 |
-| `model/metnet3_schema.py` | 输入数据契约 | 定义通道、时间帧、输出 bins 并校验 batch |
-| `model/fake_data.py` | 合成多源数据生成模块 | 构造 MRMS、OMO、HRRR、GOES 和静态场输入 |
-| `scripts/train.py` | 训练入口 | 执行训练、验证、early stopping 和断点续训 |
-| `scripts/inference.py` | 推理入口 | 加载 checkpoint 并生成多任务预测 |
-| `scripts/result.py` | 评估与可视化入口 | 输出概率、回归指标和结果图 |
-| `weight/` | 本地训练权重目录 | 保存训练产生的 checkpoint |
-
 # 使用说明
 
 ## 1. OneCode 使用
@@ -54,7 +37,13 @@ https://arxiv.org/abs/2306.06079
 - CPU 可运行当前 compact 配置。
 - 真实数据和大配置推荐使用 GPU。
 
-## 3. 快速开始
+### 下载模型包
+
+```bash
+modelscope download --model OneScience/MetNet-3 --local_dir ./MetNet-3
+cd MetNet-3
+```
+
 ### 安装运行环境
 
 **DCU 环境**
@@ -160,3 +149,5 @@ python scripts/result.py
 
 - 本目录为根据 MetNet-3 论文构建的独立 compact 复现。
 - 论文材料、代码和后续真实数据应分别遵循各自许可证。
+
+

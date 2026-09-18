@@ -6,30 +6,15 @@
 
 # 模型介绍
 
-StormCast 是 NVIDIA 提出的生成式区域天气预报模型，面向中尺度对流天气的高分辨率短临预测。该模型使用大尺度天气背景约束区域状态演变，并通过生成式扩散方法补充确定性预报难以刻画的细尺度结构。
+StormCast 是 NVIDIA 提出的生成式区域天气预报模型，面向中尺度对流天气的高分辨率短临预测。
 
 论文：StormCast: A Machine Learning Method for Meso-β-Scale Convection-resolving Weather Forecasting
 
 https://arxiv.org/abs/2408.10958
 
+# 模型描述
 
-
-# 仓库说明
-
-本仓库是 OneScience 整理的 StormCast 最小可运行独立模型仓库，面向 ModelScope 下载、OneCode 自动化运行和本地快速验证场景。
-
-当前支持能力：
-
-- 生成轻量级 ERA5 HDF5 测试数据。
-- 单卡训练和 `torchrun` 分布式训练入口。
-- 使用训练权重推理并保存预测结果。
-- 绘制推理结果可视化图像。
-
-当前不支持能力：
-
-- 不随包提供真实 ERA5 数据或预训练权重。
-- 默认配置面向 721 x 1440 的全球 0.25 度网格，完整训练需要较高显存和存储。
-- 虚拟数据只用于流程连通性验证，不代表模型效果。
+StormCast 模型使用大尺度天气背景约束区域状态演变，并通过生成式扩散方法补充确定性预报难以刻画的细尺度结构。
 
 
 # 适用场景
@@ -40,23 +25,6 @@ https://arxiv.org/abs/2408.10958
 | 本地快速验证 | 使用虚拟数据检查数据读取，模型训练、推理、推理结果可视化。 |
 | ModelScope/OneCode 运行 | 作为独立模型包下载后直接安装依赖并运行脚本。 |
 | 多卡训练 | 通过 `torchrun` 启动多进程训练。 |
-
-
-# 文件说明
-
-| 路径 | 功能 | 备注 |
-| :--- | :--- | :--- |
-| `README.md` | 工程使用说明文档 | 中文为主 |
-| `conf/config.yaml` | 训练、推理和数据配置 | 已适配本仓库相对路径 |
-| `scripts/train.py` | 训练脚本 | 支持单卡和 torchrun 多卡 |
-| `scripts/inference.py` | 推理脚本 | 需存在训练权重 |
-| `scripts/result.py` | 评估与可视化脚本 | 读取推理输出 |
-| `scripts/fake_data.py` | 假数据生成脚本 | 用于快速连通性验证 |
-| `scripts/data_loader.py` | 数据处理脚本 | 针对 StormCast 输入提供数据加载 |
-| `scripts/grid.py` | 网格生成脚本 | 生成 StormCast 适配网格 |
-| `model/stormer.py` | 独立 Python 包 | 不依赖 OneScience 源码包 |
-| `weight/` | 权重目录 | 可放置预训练或发布权重 |
-
 
 # 使用说明
 
@@ -74,8 +42,12 @@ https://arxiv.org/abs/2408.10958
 - 多卡训练使用 NCCL 后端，请确保设备驱动、通信库和 PyTorch 版本匹配。
 - DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
 
+### 下载模型包
 
-## 3. 快速开始
+```bash
+modelscope download --model OneScience/StormCast --local_dir ./StormCast
+cd StormCast
+```
 
 ### 安装运行环境
 
@@ -99,6 +71,13 @@ conda activate onescience311
 pip install onescience[earth-gpu] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
+### 训练数据介绍
+
+OneScience 社区提供可供训练的 ERA5 数据（受数据文件大小限制，当前仓库内为完整数据切片），用户可通过下述命令下载，并确认 `conf/config.yaml` 中数据路径设置正确：
+
+```bash
+modelscope download --dataset OneScience/ERA5 --local_dir ./data
+```
 
 
 ### 生成虚拟数据进行流程验证
@@ -109,12 +88,6 @@ python scripts/fake_data.py
 ```
 
 虚拟数据只用于检查数据协议和程序流程，不代表模型的科学预报能力。
-
-同时，OneScience 社区提供可供训练的 ERA5 数据（受数据文件大小限制，当前仓库内为完整数据切片），用户可通过下述命令下载，并确认 `conf/config.yaml` 中数据路径设置正确：
-
-```bash
-modelscope download --dataset OneScience/ERA5 --local_dir ./data
-```
 
 ### 训练
 
@@ -137,6 +110,10 @@ torchrun --nproc_per_node=2 scripts/train.py --stage regression
 torchrun --nproc_per_node=2 scripts/train.py --stage diffusion
 ```
 
+
+### 训练权重
+
+本仓库在 weights/ 文件夹内提供基于 ERA5 再分析数据训练的权重，权重文件即将上传，预计将于近期完成。
 
 ### 推理
 

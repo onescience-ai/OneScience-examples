@@ -1,18 +1,3 @@
----
-datasets:
-- OneScience/airfrans
-language:
-- en
-- zh
-license: Apache License 2.0
-tags:
-- OneScience
-- message-passing-neural-network
-- graph-neural-network
-- CFD
-tasks: []
----
-
 <p align="center"><strong><span style="font-size: 30px;">DSMPNN-DarcyFlow</span></strong></p>
 
 # 模型介绍

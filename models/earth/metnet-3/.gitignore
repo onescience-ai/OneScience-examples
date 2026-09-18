@@ -1,8 +1,0 @@
-__pycache__/
-*.py[cod]
-*.pdf
-result/
-weight/*
-!weight/.gitkeep
-.pytest_cache/
-.ipynb_checkpoints/

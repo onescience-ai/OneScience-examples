@@ -1,3 +1,0 @@
-numpy
-matplotlib
-# rasterio is optional and is required for GeoTIFF input/output

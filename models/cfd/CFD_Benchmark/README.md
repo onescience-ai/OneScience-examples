@@ -7,17 +7,6 @@
 # 模型介绍
 CFD_Benchmark 是一个面向神经偏微分方程（PDE）求解器研究的开源深度学习基准库，基于清华大学开源项目 Neural-Solver-Library 扩展而来，在原有神经算子与物理场建模框架基础上支持 DDP 并行训练，并引入了新的模型和数据集。它适合神经 PDE 求解器评测、CFD 场景下的深度学习建模、多模型性能对比、大规模并行训练实验、物理仿真数据集构建与算法基准测试等场景。
 
-
-# 仓库说明
-
-本仓库是 OneScience 整理的 CFD_Benchmark 标准运行包，面向 OneCode 自动化运行和本地快速验证场景。
-
-当前支持能力：
-
-* 支持多个经典的神经 PDE 求解器的训练、推理、评估与结果可视化
-* 支持 DDP 多卡并行训练
-* 支持标准 PDE、CFD、工业设计、多物理场和网格物理仿真等多类基准任务
-
 本库目前支持以下基准测试：
 
 - 来自 [[FNO]](https://arxiv.org/abs/2010.08895) 和 [[geo-FNO]](https://arxiv.org/abs/2207.05209) 的六个标准基准
@@ -63,13 +52,6 @@ CFD_Benchmark 是一个面向神经偏微分方程（PDE）求解器研究的开
 - **MeshGraphNet** LEARNING MESH-BASED SIMULATION WITH GRAPH NETWORKS[ICLR 2021](https://arxiv.org/abs/2010.03409) [[Code]](https://github.com/google-deepmind/deepmind-research/tree/master/meshgraphnets)
 
 
-当前不支持能力：
-* 不内置预训练权重
-* 不负责自动下载、清洗或重新适配全部外部数据库
-
-
-
-
 
 ## 适用场景
 
@@ -78,22 +60,8 @@ CFD_Benchmark 是一个面向神经偏微分方程（PDE）求解器研究的开
 | 神经 PDE 求解器评测 | 在统一流程下对 FNO、Transolver、GNOT、ONO、U-NO 等模型进行训练、推理和性能对比 |
 | 自回归物理预测 | 基于 PDEBench 等数据集逐步预测 PDE 状态随时间的演化 |
 | 多物理场建模 | 基于 BubbleML 等数据集研究多相流、多物理耦合和相变现象 |
-| 非结构网格仿真 | 适用于复杂几何上的不规则网格数据 |
+| ModelScope/OneCode 运行	| 作为独立模型包下载后直接安装依赖并运行脚本 |
 
-# 文件说明
-
-| 路径 | 功能 | 备注 |
-| :--- | :--- | :--- |
-| `README.md` | 工程使用说明文档 | 中文为主 |
-| `configuration.json` | OneCode 元信息 | 保持最小配置 |
-| `requirements_dcu.txt` | 依赖包 | 包含脚本运行所需的最小 Python 依赖 |
-| `config/config.yaml` | 训练、推理和数据配置 | 已适配本仓库相对路径 |
-| `scripts/train.py` | 训练脚本 | 支持单卡和 torchrun 多卡 |
-| `scripts/inference.py` | 推理脚本 | 需存在训练权重 |
-| `scripts/result.py` | 评估结果整理脚本 | 读取 checkpoint 和 `results/{save_name}` 状态并输出 JSON 摘要 |
-| `scripts/fake_data.py` | 假数据生成脚本 | 用于快速连通性验证 |
-| `model/` | 模型文件 包 | OneScience复现的经典TOP模型 |
-| `weight/` | 权重目录 | 可放置预训练或发布权重 |
 
 # 使用说明
 
@@ -108,26 +76,40 @@ CFD_Benchmark 是一个面向神经偏微分方程（PDE）求解器研究的开
 **硬件要求**
 
 - 推荐使用 GPU 或 DCU 运行。
+- CPU 可以用于导入和小配置连通性验证，完整训练和推理速度较慢。
 - DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
 
 
-## 3. 快速开始
+### 下载模型包
+
+```bash
+modelscope download --model OneScience/CFD_Benchmark --local_dir ./CFD_Benchmark 
+cd CFD_Benchmark 
+```
 
 ### 安装运行环境
 
+
+**DCU环境**
+
 ```bash
+# 请首先激活DTK及CONDA
 conda create -n onescience311 python=3.11 -y
 conda activate onescience311
-pip install onescience[cfd] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
+# 支持uv安装
+pip install onescience[cfd-dcu] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
-### 生成假数据进行流程验证
-
-如需先用最小假数据检查路径和数据格式，保持 `config/config.yaml` 的默认配置即可。默认配置使用 `airfoil + steady + Transolver`，训练 1 个 epoch，并将数据写入 `./data/fake_airfoil`。
-
+**GPU环境**
 ```bash
-python scripts/fake_data.py
+# 请首先激活CONDA
+conda create -n onescience311 python=3.11 -y libstdcxx-ng=12 libgcc-ng=12 gcc_linux-64=12 gxx_linux-64=12
+conda activate onescience311
+# 支持uv安装
+pip install onescience[cfd-gpu] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
+
+### 训练数据介绍
 
 请参考上文基准测试说明中的数据集下载链接，下载所需数据集。
 
@@ -139,20 +121,18 @@ ShapeNet-Car [[TOG 2018]](https://dl.acm.org/doi/abs/10.1145/3197517.3201325)，
 
 BubbleML [[Multiphase Multiphysics Dataset]](https://arxiv.org/abs/2307.14623)用于研究多物理相变现象数据集，可以通过[[此链接]](https://github.com/HPCForge/BubbleML/blob/main/bubbleml_data/README.md)下载。
 
-
-
-
+OneScience 社区也提供可供训练的cfd_benchmark数据集，用户可通过下述命令下载，并确认'conf/config.yaml'中数据路径设置正确：
+```
+modelscope download --dataset OneScience/cfd_benchmark  --local_dir ./data
+```
 ### 训练
 
 ```bash
 python scripts/train.py
 ```
 
-训练参数来自 `config/config.yaml` 的 `data`、`model`、`train` 和 `paths` 字段。默认训练会保存：
-
-```text
-./checkpoints/transolver_fake.pt
-```
+### 训练权重
+本仓库在weights/文件夹内提供基于基准OneScience/cfd_benchmark数据集训练的权重，即将上传该权重。
 
 ### 推理
 
@@ -166,8 +146,6 @@ python scripts/inference.py
 ./results/{train.save_name}/metrics.json
 ```
 
-默认 `vis_num: 0`，当前快速验证脚本只做指标推理，不生成图片。
-
 
 # OneScience 官方信息
 
@@ -178,4 +156,5 @@ python scripts/inference.py
 
 # 引用与许可证
 - 参考仓库：[Neural-Solver-Library](https://github.com/thuml/Neural-Solver-Library)。
-- 本仓库已保留相关来源及归属说明。使用、修改或分发本仓库内容时，请遵循相应的许可证要求。
+- 本仓库保留来源说明，并面向 OneScience ModelScope 自动运行场景进行整理。
+

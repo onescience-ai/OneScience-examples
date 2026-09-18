@@ -1,4 +1,3 @@
-
 <p align="center">
   <strong>
     <span style="font-size: 30px;">DeepONet</span>
@@ -151,7 +150,7 @@ python scripts/train.py \
 
 ### 训练权重
 
-运行download.sh脚本，可下载复现训练得到的最优权重`weight/best_model.pth`，可直接用于推理微调；
+`weight/best_model.pth` 为反导数实验正式训练得到的最优权重，可直接用于推理、微调；
 
 ### 推理
 
@@ -191,3 +190,4 @@ python scripts/result.py --config config/config.yaml
 
 - 原论文链接：[DeepONet: Learning nonlinear operators for identifying differential equations based on the universal approximation theorem of operators](https://arxiv.org/abs/1910.03193)
 - 本项目为 DeepONet 论文的独立复现。官方实现代码采用 MIT License；本项目代码、模型权重、训练数据及第三方依赖分别适用其各自的许可条款
+

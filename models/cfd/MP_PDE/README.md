@@ -117,7 +117,7 @@ python scripts/train.py \
 
 ### 训练权重
 
-运行download.sh脚本，可下载复现训练得到的最优权重`weight/best_model.pth`，可直接用于推理微调；
+`weight/best_model.pth` 为正式训练得到的最优权重，可直接用于推理微调；
 
 ### 推理
 
@@ -150,3 +150,4 @@ python scripts/result.py \
 
 - 原论文链接：[Message Passing Neural PDE Solvers](https://arxiv.org/abs/2202.03376)
 - 本项目为 MP_PDE 论文的独立复现，项目代码、模型权重、训练数据及第三方依赖分别适用其各自的许可条款
+

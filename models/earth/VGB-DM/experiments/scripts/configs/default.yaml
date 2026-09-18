@@ -1,6 +1,0 @@
-defaults:
-  - run_conf 
-
-
-#  - submitit-slurm-options
-#  - override hydra/launcher: submitit_slurm # required for submitit (available via pip)

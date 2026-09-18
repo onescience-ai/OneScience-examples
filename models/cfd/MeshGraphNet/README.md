@@ -6,24 +6,13 @@
 
 # 模型介绍
 
-MeshGraphNet 是DeepMind提出的用于网格物理场建模的图神经网络，将非结构网格表示为图结构，通过网格边与空间邻近边上的消息传递学习节点状态的动态演化，并可在前向仿真过程中支持自适应网格离散。它适合流体绕流预测、结构力学变形仿真、布料/薄膜动力学建模、传统 CFD/FEM 高成本求解器加速等场景。
+MeshGraphNets 是 DeepMind 团队提出的基于计算网格的图神经网络物理仿真模型，可对流体、结构和布料等复杂物理系统的动力学演化进行快速预测。
 
+论文：Learning Mesh-Based Simulation with Graph Networks
+https://arxiv.org/abs/2010.03409
 
-# 仓库说明
-
-本仓库是 OneScience 整理的 MeshGraphNet 标准运行包，面向 OneCode 自动化运行和本地快速验证场景。
-
-当前支持能力：
-
-* 训练
-* 推理
-* 评估与可视化
-* 生成空壳假数据用于流程连通性验证
-
-当前不支持能力：
-* 不内置预训练权重
-* 不负责下载外部数据集进行适配
-
+# 模型描述
+MeshGraphNets 基于编码器—处理器—解码器式图网络架构，使用流体力学、结构力学和布料仿真轨迹数据进行训练，面向复杂物理系统开展长时序动力学模拟。
 
 ## 适用场景
 
@@ -32,23 +21,8 @@ MeshGraphNet 是DeepMind提出的用于网格物理场建模的图神经网络�
 | 流体绕流预测 | 基于网格节点预测速度、压力等流场变量 |
 | 结构变形仿真 | 预测受力结构的位移、应力或形变过程 |
 | 布料动力学模拟 | 模拟柔性薄膜、布料等可变形物体运动 |
-| 非结构网格仿真 | 适用于复杂几何上的不规则网格数据 |
-| 快速代理求解 | 替代部分 CFD/FEM 求解流程，提高推理效率 |
-| 长时序物理预测 | 通过自回归方式逐步预测物理状态演化 |
+| ModelScope/OneCode 运行 | 作为独立模型包下载后直接安装依赖并运行脚本|
 
-# 文件说明
-
-| 路径 | 功能 | 备注 |
-| :--- | :--- | :--- |
-| `README.md` | 工程使用说明文档 | 中文为主 |
-| `configuration.json` | OneCode 元信息 | 保持最小配置 |
-| `config/config.yaml` | 训练、推理和数据配置 | 已适配本仓库相对路径 |
-| `scripts/train.py` | 训练脚本 | 支持单卡和 torchrun 多卡 |
-| `scripts/inference.py` | 推理脚本 | 需存在训练权重 |
-| `scripts/result.py` | 评估与可视化脚本 | 读取 `result/output/*.npy` |
-| `scripts/fake_data.py` | 假数据生成脚本 | 用于快速连通性验证 |
-| `model/meshgraphnet.py` | 模型文件 | OneScience复现的经典TOP模型 |
-| `weight/` | 权重目录 | 可放置预训练或发布权重 |
 
 # 使用说明
 
@@ -66,33 +40,37 @@ MeshGraphNet 是DeepMind提出的用于网格物理场建模的图神经网络�
 - DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
 
 
-## 3. 快速开始
+### 下载模型包
+
+```bash
+modelscope download --model OneScience/MeshGraphNet --local_dir ./MeshGraphNet 
+cd MeshGraphNet 
+```
 
 ### 安装运行环境
 
+
+**DCU环境**
+
 ```bash
-# 激活DTK及CONDA
+# 请首先激活DTK及CONDA
 conda create -n onescience311 python=3.11 -y
 conda activate onescience311
-pip install onescience[cfd] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
+# 支持uv安装
+pip install onescience[cfd-dcu] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
-### 生成假数据进行流程验证
-
-如需先验证脚本、模型、checkpoint 和结果文件是否能够完整跑通，可使用仓库内置的 DGL 图假数据流程。默认配置已经开启假数据：
-
-```yaml
-datapipe:
-  source:
-    fake_data: true
-    fake_data_path: data/cylinder_flow/fake_cylinder_flow.pt
-```
-
-执行以下命令会生成 `data/cylinder_flow/fake_cylinder_flow.pt`：
-
+**GPU环境**
 ```bash
-python scripts/fake_data.py
+# 请首先激活CONDA
+conda create -n onescience311 python=3.11 -y libstdcxx-ng=12 libgcc-ng=12 gcc_linux-64=12 gxx_linux-64=12
+conda activate onescience311
+# 支持uv安装
+pip install onescience[cfd-gpu] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
+
+### 训练数据介绍
+
 OneScience 社区提供可供训练的 `cylinder_flow` 数据，用户可通过下述命令下载，并确认 `config/config.yaml` 中数据路径设置正确：
 
 ```bash
@@ -114,6 +92,9 @@ torchrun --nproc_per_node=8 --nnodes=1 --rdzv_id=1000 --rdzv_backend=c10d --max_
 ```
 
 训练会在 `weight/checkpoints` 下保存 pth文件。
+
+### 训练权重
+本仓库在weights/文件夹内提供基于 cylinder_flow 数据集训练的权重，即将上传该权重。
 
 ### 推理
 
@@ -139,4 +120,5 @@ python scripts/result.py
 
 # 引用与许可证
 - MeshGraphNet 原始论文：[Learning Mesh-Based Simulation with Graph Networks](https://arxiv.org/abs/2010.03409)。
-- 本仓库已保留相关来源及归属说明。使用、修改或分发本仓库内容时，请遵循相应的许可证要求。
+- 本仓库保留来源说明，并面向 OneScience ModelScope 自动运行场景进行整理。
+

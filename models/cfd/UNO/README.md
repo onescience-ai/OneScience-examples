@@ -1,5 +1,3 @@
-
----
 <p align="center">
   <strong>
     <span style="font-size: 30px;">UNO</span>
@@ -81,12 +79,23 @@ cd UNO
 
 ### 安装运行环境
 
-已有 OneScience 环境时直接激活对应环境。新环境需安装 OneScience 及基础依赖：
+**DCU环境**
 
 ```bash
+# 请首先激活DTK及CONDA
 conda create -n onescience311 python=3.11 -y
 conda activate onescience311
-pip install onescience torch scipy numpy pyyaml matplotlib tqdm
+# 支持uv安装
+pip install onescience[cfd-dcu] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
+```
+
+**GPU环境**
+```bash
+# 请首先激活CONDA
+conda create -n onescience311 python=3.11 -y libstdcxx-ng=12 libgcc-ng=12 gcc_linux-64=12 gxx_linux-64=12
+conda activate onescience311
+# 支持uv安装
+pip install onescience[cfd-gpu] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
 ## 3. 快速开始
@@ -124,6 +133,10 @@ python scripts/train.py
 ```
 
 默认检查点保存至 `weight/uno_navier_stokes.pt`。训练脚本完全由 `conf/config.yaml` 驱动，不接收命令行配置参数。
+
+### 训练权重
+
+本仓库在`weight/`文件夹内提供基于Navier-Stokes 标准数据集训练的权重。
 
 ### 推理、评估和可视化
 
@@ -185,3 +198,5 @@ result/
 - Rahman, M. A., Ross, Z. E., and Azizzadenesheli, K. U-NO: U-shaped Neural Operators. arXiv:2204.11127, 2022.
 - Li, Z. et al. Fourier Neural Operator for Parametric Partial Differential Equations. arXiv:2010.08895, 2020.
 - 本模型包采用 Apache-2.0 许可证，并保留原始论文和数据来源说明。
+
+

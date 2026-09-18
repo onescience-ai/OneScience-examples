@@ -1,26 +1,3 @@
----
-license: mit
-tasks:
-  - crystal-structure-generation
-  - materials-generation
-  - fine-tuning
-frameworks:
-  - pytorch
-language:
-  - en
-  - zh
-tags:
-  - OneScience
-  - MatterGen
-  - 材料科学
-  - 晶体生成
-  - 扩散模型
-  - 图神经网络
-  - 条件生成
-  - 训练
-  - 微调
----
-
 <p align="center">
   <strong>
     <span style="font-size: 30px;">MatterGen</span>
@@ -138,6 +115,14 @@ args:
 
 进行属性微调时，同样在 `demo/configs/finetune_dft_mag_density_smoke.yaml` 的 `args` 下添加 `data_module.root_dir`。如果数据下载到了其他位置，请将其改为对应的绝对路径。
 
+也可使用 ModelScope SDK 下载：
+
+```python
+from modelscope import dataset_snapshot_download
+
+dataset_dir = dataset_snapshot_download("OneScience/mp20", local_dir="./datasets/mp20")
+print(dataset_dir)
+```
 
 自定义 CSV 数据需要先转换：
 
@@ -248,3 +233,4 @@ bash run.sh --config configs/finetune_dft_mag_density_smoke.yaml
 
 - MatterGen 相关代码来自 OneScience 项目中的 MatChem 示例实现，并参考了上游 MatterGen 项目（https://github.com/microsoft/mattergen）。上游 MatterGen 代码以 [MIT License](https://github.com/microsoft/mattergen/blob/main/LICENSE) 发布。
 - 如果在科研工作中使用 MatterGen 训练或生成结果，建议引用 MatterGen 原始论文、OneScience 相关项目信息和实际使用的数据集来源。
+

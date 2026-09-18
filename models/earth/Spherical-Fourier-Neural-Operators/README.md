@@ -1,48 +1,38 @@
 <p align="center">
-  <strong><span style="font-size: 30px;">Spherical Fourier Neural Operator</span></strong>
+  <strong>
+    <span style="font-size: 30px;">Spherical Fourier Neural Operators</span>
+  </strong>
 </p>
+
 
 # 模型介绍
 
-SFNO 使用球谐变换在球面上学习动力系统演化，可用于全球天气预报和球面浅水方程预测。
+SFNO（Spherical Fourier Neural Operator）由 NVIDIA 与 Caltech 等单位联合提出，将标准 FNO 中的平面 FFT 替换为球谐变换（SHT），使频域卷积尊重球面几何，缓解极区伪影、频谱伪影与长时间自回归滚动的失稳问题。
 
 论文：Spherical Fourier Neural Operators: Learning Stable Dynamics on the Sphere
 
-https://proceedings.mlr.press/v202/bonev23a.html
+https://arxiv.org/abs/2306.03838
 
 # 模型描述
 
-当前模型包调用 NVIDIA 官方 `torch-harmonics` 线性 SFNO 实现，支持 fake 球面场上的 SHT、一次参数更新、checkpoint 恢复和短时自回归。它是算子级 smoke package，不是论文 SWE/ERA5 实验复现。
+SFNO 是确定性、单状态推进的全球天气动力学模型：输入一个 6 小时时刻的大气状态，输出下一 6 小时时刻的同一变量集合，长时效通过自回归滚动获得。本仓库基于官方 `NVIDIA/torch-harmonics` 中的 reference implementation 整理并接入 OneScience 数据读取与训练流程。
 
 # 适用场景
 
 | 场景 | 说明 |
 | :---: | :--- |
-| 球面算子研究 | 验证 SHT、频谱滤波和逆 SHT。 |
-| 本地快速验证 | 使用 fake 球面数据跑通训练和推理。 |
-| ERA5 天气预报 | 后续可接入 26 或 73 通道 ERA5 数据。 |
+| 全球天气动力学研究 | 基于 ERA5 数据训练球面等变的神经算子预报模型。 |
+| 长时间自回归稳定性研究 | 验证模型在多步滚动中的极区伪影与耗散行为。 |
+| 本地快速验证 | 使用虚拟数据检查数据读取、训练入口、推理和结果脚本。 |
+| ModelScope/OneCode 运行 | 作为独立模型包下载后直接安装依赖并运行脚本。 |
+| 多卡训练 | 通过 `torchrun` 启动多进程训练。 |
 
-# 文件说明
-
-| 路径 | 功能 | 备注 |
-| :--- | :--- | :--- |
-| `README.md` | 工程使用说明文档 | 中文为主 |
-| `download.sh` | ModelScope 资源下载脚本 | 当前无额外模型或数据文件需要下载 |
-| `requirements.lock` | 第三方依赖锁定 | 固定 `torch-harmonics==0.8.0` |
-| `THIRD_PARTY.md` | 第三方资源与许可证说明 | 记录上游版本、提交和本地安装方式 |
-| `.deps/` | 项目内置依赖目录 | 保存可复现安装的 `torch-harmonics` 包及元数据 |
-| `model/default_config.json` | 默认模型配置 | 定义球面网格、通道、层数和 rollout 参数 |
-| `model/sfno_adapter.py` | 官方 SFNO 适配层 | 封装 `torch-harmonics` 的线性 SFNO 实现 |
-| `model/dataset.py` | 相邻时间帧数据集 | 将球面序列组织为 input/target pair |
-| `model/fake_spherical_data.py` | 合成球面场生成模块 | 生成确定性的低阶平滑测试序列 |
-| `scripts/train.py` | 训练入口 | 执行训练、验证、early stopping 和 checkpoint 保存 |
-| `scripts/inference.py` | 自回归推理入口 | 加载 checkpoint 并执行短时 rollout |
-| `scripts/result.py` | 评估与可视化入口 | 输出 RMSE、空间 ACC 和场对比图 |
-| `weight/` | 本地训练权重目录 | 保存训练产生的 checkpoint |
 
 # 使用说明
 
 ## 1. OneCode 使用
+
+可通过 OneCode 在线环境体验智能化一键式 AI4S 编程：
 
 [点击体验智能化一键式 AI4S 编程](https://web-2069360198568017922-iaaj.ksai.scnet.cn:58043/home)
 
@@ -50,93 +40,115 @@ https://proceedings.mlr.press/v202/bonev23a.html
 
 **硬件要求**
 
-- CPU 可运行当前小配置。
-- 完整 ERA5 训练推荐使用 GPU。
+- 推荐使用 GPU 或 DCU 运行。
+- CPU 可以用于导入和小配置连通性验证，完整训练和推理速度较慢。
+- DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
+- 模型依赖 `torch-harmonics`（球谐变换），安装前请确认其与 PyTorch/CUDA 版本匹配。
 
 
-## 3. 快速开始
+### 下载模型包
+
+```bash
+modelscope download --model OneScience/SphericalFourierNeuralOperators --local_dir ./SphericalFourierNeuralOperators
+cd SphericalFourierNeuralOperators
+```
+
 ### 安装运行环境
 
-**DCU 环境**
+**DCU环境**
 
 ```bash
+# 请首先激活DTK及CONDA
 conda create -n onescience311 python=3.11 -y
 conda activate onescience311
-pip install onescience[earth-dcu] -i http://mirrors.onescience.ai:3141/pypi/simple/ --trusted-host mirrors.onescience.ai
-pip install torch-harmonics==0.8.0
+# 支持uv安装
+pip install onescience[earth-dcu] torch-harmonics -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
-**GPU 环境**
-
+**GPU环境**
 ```bash
+# 请首先激活CONDA
 conda create -n onescience311 python=3.11 -y libstdcxx-ng=12 libgcc-ng=12 gcc_linux-64=12 gxx_linux-64=12
 conda activate onescience311
-pip install onescience[earth-gpu] -i http://mirrors.onescience.ai:3141/pypi/simple/ --trusted-host mirrors.onescience.ai
-pip install torch-harmonics==0.8.0
+# 支持uv安装
+pip install onescience[earth-gpu] torch-harmonics -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
 
-当前目录也在 `.deps/` 中保留了 `torch-harmonics==0.8.0`。
+### 训练数据介绍
 
-### 数据
+OneScience 社区提供可供训练的 ERA5 数据（受数据文件大小限制，当前仓库内为完整数据切片），用户可通过下述命令下载，并确认 `conf/config.yaml` 中数据路径设置正确：
 
-当前脚本在内存中生成低阶平滑 fake 球面场，并将相邻时间帧切成 `T-1` 个 input/target pair；不需要额外下载数据。
+```bash
+modelscope download --dataset OneScience/ERA5 --local_dir ./data
+```
+
+如需快速验证流程，可先运行虚拟数据脚本：
+
+```bash
+python scripts/fake_data.py
+```
+
+> 注：`scripts/fake_data.py` 根据模型配置生成 `[T, C, H, W]` HDF5 数据；当前小配置为 6 通道、32×64 网格，并自动计算满足 batch 的时间长度。
 
 ### 训练
+
+单卡：
 
 ```bash
 python scripts/train.py
 ```
 
-训练现在执行 pair Dataset 的多 epoch 训练、按时间顺序划分验证集、学习率调度和 early stopping：
+多卡：
 
 ```bash
-python scripts/train.py --epochs 10
-python scripts/train.py --resume weight/training/latest.pth --epochs 20
+torchrun --nproc_per_node=8 --nnodes=1 --rdzv_id=1000 --rdzv_backend=c10d --max_restarts=0 --master_addr="localhost" --master_port=29500 scripts/train.py
 ```
 
+训练输出：
+
+```text
+data/checkpoints/model_bak.pth
+data/checkpoints/trloss.npy
+data/checkpoints/valoss.npy
+```
+
+### 训练权重
+本仓库在 weight/ 文件夹内预留权重目录。论文未明确公开 26/73 通道天气模型权重；本仓库当前不提供官方权重，用户可依据论文配置自行训练。
+
 ### 推理
+
+推理默认读取 `data/checkpoints/model_bak.pth`：
 
 ```bash
 python scripts/inference.py
 ```
 
-输出文件：
+预测结果输出到：
 
 ```text
-weight/model.pth
-weight/training/latest.pth
-weight/training/best.pth
-weight/training/history.json
-result/prediction.pt
-result/target.pt
-result/inference.json
+result/output/
 ```
 
-### 结果检验
+### 评估与可视化
 
 ```bash
 python scripts/result.py
 ```
 
-当前测试只验证模型可运行。随机初始化 rollout 不代表论文长期稳定性结果。
+输出内容包括：
 
-结果脚本生成 `result/metrics.json` 和 `result/comparison.png`。当前 RMSE 未做球面积分权重，ACC 使用样本自身空间均值而非训练集长期气候态，因此不能与论文指标比较。
+- `result/rmse.npy`
+- `result/acc.npy`
+- `result/loss.png`
+- 指定日期和变量的预报对比图
 
-### 论文与当前实现的 I/O
 
-| 项目 | 论文 SWE / ERA5 | 当前 smoke 配置 |
-| --- | --- | --- |
-| 输入输出 | SWE 3 场 `256x512` / ERA5 26 或 73 通道 | `[B,2,17,32]` 平滑合成场 |
-| 时间步长 | SWE 1 小时 / ERA5 6 小时 | 无物理单位的相邻序号 |
-| 架构 | SWE 4x256；天气模型 8x384 | 2 blocks，embed dim 8 |
-| 训练 | 单步训练后双步自回归微调 | 多 epoch 单步 pair 训练和验证；rollout 用于推理分析 |
-| 分析 | 球面加权相对误差和气候态 ACC | 未加权 smoke RMSE/ACC |
+# 官方来源与复现说明
 
-完整执行顺序为 `train.py -> inference.py -> result.py`。训练在内存中生成 z-score 后的 `[T,C,Nlat,Nlon]`，并按相邻帧构成 pair。checkpoint 的 `config` 只保存模型配置，训练参数单独放在 `train_config`，因此推理可以继续从 checkpoint 恢复模型结构。模型包发布时不携带本地训练权重或 `result/` 生成物。真实 SWE/ERA5 模式仍需数据读取、变量表、正式划分、面积加权损失和论文的两阶段训练循环。
-
-### 真实数据
-
-真实训练需要准备 ERA5 26/73 通道数据、6 小时时间配对、训练集统计量和球面网格重采样配置。
+- 模型实现来自官方 `NVIDIA/torch-harmonics`（BSD-3-Clause）中的 SFNO reference implementation。
+- 当前案例目录抓取 commit：`49bac755cd8306fbd27a3604acafa65adf7ca202`（2026-08-14）。
+- `conf/config.yaml` 默认使用小配置（`img_size=[32, 64]`、`embed_dim=16`、`num_layers=2`）用于连通性验证；论文级复现需按论文调整为 0.25°（721×1440）网格、26/73 通道与更大网络。
+- 论文中以下细节论文未公开，复现时为假设项：天气模型内部频谱降采样倍数、位置嵌入形式、逐变量归一化统计区间、训练 batch size。
 
 # OneScience 官方信息
 
@@ -147,5 +159,5 @@ python scripts/result.py
 
 # 引用与许可证
 
-- 官方实现：https://github.com/NVIDIA/torch-harmonics
-- 本目录为 SFNO 的独立运行适配，第三方条款见 `THIRD_PARTY.md`。
+- 本仓库为 SFNO 的独立工程整理与适配，模型源码参考自 Bonev 等人（2023）的官方 `torch-harmonics` 实现，遵循 BSD-3-Clause。
+- 引用请参考：Bonev, Kurth, Hundt, Pathak, Baust, Kashinath, Anandkumar. Spherical Fourier Neural Operators: Learning Stable Dynamics on the Sphere. ICML 2023.

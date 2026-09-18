@@ -1,8 +1,0 @@
-pytorch_model.bin
-test_result.json
-model_file_audit.py
-.ipynb_checkpoints/
-__pycache__/
-*.pyc
-*.part
-*.docx

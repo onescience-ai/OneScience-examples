@@ -6,30 +6,14 @@
 
 # 模型介绍
 
-AlphaFold3 是 Google DeepMind 和 Isomorphic Labs 提出的生物分子结构预测模型，可预测蛋白质、DNA、RNA、小分子配体、离子和翻译后修饰等多类型分子之间的三维结构与相互作用。相比仅面向蛋白单体或蛋白复合物的结构预测流程，AlphaFold3 进一步覆盖蛋白-核酸、蛋白-配体、核酸复合物等更广泛的生物分子体系，适用于复合物建模、候选分子机制分析、结构生物学验证前处理和下游分子设计场景。
-
-本模型包提供 AlphaFold3 的 JAX / Flax 推理工程、输入 JSON 示例、数据搜索流程脚本和本地推理启动脚本，可作为独立工程下载、部署和运行。
+AlphaFold3 是 Google DeepMind 和 Isomorphic Labs 提出的生物分子结构预测模型，可预测蛋白质、DNA、RNA、小分子配体等分子及其复合物的三维结构与相互作用。
 
 论文：Accurate structure prediction of biomolecular interactions with AlphaFold 3  
 https://www.nature.com/articles/s41586-024-07487-w
 
-# 仓库说明
+# 模型描述
 
-本仓库是 AlphaFold3 最小可运行独立模型仓库，面向 OneCode 自动化运行和本地快速验证场景。
-
-当前支持能力：
-
-- 使用已包含 MSA / template 等特征的 AlphaFold3 JSON 输入进行结构推理
-- 使用 Jackhmmer / Nhmmer 数据搜索流程生成输入特征
-- 使用 MMseqs 数据搜索流程生成输入特征
-- 支持蛋白、核酸、配体等 AlphaFold3 JSON 输入对象
-- 输出结构文件、ranking score、置信度和完整推理结果
-- 支持通过环境变量指定权重、数据库、输入和输出目录
-
-当前不支持能力：
-
-- 不提供结构可视化服务或实验结果自动判读
-- 不面向临床诊断或医学决策
+AlphaFold3 采用 Pairformer 与扩散模型预测生物分子复合物结构。本模型包提供 JAX / Flax 推理工程和数据搜索脚本，并配套发布 ModelScope 数据集 `OneScience/AlphaFold3_dataset`。
 
 # 适用场景
 
@@ -39,26 +23,9 @@ https://www.nature.com/articles/s41586-024-07487-w
 | 蛋白结构预测 | 输入蛋白序列，结合搜索数据库生成特征并预测结构 |
 | 生物分子复合物建模 | 输入蛋白、DNA、RNA、配体等多组分对象，预测复合物空间构象 |
 | 数据搜索流程验证 | 使用 Jackhmmer / Nhmmer 或 MMseqs 流程检查数据库路径和搜索工具连通性 |
-| OneCode / 本地运行 | 在生物领域运行环境中快速验证脚本连通性 |
+| ModelScope / OneCode 运行 | 下载模型工程和完整数据集后，在生物领域运行环境中快速验证脚本连通性 |
 
-# 文件说明
 
-| 路径 | 功能 | 备注 |
-| :--- | :--- | :--- |
-| `README.md` | 工程使用说明文档 | 中文为主 |
-| `flax_model/alphafold3/` | AlphaFold3 模型源码 | 包含模型、数据管线、结构处理和 C++ 扩展构建入口 |
-| `flax_model/alphafold3/model/` | 模型网络、特征、置信度和后处理模块 | 推理核心实现 |
-| `flax_model/alphafold3/data/` | MSA、template、数据库搜索和特征构建模块 | 供数据搜索流程调用 |
-| `flax_model/alphafold3/structure/` | mmCIF、化学组分、键合与结构表处理模块 | 用于结构读写和后处理 |
-| `scripts/run_alphafold.py` | 主运行脚本 | 支持数据管线和模型推理 |
-| `scripts/infer.sh` | 直接推理启动脚本 | 默认读取 `inputs/7r6r_data.json` |
-| `scripts/infer_jackhmmer.sh` | Jackhmmer / Nhmmer 搜索流程启动脚本 | 需要公共数据库 |
-| `scripts/infer_mmseqs.sh` | MMseqs 搜索流程启动脚本 | 需要 MMseqs 程序和数据库 |
-| `inputs/7r6r_data.json` | 已含特征的示例输入 | 用于直接推理 |
-| `inputs/t1119_search.json` | 仅序列示例输入 | 用于数据搜索流程 |
-| `weight/` | 权重占位目录 | 默认查找 `weight/AlphaFold3` |
-| `tests/check_import_boundaries.py` | 静态导入检查脚本 | 用于工程完整性验证 |
-| `LICENSE` | 许可证说明 | 源码和模型参数遵循各自使用条款 |
 
 # 使用说明
 
@@ -76,9 +43,9 @@ https://www.nature.com/articles/s41586-024-07487-w
 - CPU 可以用于导入和小配置连通性验证，完整训练和推理速度较慢。
 - DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
 
-**软件要求**
 
-请参考 OneScience 生物领域运行环境，DCU 用户想了解更多适配内容请联系 liubiao@sugon.com。
+
+
 
 **环境检测**
 
@@ -94,7 +61,12 @@ nvidia-smi
 hy-smi
 ```
 
-## 3. 快速开始
+### 下载模型包
+
+```bash
+modelscope download --model OneScience/AlphaFold3 --local_dir ./AlphaFold3
+cd AlphaFold3
+```
 
 ### 安装运行环境
 
@@ -118,7 +90,19 @@ cd ./AlphaFold3
 
 ```bash
 python -m onescience.flax_model.alphafold3.build_extension
+python -m onescience.flax_models.alphafold3.build_data
 ```
+
+### 训练与推理数据介绍
+
+OneScience 社区已将 AlphaFold3 推理与数据搜索所需的完整数据上传至 ModelScope：[OneScience/AlphaFold3_dataset](https://modelscope.cn/datasets/OneScience/AlphaFold3_dataset)。本模型包不包含训练入口，该数据集主要用于 MSA / template 特征构建和推理前的数据搜索。
+
+```bash
+modelscope download --dataset OneScience/AlphaFold3_dataset --local_dir ./data/alphafold3
+```
+### 训练权重
+
+权重即将上传
 
 ### 准备权重
 
@@ -230,7 +214,7 @@ AlphaFold3 输入采用 JSON 格式，基本结构如下：
 - `inputs/7r6r_data.json`：包含序列、MSA 和 template 等信息，适合直接推理。
 - `inputs/t1119_search.json`：仅包含序列，适合数据搜索流程验证。
 
-请将数据搜索流程所需数据库准备到模型包下的 `data/alphafold3/`。数据搜索流程默认读取的相对结构如下：
+ModelScope 完整数据集 `OneScience/AlphaFold3_dataset` 建议下载到模型包下的 `data/alphafold3/`。数据搜索流程默认读取的相对结构如下：
 
 ```text
 data/
@@ -268,7 +252,6 @@ python tests/check_import_boundaries.py
 
 # 引用与许可证
 
-- AlphaFold3 原始论文：Accurate structure prediction of biomolecular interactions with AlphaFold 3。
-- 论文地址：https://www.nature.com/articles/s41586-024-07487-w
+- 本仓库基于 AlphaFold3 开源模型进行 DCU 适配。
 - AlphaFold3 源码使用 CC BY-NC-SA 4.0 许可；模型参数受独立使用条款约束。
-- 如果在科研工作中使用 AlphaFold3 结果，建议引用 AlphaFold3 原始论文和 OneScience 相关项目信息，并根据实际任务补充下游分析工具或数据集引用。
+- 科研使用请引用原始论文：[Accurate structure prediction of biomolecular interactions with AlphaFold 3](https://www.nature.com/articles/s41586-024-07487-w)。

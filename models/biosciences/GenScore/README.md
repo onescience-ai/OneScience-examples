@@ -1,4 +1,3 @@
-
 <p align="center">
   <strong>
     <span style="font-size: 30px;">GenScore</span>
@@ -7,23 +6,13 @@
 
 # 模型介绍
 
-GenScore 是一个基于图神经网络的**蛋白质-配体打分框架**，由 RTMScore 扩展而来。它能够预测蛋白-小分子结合亲和力并评估对接构象质量，在多个数据集上展现出均衡的打分（scoring）、排序（ranking）、对接（docking）和虚拟筛选（screening）能力。
+GenScore 是一个**蛋白质-配体打分框架**，能够预测蛋白-小分子结合亲和力并评估对接构象质量，在多个数据集上展现出均衡的打分（scoring）、排序（ranking）、对接（docking）和虚拟筛选（screening）能力。
 
-# 仓库说明
+# 模型描述
 
-本示例将 GenScore 集成到 OneScience 生物信息（AI for Biology）组件中，提供蛋白-配体打分、口袋生成、贡献度分析、模型训练以及 CASF-2016 基准评测的统一入口。
+GenScore 模型基于基于图神经网络，由 RTMScore 扩展而来。
 
-当前支持能力：
-
-- **蛋白-配体打分**：对给定蛋白（或已提取的结合口袋）与配体构象预测结合分数。
-- **口袋自动生成**：基于参考配体位置从完整蛋白结构中自动截取结合口袋。
-- **贡献度分析**：输出原子级别和残基级别对最终打分值的贡献，辅助可解释性分析。
-- **模型训练**：基于 PDBbind 预处理后的蛋白-配体图数据训练 GenScore 打分网络。
-- **CASF-2016 基准评测**：支持打分/排序（scoring/ranking）、对接（docking）和虚拟筛选（screening）三项标准测试。
-
-当前不支持能力：
-
-- 当前不存在预训练权重及训练数据集，可通过modelscope下载相应dataset，并通过export指定路径使用。
+当前无权重及数据集提供，近期会上传至魔搭，后续可通过指令下载；
 
 # 适用场景
 
@@ -35,38 +24,6 @@ GenScore 是一个基于图神经网络的**蛋白质-配体打分框架**，由
 | 模型训练 | 基于 PDBbind 预处理后的蛋白-配体图数据训练 GenScore 打分网络。 |
 | CASF-2016 基准评测 | 支持打分/排序（scoring/ranking）、对接（docking）和虚拟筛选（screening）三项标准测试。 |
 
-# 文件说明
-
-| 路径 | 功能 | 备注 |
-| :---: | :---: | :---: |
-| `README.md` | 本文档 | 中文说明文档 |
-| `run_genscore.sh` | 蛋白-配体打分推理示例脚本 | 已提供 |
-| `train_genscore_smoke.sh` | 小规模训练冒烟测试脚本 | 已提供 |
-| `train_genscore_full.sh` | 完整训练脚本 | 已提供 |
-| `run_genscore_benchmarks.sh` | CASF-2016 基准测试脚本 | 已提供 |
-| `genscore.py` | 推理入口 | - |
-| `train_genscore.py` | 训练入口 | - |
-| `preprocess_pdbbind.py` | PDBbind 数据预处理入口 | - |
-| `benchmarks/` | CASF-2016 评测脚本 | 包含 docking、scoring/ranking 和 screening 脚本 |
-| `benchmark_data/` | 评测辅助数据 | - |
-
-```
-├── benchmarks/                       # CASF-2016 评测脚本
-│   ├── casf2016_docking.py
-│   ├── casf2016_scoring_ranking.py
-│   └── casf2016_screening.py
-├── models/                           # 模型实现
-├── scripts/                           # 运行入口
-    ├── run_genscore.sh                   # 蛋白-配体打分推理示例脚本（已提供）
-    ├── train_genscore_smoke.sh           # 小规模训练冒烟测试脚本（已提供）
-    ├── train_genscore_full.sh            # 完整训练脚本（已提供）
-    ├── run_genscore_benchmarks.sh        # CASF-2016 基准测试脚本（已提供）
-    ├── genscore.py                       # 推理入口
-    ├── train_genscore.py                 # 训练入口
-    ├── preprocess_pdbbind.py             # PDBbind 数据预处理入口
-├── benchmark_data/                   # 评测辅助数据
-└── README.md                         # 本文档
-```
 
 # 使用说明
 
@@ -119,12 +76,17 @@ export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$LD_LIBRARY_PATH"
 export LD_LIBRARY_PATH="$CONDA_PREFIX/lib/python3.11/site-packages/fastpt/torch/lib:$LD_LIBRARY_PATH"
 ```
 
-### 2. 下载数据库(含权重)
+### 2. 下载模型包
 
 ```bash
-modelscope download --dataset OneScience/GenScore --local_dir ./dataset
+# 默认下载到当前路径下 GenScore 文件夹；如需修改，请调整 local_dir 后的路径
+modelscope download --model OneScience/GenScore --local_dir ./model
+
 cd model
 ```
+### 训练权重与数据集
+
+当前无权重及数据集提供，近期会上传至魔搭，后续可通过指令下载；
 
 ### 3. 使用方式
 
@@ -269,3 +231,4 @@ python preprocess_pdbbind.py \
 更多信息请参考 GenScore 官方仓库：https://github.com/sc8668/GenScore
 
 许可证信息请以 [GenScore 官方仓库](https://github.com/sc8668/GenScore) 中的说明为准。
+

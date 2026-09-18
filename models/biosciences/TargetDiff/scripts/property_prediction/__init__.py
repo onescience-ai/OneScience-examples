@@ -1,2 +1,0 @@
-"""TargetDiff property prediction scripts."""
-

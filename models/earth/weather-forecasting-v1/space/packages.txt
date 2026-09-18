@@ -1,2 +1,0 @@
-libeccodes-dev
-libeccodes-tools

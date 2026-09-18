@@ -1,5 +1,0 @@
-*.pth
-validation_results/
-__pycache__/
-*.py[cod]
-.ipynb_checkpoints/

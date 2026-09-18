@@ -1,20 +1,3 @@
----
-datasets:
-- CFD_Benchmark/elasticity
-language:
-- en
-- zh
-license: Apache License 2.0
-tags:
-- OneScience
-- PDE
-- neural-field
-- equivariant-neural-field
-- operator-learning
-- CFD
-- hyperelastic
-tasks: []
----
 <p align="center">
   <strong>
     <span style="font-size: 30px;">enf2enf</span>

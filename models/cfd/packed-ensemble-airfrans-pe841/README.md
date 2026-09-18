@@ -1,18 +1,3 @@
----
-datasets:
-- OneScience/airfrans
-language:
-- en
-- zh
-license: Apache License 2.0
-tags:
-- OneScience
-- Packed-Ensemble
-- AirfRANS
-- CFD
-- surrogate-model
-tasks: []
----
 <p align="center">
   <strong>
     <span style="font-size: 30px;">packed-ensemble-airfrans-pe841</span>

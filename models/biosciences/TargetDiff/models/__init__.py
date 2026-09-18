@@ -1,2 +1,0 @@
-"""TargetDiff model components."""
-

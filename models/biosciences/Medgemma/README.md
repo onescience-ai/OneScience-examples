@@ -1,4 +1,3 @@
-
 <p align="center">
   <strong>
     <span style="font-size: 30px;">MedGemma</span>
@@ -12,31 +11,11 @@ MedGemma 是 Google 开源的医学多模态大语言模型，基于 [Gemma 3](h
 - **MedGemma 4B**：多模态模型，支持医学文本与医学图像联合输入。
 - **MedGemma 27B**：纯文本模型，专注于医学文本理解与问答。
 
-MedGemma 4B 使用 [SigLIP](https://arxiv.org/abs/2303.15343) 图像编码器，已在多种去标识化医学数据上预训练，包括胸片（CXR）、皮肤科图像、眼科图像和组织病理学切片；其语言模型组件在放射学图像、病理学图像、眼科图像、皮肤科图像和医学文本上进行了训练。
+# 模型描述
 
-MedGemma 已在多项临床相关基准上评估，涵盖开放基准数据集和专家人工评估任务。更多信息请参阅：
+MedGemma 4B 使用图像编码器，已在多种去标识化医学数据上预训练，包括胸片（CXR）、皮肤科图像、眼科图像和组织病理学切片；其语言模型组件在放射学图像、病理学图像、眼科图像、皮肤科图像和医学文本上进行了训练。
 
-- [开发者文档](https://developers.google.com/health-ai-developer-foundations/medgemma/get-started)
-- [模型卡（Model Card）](https://developers.google.com/health-ai-developer-foundations/medgemma/model-card)
-- [Hugging Face 模型](https://huggingface.co/models?other=medgemma)
-- [Google Model Garden](https://console.cloud.google.com/vertex-ai/publishers/google/model-garden/medgemma)
-
-当前示例默认基于 `google/medgemma-1.5-4b-it`（4B 多模态指令模型），支持文本与医学图像联合输入，可在 GPU 或海光 DCU 平台上运行。
-
-# 仓库说明
-
-本示例将 MedGemma 集成到 OneScience 生物信息（AI for Biology）组件中，提供面向医学场景的统一推理、微调与评估入口。
-
-当前支持能力：
-
-- **医学问答**：基于 MedQA 等医学知识基准评估模型问答能力。
-- **医学影像分析**：支持胸片（CXR）解剖结构定位、多期影像对比分析等任务。
-- **领域微调**：基于 NCT 结肠组织病理图像等数据，使用 LoRA 进行参数高效微调。
-- **统一推理接口**：通过 `MedicalInferenceRunner` 提供交互式与批量文件推理能力。
-
-当前不支持能力：
-
-- 原 README 未说明当前不支持的能力。
+当前无权重及数据集，近期会上传魔搭，后续支持指令下载；
 
 # 适用场景
 
@@ -46,43 +25,6 @@ MedGemma 已在多项临床相关基准上评估，涵盖开放基准数据集�
 | 医学影像分析 | 支持胸片（CXR）解剖结构定位、多期影像对比分析等任务。 |
 | 领域微调 | 基于 NCT 结肠组织病理图像等数据，使用 LoRA 进行参数高效微调。 |
 | 统一推理 | 通过 `MedicalInferenceRunner` 提供交互式与批量文件推理能力。 |
-
-# 文件说明
-
-| 路径 | 功能 | 备注 |
-| :---: | :---: | :---: |
-| `README.md` | 工程使用说明文档 | 中文为主 |
-| `configs/inference_config.yaml` | 推理配置示例 | 配置模型与推理参数 |
-| `configs/configs_base.py` | 基础配置定义 | - |
-| `runner/medical_inference_runner.py` | 统一医学推理运行器 | 支持交互式与批量推理 |
-| `scripts/run_evaluate_on_medqa.sh` | MedQA 医学问答评估 | 输出至 `scripts/medqa_results/` |
-| `scripts/run_cxr_anatomy.sh` | 胸片解剖结构定位 | 输出至 `scripts/outputs/` |
-| `scripts/run_cxr_longitudinal_comparison.sh` | 胸片前后对比分析 | 输出至 `scripts/compare_outputs/` |
-| `scripts/run_fine_tune.sh` | 病理图像 LoRA 微调 | 输出至 `scripts/medgemma-nct-lora/` |
-| `tests/test_integration.py` | 集成测试脚本 | 验证模块与组件导入 |
-
-```
-medgemma/
-├── configs/                          # 配置目录
-│   ├── inference_config.yaml         # 推理配置示例
-│   └── configs_base.py               # 基础配置定义
-├── runner/
-│   └── medical_inference_runner.py   # 统一医学推理运行器
-├── scripts/                          # 可执行脚本
-│   ├── notebook_conver/              # 脚本调用的 Python 实现
-│   │   ├── cxr_anatomy_localization_with_hugging_face.py
-│   │   ├── cxr_longitudinal_comparison.py
-│   │   ├── evaluate_on_medqa.py
-│   │   ├── fine_tune_with_hugging_face.py
-│   │   └── detect_image_token.py
-│   ├── run_cxr_anatomy.sh            # 胸片解剖结构定位（已提供）
-│   ├── run_cxr_longitudinal_comparison.sh  # 胸片前后对比分析（已提供）
-│   ├── run_evaluate_on_medqa.sh      # MedQA 医学问答评估（已提供）
-│   └── run_fine_tune.sh              # 病理图像 LoRA 微调（已提供）
-├── tests/
-│   └── test_integration.py           # 集成测试脚本
-└── README.md                         # 本文档
-```
 
 # 使用说明
 
@@ -143,11 +85,31 @@ conda create -n onescience311 python=3.11 -y
 conda activate onescience311
 pip install onescience[bio] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
-
-### 2. 下载数据库(含权重)
+#如果下述代码运行存在找不到库的情况，需要激活cuda，参考下列代码
 
 ```bash
-modelscope download --dataset OneScience/medgemma --local_dir ./dataset
+source ${ROCM_PATH}/cuda/env.sh
+export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$CONDA_PREFIX/lib/python3.11/site-packages/fastpt/torch/lib:$LD_LIBRARY_PATH"
+```
+
+### 2. 下载模型包
+
+```bash
+# 默认下载到当前路径下 model 文件夹；如需修改，请调整 local_dir 后的路径
+modelscope download --model OneScience/Medgemma --local_dir ./model
+cd model
+```
+### 训练权重与数据集
+
+当前无权重及数据集提供，近期会上传至魔搭，后续可通过指令下载；
+
+### 3. 使用方式
+
+**数据与模型权重**
+
+```bash
+modelscope download --dataset OneScience/medgemma --local_dir ./dataset #当前无权重及数据集，近期会上传魔搭，后续支持指令下载；
 ```
 
 脚本默认从以下路径加载模型：
@@ -167,16 +129,16 @@ ${ONESCIENCE_DATASETS_DIR}/medgemma/modelscope/google/medgemma-1.5-4b-it
 
 请提前下载模型并放置到该目录，或通过 `model_path` 环境变量覆盖。
 
-### 3. 使用方式
+### 详细使用说明
 
 #### 1. 集成测试
 
 验证 MedGemma 在 OneScience 中的模块、配置、数据适配器与图像处理组件是否可正常导入：
 
 ```bash
-cd examples/biosciences/medgemma
 python tests/test_integration.py
 ```
+
 ---
 
 #### 2. 医学问答评估（`run_evaluate_on_medqa.sh`）
@@ -184,7 +146,6 @@ python tests/test_integration.py
 在 MedQA 数据集上评估模型医学问答能力，默认处理 10 条样本用于快速验证。
 
 ```bash
-cd examples/biosciences/medgemma
 bash scripts/run_evaluate_on_medqa.sh
 ```
 
@@ -200,7 +161,6 @@ bash scripts/run_evaluate_on_medqa.sh
 对单张或多张胸片进行解剖部位定位。脚本内部同时运行单图模式和批量模式：
 
 ```bash
-cd examples/biosciences/medgemma
 bash scripts/run_cxr_anatomy.sh
 ```
 
@@ -217,7 +177,6 @@ bash scripts/run_cxr_anatomy.sh
 对同一患者的前后两次胸片进行对比分析：
 
 ```bash
-cd examples/biosciences/medgemma
 bash scripts/run_cxr_longitudinal_comparison.sh
 ```
 
@@ -233,7 +192,6 @@ bash scripts/run_cxr_longitudinal_comparison.sh
 基于 NCT 结肠组织病理图像数据集进行 LoRA 微调：
 
 ```bash
-cd examples/biosciences/medgemma
 bash scripts/run_fine_tune.sh
 ```
 
@@ -252,7 +210,6 @@ bash scripts/run_fine_tune.sh
 ##### 交互式推理
 
 ```bash
-cd examples/biosciences/medgemma
 export PYTHONPATH=../../../src:$PYTHONPATH
 python runner/medical_inference_runner.py \
     --config configs/inference_config.yaml \
@@ -262,7 +219,6 @@ python runner/medical_inference_runner.py \
 ##### 批量文件推理
 
 ```bash
-cd examples/biosciences/medgemma
 export PYTHONPATH=../../../src:$PYTHONPATH
 python runner/medical_inference_runner.py \
     --config configs/inference_config.yaml \
@@ -294,3 +250,5 @@ MedGemma 模型采用 [Health AI Developer Foundations License](https://develope
 - [社区准则](https://developers.google.com/health-ai-developer-foundations/community-guidelines)
 - [Hugging Face](https://huggingface.co/models?other=medgemma)
 - [Google Model Garden](https://console.cloud.google.com/vertex-ai/publishers/google/model-garden/medgemma)
+
+

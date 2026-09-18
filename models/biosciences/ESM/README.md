@@ -6,38 +6,14 @@
 
 # 模型介绍
 
-ESM（Evolutionary Scale Modeling）是 Meta AI / FAIR 发布的蛋白质语言模型家族，面向蛋白质序列表征、结构预测、变异效应评估和固定骨架序列设计等任务。本项目包含 ESM-1、ESM-2、MSA Transformer、ESMFold、ESM-1v 和 ESM-IF1 相关能力，可支持从 FASTA 提取蛋白表征、预测 PDB 结构、对 DMS 突变数据进行零样本评分，以及基于已知结构进行 inverse folding 采样和序列打分。
+ESM（Evolutionary Scale Modeling）是 Meta AI / FAIR 发布的蛋白质语言模型家族，可用于蛋白质序列表征、结构预测、变异效应评估和固定骨架序列设计。
 
-主要论文：
+论文：Evolutionary-scale prediction of atomic-level protein structure with a language model  
+https://www.science.org/doi/10.1126/science.ade2574
 
-- ESM-2 / ESMFold：Evolutionary-scale prediction of atomic-level protein structure with a language model  
-  https://www.science.org/doi/10.1126/science.ade2574
-- ESM 系列基础模型：Biological structure and function emerge from scaling unsupervised learning to 250 million protein sequences  
-  https://www.pnas.org/doi/10.1073/pnas.2016239118
-- MSA Transformer：MSA Transformer  
-  https://www.biorxiv.org/content/10.1101/2021.02.12.430858v1
-- ESM-1v 变异效应预测：Language models enable zero-shot prediction of the effects of mutations on protein function  
-  https://www.biorxiv.org/content/10.1101/2021.07.09.450648v1
-- ESM-IF1 inverse folding：Learning inverse folding from millions of predicted structures  
-  https://www.biorxiv.org/content/early/2022/04/10/2022.04.10.487779
+# 模型描述
 
-# 仓库说明
-
-本仓库是 ESM 最小可运行独立模型仓库，面向 OneCode 自动化运行和本地快速验证场景。
-
-当前支持能力：
-
-- ESM / ESM-2 蛋白序列表征提取
-- ESMFold 单序列蛋白三维结构预测
-- ESM-IF1 固定骨架 inverse folding 序列采样
-- ESM-IF1 基于结构的序列 log-likelihood 打分
-- ESM-1v / MSA Transformer 零样本变异效应预测
-- 小样例 FASTA、PDB / CIF 和 DMS 数据的本地流程验证
-
-当前不支持能力：
-
-- 不负责外部 MSA 搜索、结构数据库检索或蛋白结构可视化服务
-- 不面向临床诊断或医学决策
+本模型包集成 ESM-1、ESM-2、MSA Transformer、ESMFold、ESM-1v 和 ESM-IF1 的 PyTorch 推理能力，并提供 DCU 运行适配。配套样例数据随 ModelScope 模型包 `OneScience/ESM` 发布。
 
 # 适用场景
 
@@ -48,29 +24,8 @@ ESM（Evolutionary Scale Modeling）是 Meta AI / FAIR 发布的蛋白质语言�
 | 变异效应评分 | 输入野生型序列和 DMS 突变表，输出突变影响评分 |
 | 固定骨架序列设计 | 输入 PDB / CIF 结构和链 ID，采样满足骨架约束的候选序列 |
 | 结构条件序列打分 | 输入结构和候选序列，计算 conditional log-likelihood |
-| OneCode / 本地运行 | 在生物领域运行环境中快速验证脚本连通性 |
+| ModelScope / OneCode 运行 | 下载模型工程后，在生物领域运行环境中快速验证脚本连通性 |
 
-# 文件说明
-
-| 路径 | 功能 | 备注 |
-| :--- | :--- | :--- |
-| `README.md` | 工程使用说明文档 | 中文为主 |
-| `model/esm/` | ESM 模型源码 | 包含 ESM-1、ESM-2、MSA Transformer、ESMFold 和 inverse folding |
-| `model/openfold/` | ESMFold 结构模块依赖 | 用于结构预测 |
-| `model/protenix/layer_norm/` | 可选 LayerNorm 加速模块 | GPU 环境可按需使用 |
-| `scripts/extract.py` | 序列表征提取脚本 | 读取 FASTA 并保存 `.pt` 表征文件 |
-| `scripts/fold.py` | ESMFold 结构预测脚本 | 输出 PDB 文件 |
-| `scripts/infer.sh` | 默认连通性示例脚本 | 默认执行 ESM-2 表征提取 |
-| `scripts/inverse_folding/sample_sequences.py` | inverse folding 采样脚本 | 根据结构采样蛋白序列 |
-| `scripts/inverse_folding/score_log_likelihoods.py` | inverse folding 序列打分脚本 | 根据结构评估候选序列 |
-| `scripts/variant_prediction/predict.py` | 变异效应预测脚本 | 支持 ESM-1v 和 MSA Transformer |
-| `scripts/check_import_boundaries.py` | 静态导入检查脚本 | 用于工程完整性验证 |
-| `data/fasta/` | FASTA 样例数据 | 用于表征提取和结构预测示例 |
-| `data/inverse_folding/` | PDB / CIF 和候选序列样例 | 用于 inverse folding 示例 |
-| `data/variant_prediction/` | DMS 变异效应预测样例数据 | 用于变异评分示例 |
-| `weight/` | 权重占位目录 | 建议放置 `weight/checkpoints/*.pt` |
-| `tests/` | 静态测试 | 验证导入边界 |
-| `LICENSE` | 开源许可证 | MIT License |
 
 # 使用说明
 
@@ -88,9 +43,9 @@ ESM（Evolutionary Scale Modeling）是 Meta AI / FAIR 发布的蛋白质语言�
 - CPU 可以用于导入和小配置连通性验证，完整训练和推理速度较慢。
 - DCU 用户需要预先安装 DTK，建议使用 DTK 25.04.2 以上版本或与当前集群匹配的 OneScience 推荐版本。
 
-**软件要求**
 
-请参考 OneScience 生物领域运行环境，DCU 用户想了解更多适配内容请联系 liubiao@sugon.com。
+
+
 
 **环境检测**
 
@@ -106,7 +61,12 @@ nvidia-smi
 hy-smi
 ```
 
-## 3. 快速开始
+### 下载模型包
+
+```bash
+modelscope download --model OneScience/ESM --local_dir ./ESM
+cd ESM
+```
 
 本模型包已包含少量样例数据，可直接用于默认流程验证。
 
@@ -121,6 +81,7 @@ conda activate onescience311
 # 支持uv安装
 pip install onescience[bio-dcu] -i http://mirrors.onescience.ai:3141/pypi/simple/  --trusted-host mirrors.onescience.ai
 ```
+
 ```bash
 #如果需要找不到库的情况需要激活cuda，参考下列代码
 source ${ROCM_PATH}/cuda/env.sh
@@ -128,12 +89,22 @@ export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$LD_LIBRARY_PATH"
 export LD_LIBRARY_PATH="$CONDA_PREFIX/lib/python3.11/site-packages/fastpt/torch/lib:$LD_LIBRARY_PATH"
 ```
 
-
 安装完成后回到模型包目录：
 
 ```bash
 cd ./ESM
 ```
+
+### 训练与推理数据介绍
+
+ESM 示例使用的 FASTA、PDB / CIF 和 DMS 数据已随 [ModelScope 模型包 OneScience/ESM](https://modelscope.cn/models/OneScience/ESM) 发布，完整下载模型包后可在 `data/` 目录中直接使用。本模型包不包含训练入口，数据用于示例推理和流程验证。也可仅下载数据目录：
+
+```bash
+modelscope download --model OneScience/ESM ESM/data --local_dir ./data
+```
+### 训练权重
+
+仓库已内置 `weight/`下ESM的多项权重可供推理时自行选择。
 
 ### 准备权重
 
@@ -286,10 +257,6 @@ python -B -c "import ast, pathlib; [ast.parse(p.read_text(encoding='utf-8'), fil
 
 # 引用与许可证
 
-- ESM-2 / ESMFold 原始论文：Evolutionary-scale prediction of atomic-level protein structure with a language model。
-- ESM 系列基础模型论文：Biological structure and function emerge from scaling unsupervised learning to 250 million protein sequences。
-- MSA Transformer 原始论文：MSA Transformer。
-- ESM-1v 原始论文：Language models enable zero-shot prediction of the effects of mutations on protein function。
-- ESM-IF1 原始论文：Learning inverse folding from millions of predicted structures。
+- 本仓库基于 ESM 开源模型进行 DCU 适配。
 - ESM 相关源码使用 MIT License，见 `LICENSE`。模型权重和数据的使用条款请以对应发布方说明为准。
-- 如果在科研工作中使用 ESM 结果，建议引用对应 ESM 原始论文和 OneScience 相关项目信息，并根据实际任务补充下游分析工具或数据集引用。
+- 科研使用请根据具体子模型引用对应 ESM 原始论文；ESM-2 / ESMFold 请引用：[Evolutionary-scale prediction of atomic-level protein structure with a language model](https://www.science.org/doi/10.1126/science.ade2574)。
